@@ -1,0 +1,16 @@
+LICENSE
+MANIFEST
+META.yml
+Makefile.PL
+README
+TODO
+dist.ini
+eg/standard_usage.pl
+lib/Validation/Class.pm
+t/00-load.t
+t/01-directives.t
+t/02-packageless.t
+t/03-filter-directives.t
+t/04_field_groups.t
+t/99-misc.t
+t/aa-input-required.t
