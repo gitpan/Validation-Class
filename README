@@ -2,7 +2,7 @@ NAME
     Validation::Class - Centralized Input Validation For Any Application
 
 VERSION
-    version 0.110111
+    version 0.110280
 
 SYNOPSIS
     Validation::Class is a different approach to data validation, it
@@ -327,6 +327,11 @@ METHODS
             ...
         };
 
+  error_fields
+    The error_fields function is used to get a hash reference containing all
+    fields with validation errors as keys and their corresponding error
+    messages as values.
+
   error
     The error(s) function is used to set and/or retrieve errors encountered
     during validation. The error function with no parameters returns the
@@ -354,6 +359,12 @@ METHODS
     
         # map parameters to fields then validate (no validation order)
         $input->validate({ 'login' => 'users:login', 'password' => 'users:password' });
+
+  params
+    The params function is used to get a hash reference containing all the
+    passed-in input paramters. This is useful and neccessary when your rules
+    have filters that perform transformations and you want to use the
+    altered values.
 
   validation_schema
     The validation_schema method encapsulates fields and mixins and returns

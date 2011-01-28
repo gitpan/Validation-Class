@@ -24,6 +24,7 @@ BEGIN {
         field
         mixin
         error
+        error_fields
         errors
         check_field
         check_mixin
@@ -32,6 +33,7 @@ BEGIN {
         use_mixin_field
         basic_validate
         basic_filter
+        params
         Oogly
     );
     %EXPORT_TAGS = ( all => [ @EXPORT_OK ] );
@@ -155,6 +157,19 @@ sub mixin {
         $MIXINS->{$name} = $data;
     }
     return 'mixin', %spec;
+}
+
+
+sub error_fields {
+    my ($self) = @_;
+    my $error_fields = {};
+    for my $field ( keys %{ $self->{fields} } ) {
+        my $errors = $self->{fields}->{$field}->{errors};
+        if ( @{$errors} ) {
+            $error_fields->{$field} = $errors;
+        }
+    }
+    return $error_fields;
 }
 
 
@@ -588,6 +603,18 @@ sub basic_filter {
 }
 
 
+sub params {
+    my ($self) = shift;
+    my $error_fields = {};
+    my $params = ref $_[0] ? $_[0] : { @_ };
+    if ($params) {
+        $self->{params} = { %{$self->{params}}, %{$params} };
+        return $self;
+    }
+    return $self->{params};
+}
+
+
 sub validation_schema {
     my %properties = @_;
     my $KEY  = undef;
@@ -650,7 +677,7 @@ Validation::Class - Centralized Input Validation For Any Application
 
 =head1 VERSION
 
-version 0.110111
+version 0.110280
 
 =head1 SYNOPSIS
 
@@ -977,6 +1004,12 @@ fields.
         ...
     };
 
+=head2 error_fields
+
+The error_fields function is used to get a hash reference containing
+all fields with validation errors as keys and their corresponding error
+messages as values.
+
 =head2 error
 
 The error(s) function is used to set and/or retrieve errors encountered during
@@ -1006,6 +1039,12 @@ each within each field.
     
     # map parameters to fields then validate (no validation order)
     $input->validate({ 'login' => 'users:login', 'password' => 'users:password' });
+
+=head2 params
+
+The params function is used to get a hash reference containing
+all the passed-in input paramters. This is useful and neccessary when your rules
+have filters that perform transformations and you want to use the altered values.
 
 =head2 validation_schema
 

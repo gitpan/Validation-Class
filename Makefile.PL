@@ -24,7 +24,7 @@ my %WriteMakefileArgs = (
     'Data::Dumper::Concise' => '0',
     'Hash::Merge' => '0.12'
   },
-  'VERSION' => '0.110111',
+  'VERSION' => '0.110280',
   'test' => {
     'TESTS' => 't/*.t'
   }

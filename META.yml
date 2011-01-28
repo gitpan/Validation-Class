@@ -16,4 +16,4 @@ requires:
   Array::Unique: 0
   Data::Dumper::Concise: 0
   Hash::Merge: 0.12
-version: 0.110111
+version: 0.110280
