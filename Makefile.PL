@@ -24,7 +24,7 @@ my %WriteMakefileArgs = (
     'Hash::Merge' => '0.12',
     'Moose' => '0'
   },
-  'VERSION' => '0.111710',
+  'VERSION' => '0.111720',
   'test' => {
     'TESTS' => 't/*.t'
   }

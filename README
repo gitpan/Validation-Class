@@ -2,7 +2,7 @@ NAME
     Validation::Class - Centralized Input Validation For Any Application
 
 VERSION
-    version 0.111710
+    version 0.111720
 
 SYNOPSIS
         use MyApp::Validation;
@@ -23,7 +23,8 @@ DESCRIPTION
 BUILDING A VALIDATION CLASS
         package MyApp::Validation;
         
-    use Validation::Class;
+    use Validation::Class qw/field mixin filter/;
+        use base 'Validation::Class';
         
     # a validation rule
         field 'login'  => {
@@ -50,7 +51,8 @@ BUILDING A VALIDATION CLASS
 USING MIXINS AND GROUPING
         package MyApp::Validation;
         
-    use Validation::Class;
+    use Validation::Class qw/field mixin filter/;
+        use base 'Validation::Class';
         
     # a validation rule template
         mixin 'basic'  => {
@@ -90,7 +92,8 @@ USING MIXINS AND GROUPING
     parameter name expected to be passed to your validation class.
 
         package MyApp::Validation;
-        use Validation::Class;
+        use Validation::Class qw/field mixin filter/;
+        use base 'Validation::Class';
         
     field 'login' => {
             required   => 1,
@@ -235,7 +238,8 @@ USING MIXINS AND GROUPING
     applied to any field using the mixin directive.
 
         package MyApp::Validation;
-        use Validation::Class;
+        use Validation::Class qw/field mixin filter/;
+        use base 'Validation::Class';
         
     mixin 'constrain' => {
             required   => 1,
@@ -254,7 +258,8 @@ USING MIXINS AND GROUPING
     definitions.
 
         package MyApp::Validation;
-        use Validation::Class;
+        use Validation::Class qw/field mixin filter/;
+        10use base 'Validation::Class';
         
     filter 'telephone' => sub {
             $_[0] =~ s/[^\(\)\-\+\s\d]//g;
@@ -346,6 +351,30 @@ EXECUTING A VALIDATION CLASS
         $filters->{camelcase}->(...);
         $filters->{lowercase}->(...);
         $filters->{alphanumeric}->(...);
+        ...
+
+  ignore_unknown
+    The ignore_unknown boolean determines whether your application will live
+    or die upon encountering unregistered fields during validation.
+
+        MyApp::Validation->new(params => $params, ignore_unknown => 1);
+        
+    or
+        
+    $self->ignore_unknown(1);
+        ...
+
+  report_unknown
+    The report_unknown boolean determines whether your application will
+    report unregistered fields as class-level errors upon encountering
+    unregistered fields during validation.
+
+        MyApp::Validation->new(params => $params,
+        ignore_unknown => 1, report_unknown => 1);
+        
+    or
+        
+    $self->report_unknown(1);
         ...
 
   params

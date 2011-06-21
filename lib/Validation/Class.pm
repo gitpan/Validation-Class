@@ -195,6 +195,22 @@ has 'filters' => (
 );
 
 
+# ignore unknown input parameters
+has 'ignore_unknown' => (
+    is      => 'rw',
+    isa     => 'Bool',
+    default => 0
+);
+
+
+# report unknown input parameters
+has 'report_unknown' => (
+    is      => 'rw',
+    isa     => 'Bool',
+    default => 0
+);
+
+
 # input parameters store
 has 'params' => (
     is      => 'rw',
@@ -357,7 +373,9 @@ sub validate {
             # process all params
             foreach my $field ( keys %{ $self->params } ) {
                 if ( !defined $self->fields->{$field} ) {
-                    die "Data validation field $field does not exist";
+                    my $death_cert
+                        = "Data validation field $field does not exist";
+                    $self->_suicide_by_unknown_field($death_cert);
                 }
                 my $this = $self->fields->{$field};
                 $this->{name}  = $field;
@@ -382,7 +400,9 @@ sub validate {
         else {
             foreach my $field (@fields) {
                 if ( !defined $self->fields->{$field} ) {
-                    die "Data validation field $field does not exist";
+                    my $death_cert
+                        = "Data validation field $field does not exist";
+                    $self->_suicide_by_unknown_field($death_cert);
                 }
                 my $this = $self->fields->{$field};
                 $this->{name}  = $field;
@@ -409,7 +429,9 @@ sub validate {
         if (@fields) {
             foreach my $field (@fields) {
                 if ( !defined $self->fields->{$field} ) {
-                    die "Data validation field $field does not exist";
+                    my $death_cert
+                        = "Data validation field $field does not exist";
+                    $self->_suicide_by_unknown_field($death_cert);
                 }
                 my $this = $self->fields->{$field};
                 $this->{name}  = $field;
@@ -548,8 +570,9 @@ sub basic_validate {
 sub basic_filter {
     my ( $self, $filter, $field ) = @_;
 
-    if ( defined $self->params->{$field} ) {
-        $self->filters->{$filter}->( $self->params->{$field} );
+    if ( defined $self->params->{$field} && $self->filters->{$filter} ) {
+        $self->filters->{$filter}->( $self->params->{$field} )
+            if $self->params->{$field};
     }
 
 }
@@ -635,6 +658,20 @@ sub errors {
     Validation::Class::Errors->new(errors => $errobj || $self->{errors} || []);
 }
 
+sub _suicide_by_unknown_field {
+    my $self  = shift;
+    my $error = shift;
+    if ($self->ignore_unknown) {
+        if ($self->report_unknown) {
+            push @{ $self->{errors} }, $error
+                unless grep { $_ eq $error } @{ $self->{errors} };
+        }
+    }
+    else {
+        die $error ;
+    }
+}
+
     package
         Validation::Class::Errors;
     
@@ -670,7 +707,7 @@ Validation::Class - Centralized Input Validation For Any Application
 
 =head1 VERSION
 
-version 0.111710
+version 0.111720
 
 =head1 SYNOPSIS
 
@@ -693,7 +730,8 @@ validation work-flow and promote code (validation) reuse.
 
     package MyApp::Validation;
     
-    use Validation::Class;
+    use Validation::Class qw/field mixin filter/;
+    use base 'Validation::Class';
     
     # a validation rule
     field 'login'  => {
@@ -721,7 +759,8 @@ validation work-flow and promote code (validation) reuse.
 
     package MyApp::Validation;
     
-    use Validation::Class;
+    use Validation::Class qw/field mixin filter/;
+    use base 'Validation::Class';
     
     # a validation rule template
     mixin 'basic'  => {
@@ -762,7 +801,8 @@ reuse in code. The field keyword should correspond with the parameter name
 expected to be passed to your validation class.
 
     package MyApp::Validation;
-    use Validation::Class;
+    use Validation::Class qw/field mixin filter/;
+    use base 'Validation::Class';
     
     field 'login' => {
         required   => 1,
@@ -919,7 +959,8 @@ The mixin keyword creates a validation rules template that can be applied to any
 field using the mixin directive.
 
     package MyApp::Validation;
-    use Validation::Class;
+    use Validation::Class qw/field mixin filter/;
+    use base 'Validation::Class';
     
     mixin 'constrain' => {
         required   => 1,
@@ -938,7 +979,8 @@ field using the mixin directive.
 The filter keyword creates custom filters to be used in your field definitions.
 
     package MyApp::Validation;
-    use Validation::Class;
+    use Validation::Class qw/field mixin filter/;
+    10use base 'Validation::Class';
     
     filter 'telephone' => sub {
         $_[0] =~ s/[^\(\)\-\+\s\d]//g;
@@ -1032,6 +1074,32 @@ The filters attribute returns a hashref of pre-defined filter definitions.
     $filters->{camelcase}->(...);
     $filters->{lowercase}->(...);
     $filters->{alphanumeric}->(...);
+    ...
+
+=head2 ignore_unknown
+
+The ignore_unknown boolean determines whether your application will live or die
+upon encountering unregistered fields during validation.
+
+    MyApp::Validation->new(params => $params, ignore_unknown => 1);
+    
+    or
+    
+    $self->ignore_unknown(1);
+    ...
+
+=head2 report_unknown
+
+The report_unknown boolean determines whether your application will report
+unregistered fields as class-level errors upon encountering unregistered fields
+during validation.
+
+    MyApp::Validation->new(params => $params,
+    ignore_unknown => 1, report_unknown => 1);
+    
+    or
+    
+    $self->report_unknown(1);
     ...
 
 =head2 params
