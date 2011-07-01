@@ -51,16 +51,13 @@ sub mixin {
 
 
 sub filter {
-    my %spec = @_;
+    my ($name, $data) = @_;
 
-    if (%spec) {
-        my $name = ( keys(%spec) )[0];
-        my $data = ( values(%spec) )[0];
-
+    if ($name && $data) {
         $FILTERS->{$name} = $data;
     }
 
-    return 'filter', %spec;
+    return 'filter', @_;
 }
 
 
@@ -707,7 +704,7 @@ Validation::Class - Centralized Input Validation For Any Application
 
 =head1 VERSION
 
-version 0.111720
+version 0.111820
 
 =head1 SYNOPSIS
 

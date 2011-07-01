@@ -2,7 +2,7 @@ NAME
     Validation::Class - Centralized Input Validation For Any Application
 
 VERSION
-    version 0.111720
+    version 0.111820
 
 SYNOPSIS
         use MyApp::Validation;
