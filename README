@@ -2,7 +2,7 @@ NAME
     Validation::Class - Centralized Input Validation For Any Application
 
 VERSION
-    version 0.111820
+    version 0.111850
 
 SYNOPSIS
         use MyApp::Validation;
@@ -168,12 +168,12 @@ USING MIXINS AND GROUPING
    max_length
     Determines the maximum length of characters allowed
 
-   ref_type
-    Determines whether the field value is a valid perl reference variable
-
    regex
     Determines whether the field value passes the supplied regular
     expression e.g.
+
+   alias
+    Defines alternative parameter name for the field to be matched against
 
         field 'c_field' => {
             label => 'a field labeled c',
@@ -181,7 +181,7 @@ USING MIXINS AND GROUPING
             required => 1,
             min_length => 2,
             max_length => 25,
-            ref_type => 'array',
+            alais => 'cf',
             regex => '^\d+$'
         };
 
@@ -302,14 +302,39 @@ EXECUTING A VALIDATION CLASS
         }
 
     Although this means that the incoming parameters need to specify its
-    parameter names using the same group naming convention. if this is not
+    parameter names using the same group naming convention. If this is not
     to your liking, the validate() method can assist you in mapping your
-    incoming parameters to your defined validation fields as shown here:
+    incoming parameters to your grouped validation fields as shown here:
 
         use MyApp::Validation;
         
     my $input = MyApp::Validation->new(params => $params);
         unless ($input->validate({ user => 'user:login', pass => 'user:password')){
+            return $input->errors->to_string;
+        }
+
+    You can also map automatically by using field aliases whereby a field
+    definition will have an alias attribute containing an arrayref of
+    alternate parameters that can be matched against passed-in parameters as
+    an alternative to the parameter mapping technique. The whole mapping
+    technique can get cumbersome in larger projects.
+
+        package MyApp::Validation;
+        
+    field 'foo:bar' => {
+            ...,
+            alias => [
+                'foo',
+                'bar',
+                'baz',
+                'bax'
+            ]
+        };
+
+        use MyApp::Validation;
+        
+    my  $input = MyApp::Validation->new(automap => 1, params => { foo => 1 });
+        unless ($input->validate(){
             return $input->errors->to_string;
         }
 
@@ -375,6 +400,14 @@ EXECUTING A VALIDATION CLASS
     or
         
     $self->report_unknown(1);
+        ...
+
+  automap
+    The automap boolean determines whether the validate() function will
+    automatically map passed-in parameters against agaist aliases defined in
+    the field definitions.
+
+        MyApp::Validation->new(params => $params, automap => 1);
         ...
 
   params

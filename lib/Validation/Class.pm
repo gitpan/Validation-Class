@@ -137,6 +137,27 @@ sub BUILD {
             }
         }
     }
+    
+    # alias checking, ... for duplicate aliases, etc
+    my $aliastree = {};
+    foreach my $field (keys %{$self->fields}) {
+        my $f = $self->fields->{$field};
+        if (defined $f->{alias}) {
+            my $aliases = "ARRAY" eq ref $f->{alias} ?
+                $f->{alias} : [$f->{alias}];
+            
+            foreach my $alias (@{$aliases}) {
+                if ($aliastree->{$alias}) {
+                    die "The field $field contains the alias $alias which is ".
+                        "also defined in the field $aliastree->{$alias}";
+                }
+                else {
+                    $aliastree->{$alias} = $field;
+                }
+            }
+        }
+    }
+    undef $aliastree;
 
     return $self;
 };
@@ -208,6 +229,14 @@ has 'report_unknown' => (
 );
 
 
+# automap input parameters
+has 'automap' => (
+    is      => 'rw',
+    isa     => 'Bool',
+    default => 0
+);
+
+
 # input parameters store
 has 'params' => (
     is      => 'rw',
@@ -230,6 +259,7 @@ has 'types' => (
     default => sub {
         {
             field => {
+                alias       => sub { 1 },
                 mixin       => sub { 1 },
                 mixin_field => sub { 1 },
                 validation  => sub { 1 },
@@ -244,7 +274,6 @@ has 'types' => (
                 min_length  => sub { 1 },
                 max_length  => sub { 1 },
                 data_type   => sub { 1 },
-                ref_type    => sub { 1 },
                 regex       => sub { 1 }
             },
             mixin => {
@@ -252,7 +281,6 @@ has 'types' => (
                 min_length => sub { 1 },
                 max_length => sub { 1 },
                 data_type  => sub { 1 },
-                ref_type   => sub { 1 },
                 regex      => sub { 1 },
                 filter     => sub { 1 },
                 filters    => sub { 1 },
@@ -361,6 +389,27 @@ sub validate {
             delete $self->params->{$param};
             $self->params->{ $map->{$param} } = $param_value;
             push @fields, $map->{$param};
+        }
+    }
+    
+    # (automap) from aliases if applicable
+    if ($self->automap) {
+        @fields = ();
+        foreach my $field (keys %{$self->fields}) {
+            my $f = $self->fields->{$field};
+            if (defined $f->{alias}) {
+                my $aliases = "ARRAY" eq ref $f->{alias} ?
+                    $f->{alias} : [$f->{alias}];
+                
+                foreach my $alias (@{$aliases}) {
+                    if (defined $self->params->{$alias}) {
+                        my $param_value = $self->params->{$alias};
+                        delete $self->params->{$alias};
+                        $self->params->{ $field } = $param_value;
+                        push @fields, $field;
+                    }
+                }
+            }
         }
     }
 
@@ -704,7 +753,7 @@ Validation::Class - Centralized Input Validation For Any Application
 
 =head1 VERSION
 
-version 0.111820
+version 0.111850
 
 =head1 SYNOPSIS
 
@@ -882,13 +931,13 @@ Determines the minimum length of characters allowed
 
 Determines the maximum length of characters allowed
 
-=head3 ref_type
-
-Determines whether the field value is a valid perl reference variable
-
 =head3 regex
 
 Determines whether the field value passes the supplied regular expression e.g.
+
+=head3 alias
+
+Defines alternative parameter name for the field to be matched against
 
     field 'c_field' => {
         label => 'a field labeled c',
@@ -896,7 +945,7 @@ Determines whether the field value passes the supplied regular expression e.g.
         required => 1,
         min_length => 2,
         max_length => 25,
-        ref_type => 'array',
+        alais => 'cf',
         regex => '^\d+$'
     };
 
@@ -1021,14 +1070,39 @@ like so ...
     }
 
 Although this means that the incoming parameters need to specify its parameter
-names using the same group naming convention. if this is not to your liking,
+names using the same group naming convention. If this is not to your liking,
 the validate() method can assist you in mapping your incoming parameters to your
-defined validation fields as shown here:
+grouped validation fields as shown here:
 
     use MyApp::Validation;
     
     my $input = MyApp::Validation->new(params => $params);
     unless ($input->validate({ user => 'user:login', pass => 'user:password')){
+        return $input->errors->to_string;
+    }
+
+You can also map automatically by using field aliases whereby a field definition
+will have an alias attribute containing an arrayref of alternate parameters that
+can be matched against passed-in parameters as an alternative to the parameter
+mapping technique. The whole mapping technique can get cumbersome in larger
+projects.
+
+    package MyApp::Validation;
+    
+    field 'foo:bar' => {
+        ...,
+        alias => [
+            'foo',
+            'bar',
+            'baz',
+            'bax'
+        ]
+    };
+
+    use MyApp::Validation;
+    
+    my  $input = MyApp::Validation->new(automap => 1, params => { foo => 1 });
+    unless ($input->validate(){
         return $input->errors->to_string;
     }
 
@@ -1097,6 +1171,14 @@ during validation.
     or
     
     $self->report_unknown(1);
+    ...
+
+=head2 automap
+
+The automap boolean determines whether the validate() function will automatically
+map passed-in parameters against agaist aliases defined in the field definitions.
+
+    MyApp::Validation->new(params => $params, automap => 1);
     ...
 
 =head2 params
