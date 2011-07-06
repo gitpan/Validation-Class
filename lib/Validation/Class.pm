@@ -180,33 +180,39 @@ has 'filters' => (
             trim => sub {
                 $_[0] =~ s/^\s+//g;
                 $_[0] =~ s/\s+$//g;
+                $_[0];
             },
             alpha => sub {
                 $_[0] =~ s/[^A-Za-z]//g;
+                $_[0];
             },
             digit => sub {
                 $_[0] =~ s/\D//g;
+                $_[0];
             },
             whiteout => sub {
                 $_[0] =~ s/\s+/ /g;
+                $_[0];
             },
             numeric => sub {
                 $_[0] =~ s/[^0-9]//g;
+                $_[0];
             },
             uppercase => sub {
                 return uc $_[0];
             },
             titlecase => sub {
-                map ( ucfirst, split( /\s/, $_[0] ) );
+                join( "", map ( ucfirst, split( /\s/, $_[0] ) ) );
             },
             camelcase => sub {
-                map ( ucfirst, split( /\s/, lc $_[0] ) );
+                join( "", map ( ucfirst, split( /\s/, lc $_[0] ) ) );
             },
             lowercase => sub {
                 return lc $_[0];
             },
             alphanumeric => sub {
                 $_[0] =~ s/[^A-Za-z0-9]//g;
+                $_[0];
               }
         };
       }
@@ -617,10 +623,19 @@ sub basic_filter {
     my ( $self, $filter, $field ) = @_;
 
     if ( defined $self->params->{$field} && $self->filters->{$filter} ) {
-        $self->filters->{$filter}->( $self->params->{$field} )
+        $self->params->{$field} = $self->filters->{$filter}->( $self->params->{$field} )
             if $self->params->{$field};
     }
 
+}
+
+
+
+sub get_params {
+    my ($self, @params) = @_;
+    return map {
+        $self->params->{$_}
+    }   @params;
 }
 
 
@@ -753,7 +768,7 @@ Validation::Class - Centralized Input Validation For Any Application
 
 =head1 VERSION
 
-version 0.111850
+version 0.111870
 
 =head1 SYNOPSIS
 
@@ -1207,6 +1222,35 @@ The validate method returns a hashref of defined validation templates.
 
     my $mixins = $self->mixins();
     ...
+
+=head1 PARAMETER HANDLING
+
+The following are convenience functions for handling your input data after
+processing and data validation.
+
+=head2 get_params
+
+The get_params method returns the values (in list form) of the parameters
+specified.
+
+    if ($self->validate) {
+        my $name = $self->get_params('name');
+        my ($name, $email, $login, $password) =
+            $self->get_params(qw/name email login password/);
+        
+        # you should note that if the params dont exist they will return undef
+        # ... meaning you should check that it exists before checking its value
+        # e.g.
+        
+        if (defined $name) {
+            if ($name eq '') {
+                print 'name parameter was passed but was empty';
+            }
+        }
+        else {
+            print 'name parameter was never submitted';
+        }
+    }
 
 =head1 ERROR HANDLING
 

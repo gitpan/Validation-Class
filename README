@@ -2,7 +2,7 @@ NAME
     Validation::Class - Centralized Input Validation For Any Application
 
 VERSION
-    version 0.111850
+    version 0.111870
 
 SYNOPSIS
         use MyApp::Validation;
@@ -433,6 +433,33 @@ EXECUTING A VALIDATION CLASS
 
         my $mixins = $self->mixins();
         ...
+
+PARAMETER HANDLING
+    The following are convenience functions for handling your input data
+    after processing and data validation.
+
+  get_params
+    The get_params method returns the values (in list form) of the
+    parameters specified.
+
+        if ($self->validate) {
+            my $name = $self->get_params('name');
+            my ($name, $email, $login, $password) =
+                $self->get_params(qw/name email login password/);
+            
+        # you should note that if the params dont exist they will return undef
+            # ... meaning you should check that it exists before checking its value
+            # e.g.
+            
+        if (defined $name) {
+                if ($name eq '') {
+                    print 'name parameter was passed but was empty';
+                }
+            }
+            else {
+                print 'name parameter was never submitted';
+            }
+        }
 
 ERROR HANDLING
     The most important part of any input validation framework is its

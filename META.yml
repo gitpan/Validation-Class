@@ -16,4 +16,4 @@ requires:
   Array::Unique: 0
   Hash::Merge: 0.12
   Moose: 0
-version: 0.111850
+version: 0.111870
