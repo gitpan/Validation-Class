@@ -23,7 +23,7 @@ my %WriteMakefileArgs = (
     'Array::Unique' => '0',
     'Moose' => '0'
   },
-  'VERSION' => '0.111900',
+  'VERSION' => '0.111901',
   'test' => {
     'TESTS' => 't/*.t'
   }

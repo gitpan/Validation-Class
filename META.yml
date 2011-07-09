@@ -15,4 +15,4 @@ name: Validation-Class
 requires:
   Array::Unique: 0
   Moose: 0
-version: 0.111900
+version: 0.111901
