@@ -2,14 +2,14 @@ NAME
     Validation::Class - Centralized Input Validation For Any Application
 
 VERSION
-    version 0.111870
+    version 0.111900
 
 SYNOPSIS
         use MyApp::Validation;
         
     my $input = MyApp::Validation->new(params => $params);
         
-    unless ($input->validate('field1', 'field2')){
+    unless ($input->validate){
             return $input->errors->to_string;
         }
 
@@ -47,6 +47,170 @@ BUILDING A VALIDATION CLASS
         };
         
     1;
+
+USING DIRECTIVES
+        package MyApp::Validation;
+        
+    use Validation::Class qw/field mixin/;
+        use base 'Validation::Class';
+        
+    # a validation template
+        mixin '...'  => {
+            ...
+        };
+        
+    # a validation rule
+        field '...'  => {
+            mixin => '...',
+            ...
+        };
+        
+    1;
+
+    When building a validation class, the first encountered and arguably two
+    most important keyword functions are field() and mixin() which are used
+    to declare their respective properties. A mixin() declares a validation
+    template where its properties are intended to be copied within field()
+    declarations which declares validation rules and properties.
+
+    Both the field() and mixin() declarations/functions require two
+    parameters, the first being a name, used to identify the declaration,
+    and the second being a hashref of key/value pairs. The key(s) within a
+    declaration are commonly referred to as directives.
+
+    The following is a list of default directives which can be used in
+    field/mixin declarations:
+
+  label
+        # the label directive
+        field 'foobar'  => {
+            label => 'Foo Bar',
+            ...
+        };
+
+  alias
+        # the alias directive
+        field 'foobar'  => {
+            alias => 'foo_bar',
+            ...
+        };
+
+  mixin
+        mixin 'abcxyz' => {
+            ...
+        };
+
+        # the mixin directive
+        field 'foobar'  => {
+            mixin => 'abcxyz',
+            ...
+        };
+
+  mixin_field
+        # the mixin_field directive
+        field 'foobar'  => {
+            mixin_field => '...',
+            ...
+        };
+
+  validation
+        # the validation directive
+        field 'foobar'  => {
+            validation => '...',
+            ...
+        };
+
+  error/errors
+        # the error(s) directive
+        field 'foobar'  => {
+            errors => '...',
+            ...
+        };
+
+  value
+        # the value directive
+        field 'foobar'  => {
+            value => '...',
+            ...
+        };
+
+  name
+        # the name directive
+        field 'foobar'  => {
+            name => '...',
+            ...
+        };
+
+  filter/filters
+        # the filter(s) directive
+        field 'foobar'  => {
+            filter => '...',
+            ...
+        };
+
+  required
+        # the required directive
+        field 'foobar'  => {
+            required => '...',
+            ...
+        };
+
+USING VALIDATOR DIRECTIVES
+        package MyApp::Validation;
+        
+    use Validation::Class qw/field mixin/;
+        use base 'Validation::Class';
+        
+    # a validation rule with validator directives
+        field '...'  => {
+            min_length => '...',
+            max_length => '...',
+            pattern    => '+# (###) ###-####',
+            ...
+        };
+        
+    1;
+
+    Validator directives are special directives with associated validation
+    code that is used to validate common use-cases such as "checking the
+    length of a parameter", etc.
+
+    The following is a list of the default validators which can be used in
+    field/mixin declarations:
+
+  min_length
+        # the min_length directive
+        field 'foobar'  => {
+            min_length => '...',
+            ...
+        };
+
+  max_length
+        # the max_length directive
+        field 'foobar'  => {
+            max_length => '...',
+            ...
+        };
+
+  between
+        # the between directive
+        field 'foobar'  => {
+            between => '1-5',
+            ...
+        };
+
+  pattern
+        # the pattern directive
+        field 'telephone'  => {
+            pattern => '### ###-####',
+            ...
+        };
+        
+    field 'country_code'  => {
+            pattern => 'XX',
+            filter  => 'uppercase'
+            ...
+        };
 
 USING MIXINS AND GROUPING
         package MyApp::Validation;
@@ -168,12 +332,8 @@ USING MIXINS AND GROUPING
    max_length
     Determines the maximum length of characters allowed
 
-   regex
-    Determines whether the field value passes the supplied regular
-    expression e.g.
-
    alias
-    Defines alternative parameter name for the field to be matched against
+    Defines alternative parameter names for the field to be matched against
 
         field 'c_field' => {
             label => 'a field labeled c',
@@ -181,8 +341,7 @@ USING MIXINS AND GROUPING
             required => 1,
             min_length => 2,
             max_length => 25,
-            alais => 'cf',
-            regex => '^\d+$'
+            alais => 'cf'
         };
 
    filter
@@ -238,7 +397,7 @@ USING MIXINS AND GROUPING
     applied to any field using the mixin directive.
 
         package MyApp::Validation;
-        use Validation::Class qw/field mixin filter/;
+        use Validation::Class qw/field mixin/;
         use base 'Validation::Class';
         
     mixin 'constrain' => {
@@ -258,15 +417,41 @@ USING MIXINS AND GROUPING
     definitions.
 
         package MyApp::Validation;
-        use Validation::Class qw/field mixin filter/;
-        10use base 'Validation::Class';
+        use Validation::Class qw/field filter/;
+        use base 'Validation::Class';
         
     filter 'telephone' => sub {
-            $_[0] =~ s/[^\(\)\-\+\s\d]//g;
+            ...
         };
         
     field 'telephone' => {
             filter => ['trim', 'telephone'],
+            ...
+        };
+
+  DIRECTIVE KEYWORD
+    The directive keyword creates custom validator directives to be used in
+    your field definitions. The routine is passed two parameters, the value
+    of directive and the value of the field the validator is being processed
+    against. The validator should return true or false.
+
+        package MyApp::Validation;
+        use Validation::Class qw/directive field/;
+        use base 'Validation::Class';
+        
+    directive 'between' => sub {
+            my ($directive, $value, $field, $class) = @_;
+            my ($min, $max) = split /\-/, $directive;
+            unless ($value > $min && $value < $max) {
+                my $handle = $field->{label} || $field->{name};
+                $class->error($field, "$handle must be between $directive");
+                return 0;
+            }
+            return 1;
+        };
+        
+    field 'hours' => {
+            between => '00-24',
             ...
         };
 
@@ -333,7 +518,7 @@ EXECUTING A VALIDATION CLASS
 
         use MyApp::Validation;
         
-    my  $input = MyApp::Validation->new(automap => 1, params => { foo => 1 });
+    my  $input = MyApp::Validation->new(params => { foo => 1 });
         unless ($input->validate(){
             return $input->errors->to_string;
         }
@@ -400,14 +585,6 @@ EXECUTING A VALIDATION CLASS
     or
         
     $self->report_unknown(1);
-        ...
-
-  automap
-    The automap boolean determines whether the validate() function will
-    automatically map passed-in parameters against agaist aliases defined in
-    the field definitions.
-
-        MyApp::Validation->new(params => $params, automap => 1);
         ...
 
   params

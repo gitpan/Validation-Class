@@ -21,10 +21,9 @@ my %WriteMakefileArgs = (
   'NAME' => 'Validation::Class',
   'PREREQ_PM' => {
     'Array::Unique' => '0',
-    'Hash::Merge' => '0.12',
     'Moose' => '0'
   },
-  'VERSION' => '0.111870',
+  'VERSION' => '0.111900',
   'test' => {
     'TESTS' => 't/*.t'
   }

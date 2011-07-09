@@ -7,7 +7,7 @@ dist.ini
 lib/Validation/Class.pm
 t/00-load.t
 t/01-attributes.t
-t/02-packages.t
-t/03-automap.t
-t/04-getparams.t
+t/02-package-declaration.t
+t/03-mixin-usages.t
+t/04-parameters.t
 t/99-battery.t
