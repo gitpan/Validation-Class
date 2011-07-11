@@ -2,7 +2,7 @@ NAME
     Validation::Class - Centralized Input Validation For Any Application
 
 VERSION
-    version 0.111901
+    version 0.111902
 
 SYNOPSIS
         use MyApp::Validation;
@@ -266,6 +266,59 @@ FIELD/MIXIN DEFAULT DIRECTIVES
         field 'foobar'  => {
             filter => '...',
             ...
+        };
+
+    The following is a list of default filters that may be used with the
+    filter directive:
+
+   trim
+        field 'foobar'  => {
+            filter => 'trim',
+        };
+
+   alpha
+        field 'foobar'  => {
+            filter => 'alpha',
+        };
+
+   currency
+        field 'foobar'  => {
+            filter => 'currency',
+        };
+
+   strip
+        field 'foobar'  => {
+            filter => 'strip',
+        };
+
+   numeric
+        field 'foobar'  => {
+            filter => 'numeric',
+        };
+
+   uppercase
+        field 'foobar'  => {
+            filter => 'uppercase',
+        };
+
+   titlecase
+        field 'foobar'  => {
+            filter => 'titlecase',
+        };
+
+   capitalize
+        field 'foobar'  => {
+            filter => 'capitalize',
+        };
+
+   lowercase
+        field 'foobar'  => {
+            filter => 'lowercase',
+        };
+
+   alphanumeric
+        field 'foobar'  => {
+            filter => 'alphanumeric',
         };
 
   required

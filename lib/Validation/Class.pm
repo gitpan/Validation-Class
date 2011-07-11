@@ -15,48 +15,10 @@ use Array::Unique;
         also   => 'Moose',
     );
 
-our $FIELDS  = {};
-our $MIXINS  = {};
+our $FIELDS     = {};
+our $MIXINS     = {};
 our $DIRECTIVES = {};
-our $FILTERS = { # default filters
-    trim => sub {
-        $_[0] =~ s/^\s+//g;
-        $_[0] =~ s/\s+$//g;
-        $_[0];
-    },
-    alpha => sub {
-        $_[0] =~ s/[^A-Za-z]//g;
-        $_[0];
-    },
-    digit => sub {
-        $_[0] =~ s/\D//g;
-        $_[0];
-    },
-    whiteout => sub {
-        $_[0] =~ s/\s+/ /g;
-        $_[0];
-    },
-    numeric => sub {
-        $_[0] =~ s/[^0-9]//g;
-        $_[0];
-    },
-    uppercase => sub {
-        uc $_[0];
-    },
-    titlecase => sub {
-        join( "", map ( ucfirst, split( /\s/, $_[0] ) ) );
-    },
-    camelcase => sub {
-        join( "", map ( ucfirst, split( /\s/, lc $_[0] ) ) );
-    },
-    lowercase => sub {
-        lc $_[0];
-    },
-    alphanumeric => sub {
-        $_[0] =~ s/[^A-Za-z0-9]//g;
-        $_[0];
-    }
-};
+our $FILTERS    = {};
 
 
 
@@ -183,6 +145,67 @@ $DIRECTIVES->{filter} = {
 $DIRECTIVES->{filters} = $DIRECTIVES->{filter};
 
 
+$FILTERS->{trim} = sub {
+    $_[0] =~ s/^\s+//g;
+    $_[0] =~ s/\s+$//g;
+    $_[0];
+};
+
+
+$FILTERS->{alpha} = sub {
+    $_[0] =~ s/[^A-Za-z]//g;
+    $_[0];
+};
+
+
+$FILTERS->{currency} = sub {
+    $_[0] =~ s/[^0-9\.\,]//g;
+    $_[0];
+};
+
+
+$FILTERS->{strip} = sub {
+    $_[0] =~ s/\s+/ /g;
+    $_[0] =~ s/^\s+//;
+    $_[0] =~ s/\s+$//;
+    $_[0];
+};
+
+
+$FILTERS->{numeric} = sub {
+    $_[0] =~ s/\D//g;
+    $_[0];
+};
+
+
+$FILTERS->{uppercase} = sub {
+    uc $_[0];
+};
+
+
+$FILTERS->{titlecase} = sub {
+    join( " ", map ( ucfirst, split( /\s/, lc $_[0] ) ) );
+};
+
+
+$FILTERS->{capitalize} = sub {
+    $_[0] = ucfirst $_[0];
+    $_[0] =~ s/\.\s+([a-z])/\. \U$1/g;
+    $_[0];
+};
+
+
+$FILTERS->{lowercase} = sub {
+    lc $_[0];
+};
+
+
+$FILTERS->{alphanumeric} = sub {
+    $_[0] =~ s/[^A-Za-z0-9]//g;
+    $_[0];
+};
+
+
 $DIRECTIVES->{required} = {
     mixin => 1,
     field => 1,
@@ -198,10 +221,10 @@ $DIRECTIVES->{min_length} = {
     validator => sub {
         my ( $directive, $value, $field, $class ) = @_;
         if ($value) {
-            unless ( length($value) > $directive ) {
+            unless ( length($value) >= $directive ) {
                 my $handle = $field->{label} || $field->{name};
                 my $characters = int( $directive ) > 1 ?
-                    " characters" : " character";
+                    "characters" : "character";
                 my $error = "$handle must contain $directive or more $characters";
                 $class->error( $field, $error );
                 return 0;
@@ -219,11 +242,11 @@ $DIRECTIVES->{max_length} = {
     validator => sub {
         my ( $directive, $value, $field, $class ) = @_;
         if ($value) {
-            unless ( length($value) < $directive ) {
+            unless ( length($value) <= $directive ) {
                 my $handle = $field->{label} || $field->{name};
                 my $characters = int( $directive ) > 1 ?
-                    " characters" : " character";
-                my $error = "$handle must contain $directive or less $characters";
+                    "characters" : "character";
+                my $error = "$handle must contain $directive $characters or less";
                 $class->error( $field, $error );
                 return 0;
             }
@@ -240,10 +263,18 @@ $DIRECTIVES->{between} = {
     validator => sub {
         my ($directive, $value, $field, $class) = @_;
         my ($min, $max) = split /\-/, $directive;
+        
+        $min = scalar($min);
+        $max = scalar($max);
+        $value = length($value);
+        
         if ($value) {
-            unless ($value > $min && $value < $max) {
+            unless ($value >= $min && $value <= $max) {
                 my $handle = $field->{label} || $field->{name};
-                $class->error($field, "$handle must be between $directive");
+                $class->error(
+                    $field,
+                    "$handle must contain between $directive characters"
+                );
                 return 0;
             }
         }
@@ -338,7 +369,12 @@ sub BUILD {
             @filters = @{ $self->fields->{$_}->{filters} };
 
             if ( defined $self->fields->{$_}->{filter} ) {
-                push @filters, $self->fields->{$_}->{filter};
+                
+                push @filters,
+                    "ARRAY" eq ref $self->fields->{$_}->{filter} ?
+                        @{$self->fields->{$_}->{filter}} :
+                        $self->fields->{$_}->{filter} ;
+                
                 delete $self->fields->{$_}->{filter};
             }
 
@@ -866,7 +902,26 @@ sub _merge_field_with_mixin {
     my ($self, $field, $mixin) = @_;
     while (my($key,$value) = each(%{$mixin})) {
         if (defined $self->types->{field}->{$key}) {
-            $field->{$key} = $value;
+            # can the directive have multiple values, merge array
+            if ($self->types->{field}->{$key}->{multi}) {
+                # if field has existing array value, merge unique
+                if ("ARRAY" eq ref $field->{key}) {
+                    tie my @values, 'Array::Unique';
+                    @values = @{$field->{$key}};
+                    push @values, "ARRAY" eq ref $value ?
+                        @{$value} : $value;
+                    
+                    $field->{$key} = [@values];
+                }
+                # simple copy
+                else {
+                    $field->{$key} = $value;
+                }
+            }
+            # simple copy
+            else {
+                $field->{$key} = $value;
+            }
         }
     }
     return $field;
@@ -880,7 +935,26 @@ sub _merge_field_with_field {
         next unless $self->types->{mixin}->{$key}->{mixin};
         
         if (defined $self->types->{field}->{$key}) {
-            $field->{$key} = $value;
+            # can the directive have multiple values, merge array
+            if ($self->types->{field}->{$key}->{multi}) {
+                # if field has existing array value, merge unique
+                if ("ARRAY" eq ref $field->{key}) {
+                    tie my @values, 'Array::Unique';
+                    @values = @{$field->{$key}};
+                    push @values, "ARRAY" eq ref $value ?
+                        @{$value} : $value;
+                    
+                    $field->{$key} = [@values];
+                }
+                # simple copy
+                else {
+                    $field->{$key} = $value;
+                }
+            }
+            # simple copy
+            else {
+                $field->{$key} = $value;
+            }
         }
     }
     return $field;
@@ -921,7 +995,7 @@ Validation::Class - Centralized Input Validation For Any Application
 
 =head1 VERSION
 
-version 0.111901
+version 0.111902
 
 =head1 SYNOPSIS
 
@@ -1199,6 +1273,69 @@ declarations:
     field 'foobar'  => {
         filter => '...',
         ...
+    };
+
+The following is a list of default filters that may be used with the filter
+directive:
+
+=head3 trim
+
+    field 'foobar'  => {
+        filter => 'trim',
+    };
+
+=head3 alpha
+
+    field 'foobar'  => {
+        filter => 'alpha',
+    };
+
+=head3 currency
+
+    field 'foobar'  => {
+        filter => 'currency',
+    };
+
+=head3 strip
+
+    field 'foobar'  => {
+        filter => 'strip',
+    };
+
+=head3 numeric
+
+    field 'foobar'  => {
+        filter => 'numeric',
+    };
+
+=head3 uppercase
+
+    field 'foobar'  => {
+        filter => 'uppercase',
+    };
+
+=head3 titlecase
+
+    field 'foobar'  => {
+        filter => 'titlecase',
+    };
+
+=head3 capitalize
+
+    field 'foobar'  => {
+        filter => 'capitalize',
+    };
+
+=head3 lowercase
+
+    field 'foobar'  => {
+        filter => 'lowercase',
+    };
+
+=head3 alphanumeric
+
+    field 'foobar'  => {
+        filter => 'alphanumeric',
     };
 
 =head2 required
