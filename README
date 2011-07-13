@@ -2,7 +2,7 @@ NAME
     Validation::Class - Centralized Input Validation For Any Application
 
 VERSION
-    version 0.111902
+    version 0.111903
 
 SYNOPSIS
         use MyApp::Validation;
@@ -22,7 +22,7 @@ DESCRIPTION
 
         package MyApp::Validation;
         
-    use Validation::Class qw/field mixin filter/;
+    use Validation::Class;
         use base 'Validation::Class';
         
     # a validation rule
@@ -50,7 +50,7 @@ DESCRIPTION
 BUILDING A VALIDATION CLASS
         package MyApp::Validation;
         
-    use Validation::Class qw/field mixin filter/;
+    use Validation::Class;
         use base 'Validation::Class';
         
     # a validation rule template
@@ -90,7 +90,7 @@ BUILDING A VALIDATION CLASS
     applied to any field using the mixin directive.
 
         package MyApp::Validation;
-        use Validation::Class qw/field mixin/;
+        use Validation::Class;
         use base 'Validation::Class';
         
     mixin 'constrain' => {
@@ -110,7 +110,7 @@ BUILDING A VALIDATION CLASS
     definitions.
 
         package MyApp::Validation;
-        use Validation::Class qw/field filter/;
+        use Validation::Class;
         use base 'Validation::Class';
         
     filter 'telephone' => sub {
@@ -129,7 +129,7 @@ BUILDING A VALIDATION CLASS
     against. The validator should return true or false.
 
         package MyApp::Validation;
-        use Validation::Class qw/directive field/;
+        use Validation::Class;
         use base 'Validation::Class';
         
     directive 'between' => sub {
@@ -154,7 +154,7 @@ BUILDING A VALIDATION CLASS
     parameter name expected to be passed to your validation class.
 
         package MyApp::Validation;
-        use Validation::Class qw/field mixin filter/;
+        use Validation::Class;
         use base 'Validation::Class';
         
     field 'login' => {
@@ -171,7 +171,7 @@ BUILDING A VALIDATION CLASS
 FIELD/MIXIN DEFAULT DIRECTIVES
         package MyApp::Validation;
         
-    use Validation::Class qw/field mixin/;
+    use Validation::Class;
         use base 'Validation::Class';
         
     # a validation template
@@ -331,7 +331,7 @@ FIELD/MIXIN DEFAULT DIRECTIVES
 FIELD/MIXIN DEFAULT VALIDATOR DIRECTIVES
         package MyApp::Validation;
         
-    use Validation::Class qw/field mixin/;
+    use Validation::Class;
         use base 'Validation::Class';
         
     # a validation rule with validator directives
@@ -372,6 +372,13 @@ FIELD/MIXIN DEFAULT VALIDATOR DIRECTIVES
             ...
         };
 
+  length
+        # the length directive
+        field 'foobar'  => {
+            length => 20,
+            ...
+        };
+
   pattern
         # the pattern directive
         field 'telephone'  => {
@@ -382,6 +389,13 @@ FIELD/MIXIN DEFAULT VALIDATOR DIRECTIVES
     field 'country_code'  => {
             pattern => 'XX',
             filter  => 'uppercase'
+            ...
+        };
+
+  matches
+        # the matches directive
+        field 'password'  => {
+            matches => 'password_confirmation',
             ...
         };
 

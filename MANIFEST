@@ -28,3 +28,5 @@ t/validators/01-min_length.t
 t/validators/02-max_length.t
 t/validators/03-pattern.t
 t/validators/04-between.t
+t/validators/05-length.t
+t/validators/06-matches.t

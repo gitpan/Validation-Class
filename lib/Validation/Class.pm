@@ -11,7 +11,7 @@ use Array::Unique;
 # use Hash::Merge;
 
     Moose::Exporter->setup_import_methods(
-        as_is  => [ 'field', 'filter', 'mixin' ],
+        as_is  => [ 'field', 'mixin', 'filter', 'directive' ],
         also   => 'Moose',
     );
 
@@ -283,6 +283,31 @@ $DIRECTIVES->{between} = {
 };
 
 
+$DIRECTIVES->{length} = {
+    mixin     => 1,
+    field     => 1,
+    multi     => 0,
+    validator => sub {
+        my ($directive, $value, $field, $class) = @_;
+        
+        $value = length($value);
+        
+        if ($value) {
+            unless ($value == $directive) {
+                my $handle = $field->{label} || $field->{name};
+                my $characters = $directive > 1 ? "characters" : "character";
+                $class->error(
+                    $field,
+                    "$handle must contain exactly $directive $characters"
+                );
+                return 0;
+            }
+        }
+        return 1;
+    }
+};
+
+
 $DIRECTIVES->{pattern} = {
     mixin     => 1,
     field     => 1,
@@ -299,6 +324,30 @@ $DIRECTIVES->{pattern} = {
             unless ( $value =~ $regex ) {
                 my $handle = $field->{label} || $field->{name};
                 my $error = "$handle does not match the pattern $directive";
+                $class->error( $field, $error );
+                return 0;
+            }
+        }
+        return 1;
+    }
+};
+
+
+$DIRECTIVES->{matches} = {
+    mixin     => 1,
+    field     => 1,
+    multi     => 0,
+    validator => sub {
+        my ( $directive, $value, $field, $class ) = @_;
+        if ($value) {
+            # build the regex
+            my $password = $value;
+            my $password_confirmation = $class->params->{$directive} || '';
+            unless ( $password =~ /^$password_confirmation$/ ) {
+                my $handle  = $field->{label} || $field->{name};
+                my $handle2 = $class->fields->{$directive}->{label}
+                    || $class->fields->{$directive}->{name};
+                my $error = "$handle does not match $handle2";
                 $class->error( $field, $error );
                 return 0;
             }
@@ -995,7 +1044,7 @@ Validation::Class - Centralized Input Validation For Any Application
 
 =head1 VERSION
 
-version 0.111902
+version 0.111903
 
 =head1 SYNOPSIS
 
@@ -1016,7 +1065,7 @@ validation work-flow and promote code (validation) reuse.
 
     package MyApp::Validation;
     
-    use Validation::Class qw/field mixin filter/;
+    use Validation::Class;
     use base 'Validation::Class';
     
     # a validation rule
@@ -1045,7 +1094,7 @@ validation work-flow and promote code (validation) reuse.
 
     package MyApp::Validation;
     
-    use Validation::Class qw/field mixin filter/;
+    use Validation::Class;
     use base 'Validation::Class';
     
     # a validation rule template
@@ -1086,7 +1135,7 @@ The mixin keyword creates a validation rules template that can be applied to any
 field using the mixin directive.
 
     package MyApp::Validation;
-    use Validation::Class qw/field mixin/;
+    use Validation::Class;
     use base 'Validation::Class';
     
     mixin 'constrain' => {
@@ -1106,7 +1155,7 @@ field using the mixin directive.
 The filter keyword creates custom filters to be used in your field definitions.
 
     package MyApp::Validation;
-    use Validation::Class qw/field filter/;
+    use Validation::Class;
     use base 'Validation::Class';
     
     filter 'telephone' => sub {
@@ -1126,7 +1175,7 @@ value of the field the validator is being processed against. The validator shoul
 return true or false.
 
     package MyApp::Validation;
-    use Validation::Class qw/directive field/;
+    use Validation::Class;
     use base 'Validation::Class';
     
     directive 'between' => sub {
@@ -1152,7 +1201,7 @@ reuse in code. The field keyword should correspond with the parameter name
 expected to be passed to your validation class.
 
     package MyApp::Validation;
-    use Validation::Class qw/field mixin filter/;
+    use Validation::Class;
     use base 'Validation::Class';
     
     field 'login' => {
@@ -1169,7 +1218,7 @@ pairs. The keys are referred to as directives, those directives are as follows:
 
     package MyApp::Validation;
     
-    use Validation::Class qw/field mixin/;
+    use Validation::Class;
     use base 'Validation::Class';
     
     # a validation template
@@ -1350,7 +1399,7 @@ directive:
 
     package MyApp::Validation;
     
-    use Validation::Class qw/field mixin/;
+    use Validation::Class;
     use base 'Validation::Class';
     
     # a validation rule with validator directives
@@ -1394,6 +1443,14 @@ declarations:
         ...
     };
 
+=head2 length
+
+    # the length directive
+    field 'foobar'  => {
+        length => 20,
+        ...
+    };
+
 =head2 pattern
 
     # the pattern directive
@@ -1405,6 +1462,14 @@ declarations:
     field 'country_code'  => {
         pattern => 'XX',
         filter  => 'uppercase'
+        ...
+    };
+
+=head2 matches
+
+    # the matches directive
+    field 'password'  => {
+        matches => 'password_confirmation',
         ...
     };
 
