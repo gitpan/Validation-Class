@@ -30,3 +30,4 @@ t/validators/03-pattern.t
 t/validators/04-between.t
 t/validators/05-length.t
 t/validators/06-matches.t
+t/validators/07-options.t

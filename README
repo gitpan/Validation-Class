@@ -2,7 +2,7 @@ NAME
     Validation::Class - Centralized Input Validation For Any Application
 
 VERSION
-    version 0.111903
+    version 0.111904
 
 SYNOPSIS
         use MyApp::Validation;
@@ -396,6 +396,13 @@ FIELD/MIXIN DEFAULT VALIDATOR DIRECTIVES
         # the matches directive
         field 'password'  => {
             matches => 'password_confirmation',
+            ...
+        };
+
+  options
+        # the options directive
+        field 'status'  => {
+            options => 'Active, Inactive',
             ...
         };
 
