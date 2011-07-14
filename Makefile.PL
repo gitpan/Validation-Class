@@ -23,7 +23,7 @@ my %WriteMakefileArgs = (
     'Array::Unique' => '0',
     'Moose' => '0'
   },
-  'VERSION' => '0.111910',
+  'VERSION' => '0.111911',
   'test' => {
     'TESTS' => 't/*.t t/filters/*.t t/validators/*.t'
   }

@@ -131,7 +131,7 @@ $DIRECTIVES->{value} = {
 
 $DIRECTIVES->{name} = {
     mixin => 0,
-    field => 0,
+    field => 1,
     multi => 0
 };
 
@@ -1067,7 +1067,7 @@ Validation::Class - Centralized Input Validation For Any Application
 
 =head1 VERSION
 
-version 0.111910
+version 0.111911
 
 =head1 SYNOPSIS
 
