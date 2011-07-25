@@ -13,7 +13,9 @@ t/03-mixin-usages.t
 t/03-mixin.t
 t/04-parameters.t
 t/10-validation.t
+t/97-persistent-values.t
 t/98-anomaly.t
+t/98-unknown_params.t
 t/99-battery.t
 t/filters/01-trim.t
 t/filters/02-alpha.t

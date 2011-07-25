@@ -2,7 +2,7 @@ NAME
     Validation::Class - Centralized Input Validation For Any Application
 
 VERSION
-    version 0.111911
+    version 0.111912
 
 SYNOPSIS
         use MyApp::Validation;
@@ -573,6 +573,13 @@ EXECUTING A VALIDATION CLASS
         unless ($input->validate($map)){
             return $input->errors->to_string;
         }
+
+  reset_fields
+    The reset_fields effectively resets any altered field objects at the
+    class level. This method is called automatically everytime the new()
+    method is triggered.
+
+        $self->reset_fields();
 
 PARAMETER HANDLING
     The following are convenience functions for handling your input data
