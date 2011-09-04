@@ -2,7 +2,7 @@ NAME
     Validation::Class - Centralized Input Validation For Any Application
 
 VERSION
-    version 0.111912
+    version 0.111913
 
 SYNOPSIS
         use MyApp::Validation;
@@ -574,6 +574,35 @@ EXECUTING A VALIDATION CLASS
             return $input->errors->to_string;
         }
 
+  validate_groups
+    If your fields and parameters are grouped using the group:field
+    convention, The validate_groups method returns true/false depending on
+    whether all specified *group(s) fields passed validation checks.
+
+        use MyApp::Validation;
+        
+    my $input = MyApp::Validation->new(params => $params);
+        
+    # validate all fields within a specific group
+        unless ($input->validate_groups('person')){
+            ...
+        }
+        
+    # validate specific fields within a specific group
+        unless ($input->validate_groups('person', [qw/login password/])){
+            ...
+        }
+        
+    # validate specific fields within a specific groups
+        my @groups = (
+            person => [qw/login password/],
+            person_settings => [qw/email title/]
+        );
+        
+    unless ($input->validate_groups(@groups)){
+            ...
+        }
+
   reset_fields
     The reset_fields effectively resets any altered field objects at the
     class level. This method is called automatically everytime the new()
@@ -584,6 +613,21 @@ EXECUTING A VALIDATION CLASS
 PARAMETER HANDLING
     The following are convenience functions for handling your input data
     after processing and data validation.
+
+  get_group_params
+    If your fields and parameters are grouped using the group:field
+    convention, The get_group_params method returns a hashref of specified
+    parameters.
+
+        my $params = {
+            'user:login' => 'member',
+            'user:password' => 'abc123456'
+        };
+        
+    if ($self->validate_group('user')) {
+            my $user = $self->get_group_params('user');
+            print $user->{login};
+        }
 
   get_params
     The get_params method returns the values (in list form) of the
