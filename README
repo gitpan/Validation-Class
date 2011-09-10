@@ -2,7 +2,7 @@ NAME
     Validation::Class - Centralized Input Validation For Any Application
 
 VERSION
-    version 0.111913
+    version 1.112530
 
 SYNOPSIS
         use MyApp::Validation;
@@ -506,7 +506,8 @@ EXECUTING A VALIDATION CLASS
 
   ignore_unknown
     The ignore_unknown boolean determines whether your application will live
-    or die upon encountering unregistered fields during validation.
+    or die upon encountering unregistered field directives during
+    validation.
 
         my $self = MyApp::Validation->new(params => $params, ignore_unknown => 1);
         $self->ignore_unknown(1);
@@ -515,7 +516,7 @@ EXECUTING A VALIDATION CLASS
   report_unknown
     The report_unknown boolean determines whether your application will
     report unregistered fields as class-level errors upon encountering
-    unregistered fields during validation.
+    unregistered field directives during validation.
 
         my $self = MyApp::Validation->new(params => $params,
         ignore_unknown => 1, report_unknown => 1);

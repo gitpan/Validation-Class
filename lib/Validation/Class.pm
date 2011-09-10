@@ -19,6 +19,8 @@ our $MIXINS     = {};
 our $DIRECTIVES = {};
 our $FILTERS    = {};
 
+our $VERSION = '1.112530'; # VERSION
+
 
 
 sub mixin {
@@ -575,11 +577,14 @@ sub check_mixin {
 
     foreach ( keys %{$spec} ) {
         if ( ! defined $directives->{$_} ) {
-            die
+            my $death_cert =
               "The $_ directive supplied by the $mixin mixin is not supported";
+            $self->_suicide_by_unknown_field($death_cert);
         }
         if ( ! $directives->{$_} ) {
-            die "The $_ directive supplied by the $mixin mixin is invalid";
+            my $death_cert =
+              "The $_ directive supplied by the $mixin mixin is empty";
+            $self->_suicide_by_unknown_field($death_cert);
         }
     }
 
@@ -593,8 +598,9 @@ sub check_field {
 
     foreach ( keys %{$spec} ) {
         if ( ! defined $directives->{$_} ) {
-            die
+            my $death_cert =
               "The $_ directive supplied by the $field field is not supported";
+            $self->_suicide_by_unknown_field($death_cert);
         }
     }
 
@@ -909,6 +915,7 @@ sub reset_fields {
 
 
 
+
 sub get_group_params {
     my ($self, $group, @params) = @_;
     return +{} unless $group;
@@ -1110,26 +1117,32 @@ EOF
     package
         Validation::Class::Errors;
     
-    # Error Class for Validation::Class
-    
-    use Moose;
-    
-    has 'errors' => (
-        is      => 'rw',
-        isa     => 'ArrayRef',
-        default => sub { [] }
-    );
-    
-    sub count {
-        return scalar(@{shift->errors});
-    }
-    
-    sub to_string {
-        return join(($_[1]||', '), @{$_[0]->errors});
-    }
+        # Error Class for Validation::Class
+        
+        use Moose;
+        
+        has 'errors' => (
+            is      => 'rw',
+            isa     => 'ArrayRef',
+            default => sub { [] }
+        );
+        
+        sub count {
+            return scalar(@{shift->errors});
+        }
+        
+        sub to_string {
+            return join(($_[1]||', '), @{$_[0]->errors});
+        }
     
     # End of Validation::Class::Errors
 
+# Random Un-documented Shortcuts
+sub errors_to_string { shift->errors->to_string(@_) }
+sub validate_group { shift->validate_groups(@_) }
+sub group_validate { shift->validate_groups(@_) }
+sub group { shift->get_group_params(@_) }
+sub param { shift->get_params(@_) }
 
 1;    # End of Validation::Class
 
@@ -1142,7 +1155,7 @@ Validation::Class - Centralized Input Validation For Any Application
 
 =head1 VERSION
 
-version 0.111913
+version 1.112530
 
 =head1 SYNOPSIS
 
@@ -1682,7 +1695,7 @@ The filters attribute returns a hashref of pre-defined filter definitions.
 =head2 ignore_unknown
 
 The ignore_unknown boolean determines whether your application will live or die
-upon encountering unregistered fields during validation.
+upon encountering unregistered field directives during validation.
 
     my $self = MyApp::Validation->new(params => $params, ignore_unknown => 1);
     $self->ignore_unknown(1);
@@ -1691,8 +1704,8 @@ upon encountering unregistered fields during validation.
 =head2 report_unknown
 
 The report_unknown boolean determines whether your application will report
-unregistered fields as class-level errors upon encountering unregistered fields
-during validation.
+unregistered fields as class-level errors upon encountering unregistered field
+directives during validation.
 
     my $self = MyApp::Validation->new(params => $params,
     ignore_unknown => 1, report_unknown => 1);
