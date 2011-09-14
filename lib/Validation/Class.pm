@@ -19,7 +19,7 @@ our $MIXINS     = {};
 our $DIRECTIVES = {};
 our $FILTERS    = {};
 
-our $VERSION = '1.112530'; # VERSION
+our $VERSION = '1.112570'; # VERSION
 
 
 
@@ -496,6 +496,10 @@ sub BUILD {
         }
     }
     undef $aliastree;
+
+    # always done last!!! auto-generate the field name
+    # happens again at validation, FYI
+    $self->fields->{$_}->{name} = $_ for ( keys %{ $self->fields } );
 
     return $self;
 };
@@ -1155,7 +1159,7 @@ Validation::Class - Centralized Input Validation For Any Application
 
 =head1 VERSION
 
-version 1.112530
+version 1.112570
 
 =head1 SYNOPSIS
 
@@ -1923,7 +1927,7 @@ Al Newkirk <awncorp@cpan.org>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2010 by awncorp.
+This software is copyright (c) 2011 by awncorp.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.

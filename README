@@ -2,7 +2,7 @@ NAME
     Validation::Class - Centralized Input Validation For Any Application
 
 VERSION
-    version 1.112530
+    version 1.112570
 
 SYNOPSIS
         use MyApp::Validation;
@@ -722,7 +722,7 @@ AUTHOR
     Al Newkirk <awncorp@cpan.org>
 
 COPYRIGHT AND LICENSE
-    This software is copyright (c) 2010 by awncorp.
+    This software is copyright (c) 2011 by awncorp.
 
     This is free software; you can redistribute it and/or modify it under
     the same terms as the Perl 5 programming language system itself.
