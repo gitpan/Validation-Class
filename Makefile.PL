@@ -9,23 +9,24 @@ use ExtUtils::MakeMaker 6.30;
 
 
 my %WriteMakefileArgs = (
-  'ABSTRACT' => 'Centralized Input Validation For Any Application',
-  'AUTHOR' => 'Al Newkirk <awncorp@cpan.org>',
-  'BUILD_REQUIRES' => {},
-  'CONFIGURE_REQUIRES' => {
-    'ExtUtils::MakeMaker' => '6.30'
+  "ABSTRACT" => "Centralized Input Validation For Any Application",
+  "AUTHOR" => "Al Newkirk <awncorp\@cpan.org>",
+  "BUILD_REQUIRES" => {},
+  "CONFIGURE_REQUIRES" => {
+    "ExtUtils::MakeMaker" => "6.30"
   },
-  'DISTNAME' => 'Validation-Class',
-  'EXE_FILES' => [],
-  'LICENSE' => 'perl',
-  'NAME' => 'Validation::Class',
-  'PREREQ_PM' => {
-    'Array::Unique' => '0',
-    'Moose' => '0'
+  "DISTNAME" => "Validation-Class",
+  "EXE_FILES" => [],
+  "LICENSE" => "perl",
+  "NAME" => "Validation::Class",
+  "PREREQ_PM" => {
+    "Array::Unique" => 0,
+    "Hash::Flatten" => 0,
+    "Moose" => 0
   },
-  'VERSION' => '1.112570',
-  'test' => {
-    'TESTS' => 't/*.t t/filters/*.t t/validators/*.t'
+  "VERSION" => "1.112870",
+  "test" => {
+    "TESTS" => "t/*.t t/filters/*.t t/validators/*.t"
   }
 );
 
