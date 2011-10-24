@@ -1,9 +1,11 @@
-use Test::More tests => 4;
+use Test::More tests => 3;
 
-# load module
-BEGIN { use_ok( 'Validation::Class' ) }
+package MyVal;
+use Validation::Class;
 
-my $r = Validation::Class->new(
+package main;
+
+my $r = MyVal->new(
     fields => {
         telephone => {
             pattern => '### ###-####'
@@ -18,7 +20,7 @@ ok  $r->validate(), 'telephone validates';
     $r->params->{telephone} = '1234567890';
     
 ok  ! $r->validate(), 'telephone doesnt validate';
-ok  'telephone does not match the pattern ### ###-####' eq $r->errors->to_string(),
+ok  'telephone does not match the pattern ### ###-####' eq $r->errors_to_string(),
     'displays proper error message';
     
-#warn $r->errors->to_string();
+#warn $r->errors_to_string();

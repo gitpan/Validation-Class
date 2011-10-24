@@ -1,0 +1,5 @@
+This file documents the revision history for the Perl library Validation::Class.
+
+1.9.5   2011-10-23
+        - Completely rewritten with using Moose
+        - Fixed mixin and mixin_field merging policy

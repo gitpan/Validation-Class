@@ -1,125 +1,24 @@
-# ABSTRACT: Centralized Input Validation for Any Application
-
-use strict;
-use warnings;
-
-package Validation::Class;
-{
-  $Validation::Class::VERSION = '1.9.5';
-}
-
-use 5.008001;
-
-our $VERSION = '1.9.5'; # VERSION
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-use Validation::Class::Sugar ();
-use Moose::Exporter;
-
-my ($import, $unimport, $init_meta) = Moose::Exporter->build_import_methods(
-    also             => 'Validation::Class::Sugar',
-    base_class_roles => [
-        'Validation::Class::Validator',
-        'Validation::Class::Errors'
-    ],
-);
-
-sub import {
-    return unless $import;
-    goto &$import;
-}
-
-
-sub unimport {
-    return unless $unimport;
-    goto &$unimport;
-}
-
-sub init_meta {
-    my ($dummy, %opts) = @_;
-    Moose->init_meta(%opts);
-    Moose::Util::MetaRole::apply_base_class_roles(
-        for   => $opts{for_class},
-        roles => ['Validation::Class::Validator', 'Validation::Class::Errors']
-    );
-    return Class::MOP::class_of($opts{for_class});
-}
-
-1;
-__END__
-=pod
-
-=head1 NAME
+# NAME
 
 Validation::Class - Centralized Input Validation for Any Application
 
-=head1 VERSION
+# VERSION
 
 version 1.9.5
 
-=head1 SYNOPSIS
+# SYNOPSIS
 
     use MyApp::Validation;
     
+
     my $input = MyApp::Validation->new(params => $params);
     
+
     unless ($input->validate()){
         return $input->errors_to_string;
     }
 
-=head1 DESCRIPTION
+# DESCRIPTION
 
 Validation::Class is a different approach to data validation, it attempts to
 simplify and centralize data validation rules to ensure DRY (don't repeat
@@ -130,8 +29,10 @@ in both the Controller and Model. A validation class is defined as follows:
 
     package MyApp::Validation;
     
+
     use Validation::Class;
     
+
     # a validation rule
     field 'login'  => {
         label      => 'User Login',
@@ -143,6 +44,7 @@ in both the Controller and Model. A validation class is defined as follows:
         }
     };
     
+
     # a validation rule
     field 'password'  => {
         label         => 'User Password',
@@ -154,50 +56,57 @@ in both the Controller and Model. A validation class is defined as follows:
         }
     };
     
+
     1;
 
 The fields defined will be used to validate the specified input parameters.
 You specify the input parameters at instantiaton, parameters should take the
 form of a hashref of key/value pairs. Multi-level (nested) hashrefs are allowed
-and are inflated/deflated in accordance with the rules of L<Hash::Flatten> or
+and are inflated/deflated in accordance with the rules of [Hash::Flatten](http://search.cpan.org/perldoc?Hash::Flatten) or
 your hash inflator configuration. The following is an example on using your
 validate class to validate input in various scenarios:
 
     # web app
     package MyApp;
     
+
     use MyApp::Validation;
     use Misc::WebAppFramework;
     
+
     get '/auth' => sub {
         # get user input parameters
         my $params = shift;
     
+
         # initialize validation class and set input parameters
         my $rules = MyApp::Validation->new(params => $params);
         
+
         unless ($rules->validate('login', 'password')) {
             
+
             # print errors to browser unless validation is successful
             return $rules->errors_to_string;
         }
         
+
         return 'you have authenticated';
     };
 
-=head1 CHANGE NOTICE
+# CHANGE NOTICE
 
-B<Important Note!> Validation::Class is subject to change, you've been warned.
+__Important Note!__ Validation::Class is subject to change, you've been warned.
 You should be fine if you stay tuned.
 
-Validation::Class has been re-written using L<Moose>. Sorry
+Validation::Class has been re-written using [Moose](http://search.cpan.org/perldoc?Moose). Sorry
 if you feel this bloats your application but using Moose was the better approach.
 
 Validation::Class now supports hash serialization/deserialization which means
 that you can now set the parameters using a hashref of nested hashrefs and
 validate against them, or set the parameters using a hashref of key/value pairs
 and validate against that. This function is provided in Validation::Class via
-L<Hash::Flatten>. The following is an example of that:
+[Hash::Flatten](http://search.cpan.org/perldoc?Hash::Flatten). The following is an example of that:
 
     my $params = {
         user => {
@@ -206,28 +115,36 @@ L<Hash::Flatten>. The following is an example of that:
         }
     };
     
+
     my $rules = MyApp::Validation->new(params => $params);
     
+
     # or
     
+
     my $params = {
         'user.login' => 'admin',
         'user.password' => 'pass'
     };
     
+
     my $rules = MyApp::Validation->new(params => $params);
     
+
     # after filtering, validation, etc ... return your params as a hashref if
     # needed
     
+
     my $params = $rules->get_params_hash;
 
-=head1 BUILDING A VALIDATION CLASS
+# BUILDING A VALIDATION CLASS
 
     package MyApp::Validation;
     
+
     use Validation::Class;
     
+
     # a validation rule template
     mixin 'basic'  => {
         required   => 1,
@@ -236,6 +153,7 @@ L<Hash::Flatten>. The following is an example of that:
         filters    => ['lowercase', 'alphanumeric']
     };
     
+
     # a validation rule
     field 'user.login'  => {
         mixin      => 'basic',
@@ -247,6 +165,7 @@ L<Hash::Flatten>. The following is an example of that:
         }
     };
     
+
     # a validation rule
     field 'user.password'  => {
         mixin         => 'basic',
@@ -258,9 +177,10 @@ L<Hash::Flatten>. The following is an example of that:
         }
     };
     
+
     1;
 
-=head2 THE MIXIN KEYWORD
+## THE MIXIN KEYWORD
 
 The mixin keyword creates a validation rules template that can be applied to any
 field using the mixin directive.
@@ -268,6 +188,7 @@ field using the mixin directive.
     package MyApp::Validation;
     use Validation::Class;
     
+
     mixin 'constrain' => {
         required   => 1,
         min_length => 1,
@@ -275,32 +196,35 @@ field using the mixin directive.
         ...
     };
     
+
     # e.g.
     field 'login' => {
         mixin => 'constrain',
         ...
     };
 
-=head2 THE FILTER KEYWORD
+## THE FILTER KEYWORD
 
 The filter keyword creates custom filters to be used in your field definitions.
 
     package MyApp::Validation;
     use Validation::Class;
     
+
     filter 'usa_telephone_number_converter' => sub {
         $_[0] =~ s/\D//g;
         my ($ac, $pre, $num) = $_[0] =~ /(\d{3})(\d{3})(\d{4})/;
         $_[0] = "($ac) $pre-$num";
     };
     
+
     # e.g.
     field 'my_telephone' => {
         filter => ['trim', 'usa_telephone_number_converter'],
         ...
     };
 
-=head2 THE DIRECTIVE KEYWORD
+## THE DIRECTIVE KEYWORD
 
 The directive keyword creates custom validator directives to be used in your field
 definitions. The routine is passed two parameters, the value of directive and the
@@ -310,6 +234,7 @@ return true or false.
     package MyApp::Validation;
     use Validation::Class;
     
+
     directive 'between' => sub {
         my ($directive, $value, $field, $class) = @_;
         my ($min, $max) = split /\-/, $directive;
@@ -321,13 +246,14 @@ return true or false.
         return 1;
     };
     
+
     # e.g.
     field 'hours' => {
         between => '00-24',
         ...
     };
 
-=head2 THE FIELD KEYWORD
+## THE FIELD KEYWORD
 
 The field keyword creates a validation block and defines validation rules for
 reuse in code. The field keyword should correspond with the parameter name
@@ -336,6 +262,7 @@ expected to be passed to your validation class.
     package MyApp::Validation;
     use Validation::Class;
     
+
     field 'login' => {
         required   => 1,
         min_length => 1,
@@ -346,23 +273,26 @@ expected to be passed to your validation class.
 The field keword takes two arguments, the field name and a hashref of key/values
 pairs.
 
-=head1 DEFAULT FIELD/MIXIN DIRECTIVES
+# DEFAULT FIELD/MIXIN DIRECTIVES
 
     package MyApp::Validation;
     use Validation::Class;
     
+
     # a validation template
     mixin '...'  => {
         # mixin directives here
         ...
     };
     
+
     # a validation rule
     field '...'  => {
         # field directives here
         ...
     };
     
+
     1;
 
 When building a validation class, the first encountered and arguably two most
@@ -379,7 +309,7 @@ The key(s) within a declaration are commonly referred to as directives.
 The following is a list of default directives which can be used in field/mixin
 declarations:
 
-=head2 alias
+## alias
 
 The alias directive is useful when many different parameters with different
 names can be validated using a single rule. E.g. The paging parameters in a
@@ -391,7 +321,7 @@ webapp may take on different names but require the same validation.
         ...
     };
 
-=head2 error/errors
+## error/errors
 
 The error/errors directive is used to replace the system generated error
 messages when a particular field doesn't validate. If a field fails multiple
@@ -405,7 +335,7 @@ error is registered and displayed.
         ...
     };
 
-=head2 label
+## label
 
 The label directive is used as a user-friendly reference when the field name
 is a serialized hash key or just plain ugly.
@@ -416,7 +346,7 @@ is a serialized hash key or just plain ugly.
         ...
     };
 
-=head2 mixin
+## mixin
 
 The mixin directive is used to create a template of directives to be applied to
 other fields.
@@ -433,7 +363,7 @@ other fields.
         ...
     };
 
-=head2 mixin_field
+## mixin_field
 
 The mixin directive is used to copy all directives from an existing field
 except for the name, label, and validation directives.
@@ -444,13 +374,14 @@ except for the name, label, and validation directives.
         required => 1
     };
     
+
     field 'barbaz'  => {
         mixin_field => 'foobar',
         label => 'Bar Baz',
         ...
     };
 
-=head2 name
+## name
 
 The name directive is used *internally* and cannot be changed.
 
@@ -459,7 +390,7 @@ The name directive is used *internally* and cannot be changed.
         ...
     };
 
-=head2 required
+## required
 
 The required directive is an important directive but can be misunderstood.
 The required directive used to ensure the *submitted* parameter exists and has
@@ -472,23 +403,27 @@ effect *unless* the field name is specified when validate() is called.
         ...
     };
     
+
     # pass
     my $rules = MyApp::Validation->new(params => { barbaz => 'blahblahblah' });
     $rules->validate('barbaz');
     
+
     # fail
     my $rules = MyApp::Validation->new(params => { barbaz => 'blahblahblah' });
     $rules->validate('foobar');
     
+
     # fail
     my $rules = MyApp::Validation->new(params => { barbaz => 'blahblahblah' });
     $rules->validate('foobar');
     
+
     # pass
     my $rules = MyApp::Validation->new(params => { foobar => 'blahblahblah' });
     $rules->validate('foobar');
 
-=head2 validation
+## validation
 
 The validation directive is a coderef used add additional custom validation to
 the field.
@@ -503,7 +438,7 @@ the field.
         ...
     };
 
-=head2 value
+## value
 
 The value directive is used as a kindof default value for a field to be used
 when a matching parameter is not present.
@@ -514,9 +449,9 @@ when a matching parameter is not present.
         ...
     };
 
-=head1 DEFAULT FIELD/MIXIN FILTER DIRECTIVES
+# DEFAULT FIELD/MIXIN FILTER DIRECTIVES
 
-=head2 filter/filters
+## filter/filters
 
 The filter/filters directive is used to correct, altering and/or format the
 values of the matching input parameter. Note: Filtering is applied before
@@ -534,7 +469,7 @@ in the form of an arrayref of values.
 The following is a list of default filters that may be used with the filter
 directive:
 
-=head3 alpha
+### alpha
 
 The alpha filter removes all non-Alphabetic characters from the field's value.
 
@@ -542,7 +477,7 @@ The alpha filter removes all non-Alphabetic characters from the field's value.
         filter => 'alpha',
     };
 
-=head3 alphanumeric
+### alphanumeric
 
 The alpha filter removes all non-Alphabetic and non-Numeric characters from the
 field's value.
@@ -551,7 +486,7 @@ field's value.
         filter => 'alphanumeric',
     };
 
-=head3 capitalize
+### capitalize
 
 The capitalize filter attempts to capitalize the first word in each sentence,
 where sentences are seperated by a period and space, within the field's value.
@@ -560,7 +495,7 @@ where sentences are seperated by a period and space, within the field's value.
         filter => 'capitalize',
     };
 
-=head3 decimal
+### decimal
 
 The decimal filter removes all non-decimal-based characters from the field's
 value. Allows-only: decimal, comma, and numbers.
@@ -569,7 +504,7 @@ value. Allows-only: decimal, comma, and numbers.
         filter => 'decimal',
     };
 
-=head3 numeric
+### numeric
 
 The numeric filter removes all non-Numeric characters from the field's
 value.
@@ -578,7 +513,7 @@ value.
         filter => 'numeric',
     };
 
-=head3 strip
+### strip
 
 As with the trim filter the strip filter removes leading and trailing
 whitespaces from the field's value and additionally removes multiple whitespaces
@@ -588,7 +523,7 @@ from between the values characters.
         filter => 'strip',
     };
 
-=head3 titlecase
+### titlecase
 
 The titlecase filter converts the field's value to titlecase by capitalizing the
 first letter of each word.
@@ -597,7 +532,7 @@ first letter of each word.
         filter => 'titlecase',
     };
 
-=head3 trim
+### trim
 
 The trim filter removes leading and trailing whitespaces from the field's value.
 
@@ -605,7 +540,7 @@ The trim filter removes leading and trailing whitespaces from the field's value.
         filter => 'trim',
     };
 
-=head3 uppercase
+### uppercase
 
 The uppercase filter converts the field's value to uppercase.
 
@@ -613,12 +548,14 @@ The uppercase filter converts the field's value to uppercase.
         filter => 'uppercase',
     };
 
-=head1 DEFAULT FIELD/MIXIN VALIDATOR DIRECTIVES
+# DEFAULT FIELD/MIXIN VALIDATOR DIRECTIVES
 
     package MyApp::Validation;
     
+
     use Validation::Class;
     
+
     # a validation rule with validator directives
     field 'telephone_number'  => {
         length => 14,
@@ -626,6 +563,7 @@ The uppercase filter converts the field's value to uppercase.
         ...
     };
     
+
     1;
 
 Validator directives are special directives with associated validation code that
@@ -635,7 +573,7 @@ etc.
 The following is a list of the default validators which can be used in field/mixin
 declarations:
 
-=head2 between
+## between
 
     # the between directive
     field 'foobar'  => {
@@ -643,7 +581,7 @@ declarations:
         ...
     };
 
-=head2 length
+## length
 
     # the length directive
     field 'foobar'  => {
@@ -651,7 +589,7 @@ declarations:
         ...
     };
 
-=head2 matches
+## matches
 
     # the matches directive
     field 'this_field'  => {
@@ -659,7 +597,7 @@ declarations:
         ...
     };
 
-=head2 max_length
+## max_length
 
     # the max_length directive
     field 'foobar'  => {
@@ -667,7 +605,7 @@ declarations:
         ...
     };
 
-=head2 min_length
+## min_length
 
     # the min_length directive
     field 'foobar'  => {
@@ -675,7 +613,7 @@ declarations:
         ...
     };
 
-=head2 options
+## options
 
     # the options directive
     field 'status'  => {
@@ -683,7 +621,7 @@ declarations:
         ...
     };
 
-=head2 pattern
+## pattern
 
     # the pattern directive
     field 'telephone'  => {
@@ -691,19 +629,21 @@ declarations:
         ...
     };
     
+
     field 'country_code'  => {
         pattern => 'XX',
         filter  => 'uppercase'
         ...
     };
 
-=head1 THE VALIDATION CLASS
+# THE VALIDATION CLASS
 
 The following is an example of how to use your constructed validation class in
 other code, .e.g. Web App Controller, etc.
 
     use MyApp::Validation;
     
+
     my $input = MyApp::Validation->new(params => $params);
     unless ($input->validate('field1','field2')){
         return $input->errors_to_string;
@@ -714,6 +654,7 @@ to validate against (params must match field names).
 
     use MyApp::Validation;
     
+
     my $input = MyApp::Validation->new(params => $params);
     unless ($input->validate){
         return $input->errors_to_string;
@@ -725,6 +666,7 @@ of alternate parameters that can be matched against passed-in parameters.
 
     package MyApp::Validation;
     
+
     field 'foo.bar' => {
         ...,
         alias => [
@@ -737,27 +679,30 @@ of alternate parameters that can be matched against passed-in parameters.
 
     use MyApp::Validation;
     
+
     my  $input = MyApp::Validation->new(params => { foo => 1 });
     unless ($input->validate(){
         return $input->errors_to_string;
     }
 
-=head2 new
+## new
 
 The new method instantiates and returns an instance of your validation class.
 
     use MyApp::Validation;
     
+
     my $input = MyApp::Validation->new;
     $input->params($params);
     ...
     
+
     my $input = MyApp::Validation->new(params => $params);
     ...
 
-=head1 VALIDATION CLASS ATTRIBUTES
+# VALIDATION CLASS ATTRIBUTES
 
-=head2 ignore_unknown
+## ignore_unknown
 
 The ignore_unknown boolean determines whether your application will live or die
 upon encountering unregistered field directives during validation.
@@ -766,7 +711,7 @@ upon encountering unregistered field directives during validation.
     $self->ignore_unknown(1);
     ...
 
-=head2 fields
+## fields
 
 The fields attribute returns a hashref of defined fields, filtered and merged
 with thier parameter counterparts.
@@ -775,14 +720,14 @@ with thier parameter counterparts.
     my $fields = $self->fields();
     ...
 
-=head2 filters
+## filters
 
 The filters attribute returns a hashref of pre-defined filter definitions.
 
     my $filters = $self->filters();
     ...
 
-=head2 hash_inflator
+## hash_inflator
 
 The hash_inflator value determines how the hash serializer (inflation/deflation)
 behaves. The value must be a hashref of L<Hash::Flatten/OPTIONS> options. Purely
@@ -797,14 +742,14 @@ will be converted to camelcased keys before passed to the serializer.
     );
     ...
 
-=head2 mixins
+## mixins
 
 The mixins attribute returns a hashref of defined validation templates.
 
     my $mixins = $self->mixins();
     ...
 
-=head2 params
+## params
 
 The params attribute gets/sets the parameters to be validated.
 
@@ -812,14 +757,17 @@ The params attribute gets/sets the parameters to be validated.
         ...
     };
     
+
     my $self = MyApp::Validation->new(params => $input);
     
+
     $self->params($input);
     my $params = $self->params();
     
+
     ...
 
-=head2 report_unknown
+## report_unknown
 
 The report_unknown boolean determines whether your application will report
 unregistered fields as class-level errors upon encountering unregistered field
@@ -830,16 +778,16 @@ directives during validation.
     $self->report_unknown(1);
     ...
 
-=head2 reset_fields
+## reset_fields
 
 The reset_fields effectively resets any altered field objects at the class level.
 This method is called automatically everytime the new() method is triggered.
 
     $self->reset_fields();
 
-=head1 VALIDATION CLASS METHODS
+# VALIDATION CLASS METHODS
 
-=head2 error
+## error
 
 The error function is used to set and/or retrieve errors encountered during
 validation. The error function with no parameters returns the error message object
@@ -848,10 +796,12 @@ which is an arrayref of error messages stored at class-level.
     # return all errors encountered/set as an arrayref
     return $self->error();
     
+
     # return all errors specific to the specified field (at the field-level)
     # as an arrayref
     return $self->error('some_param');
     
+
     # set an error specific to the specified field (at the field-level)
     # using the field object (hashref not field name)
     $self->error($field_object, "i am your error message");
@@ -860,18 +810,19 @@ which is an arrayref of error messages stored at class-level.
         my $fields = $self->error();
     }
 
-=head2 error_count
+## error_count
 
 The error_count function returns the total number of error encountered from the 
 last validation call.
 
     return $self->error_count();
     
+
     unless ($self->validate) {
         print "Found ". $self->error_count ." Errors";
     }
 
-=head2 error_fields
+## error_fields
 
 The error_fields method returns a hashref of fields whose value is an arrayref
 of error messages.
@@ -880,7 +831,7 @@ of error messages.
         my $bad_fields = $self->error_fields();
     }
 
-=head2 errors_to_string
+## errors_to_string
 
 The errors_to_string function stringifies the error arrayref object using the
 specified delimiter or ', ' by default. 
@@ -888,11 +839,12 @@ specified delimiter or ', ' by default.
     return $self->errors_to_string();
     return $self->errors_to_string("<br/>\n");
     
+
     unless ($self->validate) {
         return $self->errors_to_string;
     }
 
-=head2 get_params
+## get_params
 
 The get_params method returns the values (in list form) of the parameters
 specified.
@@ -902,10 +854,12 @@ specified.
         my ($name_b, $email, $login, $password) =
             $self->get_params(qw/name email login password/);
         
+
         # you should note that if the params dont exist they will return undef
         # ... meaning you should check that it exists before checking its value
         # e.g.
         
+
         if (defined $name) {
             if ($name eq '') {
                 print 'name parameter was passed but was empty';
@@ -916,29 +870,30 @@ specified.
         }
     }
 
-=head2 get_params_hash
+## get_params_hash
 
 If your fields and parameters are designed with complex hash structures, The
 get_params_hash method returns the deserialized hashref of specified parameters
 based on the the default or custom configuration of the hash serializer
-L<Hash::Flatten>.
+[Hash::Flatten](http://search.cpan.org/perldoc?Hash::Flatten).
 
     my $params = {
         'user.login' => 'member',
         'user.password' => 'abc123456'
     };
     
+
     if ($self->validate(keys %$params)) {
         my $params = $self->get_params_hash;
         print $params->{user}->{login};
     }
 
-=head2 set_params_hash
+## set_params_hash
 
 Depending on how parameters are being input into your application, if your
 input parameters are already complex hash structures, The set_params_hash method
 will set and return the serialized version of your hashref based on the the
-default or custom configuration of the hash serializer L<Hash::Flatten>.
+default or custom configuration of the hash serializer [Hash::Flatten](http://search.cpan.org/perldoc?Hash::Flatten).
 
     my $params = {
         user => {
@@ -947,32 +902,38 @@ default or custom configuration of the hash serializer L<Hash::Flatten>.
         }
     };
     
+
     my $serialized_params = $self->set_params_hash($params);
 
-=head2 validate
+## validate
 
 The validate method returns true/false depending on whether all specified fields
 passed validation checks. 
 
     use MyApp::Validation;
     
+
     my $input = MyApp::Validation->new(params => $params);
     
+
     # validate specific fields
     unless ($input->validate('field1','field2')){
         return $input->errors_to_string;
     }
     
+
     # validate all fields, regardless of parameter existence
     unless ($input->validate()){
         return $input->errors_to_string;
     }
     
+
     # validate all existing parameters
     unless ($input->validate(keys %{$input->params})){
         return $input->errors_to_string;
     }
     
+
     # validate specific parameters (by name) after mapping them to other fields
     my $map = {
         param1 => 'field_abc',
@@ -982,7 +943,7 @@ passed validation checks.
         return $input->errors_to_string;
     }
 
-=head2 reset_errors
+## reset_errors
 
 The reset_errors method clears all errors, both at the class and individual
 field levels. This method is called automatically everytime the validate()
@@ -990,16 +951,13 @@ method is triggered.
 
     $self->reset_errors();
 
-=head1 AUTHOR
+# AUTHOR
 
 Al Newkirk <awncorp@cpan.org>
 
-=head1 COPYRIGHT AND LICENSE
+# COPYRIGHT AND LICENSE
 
 This software is copyright (c) 2011 by awncorp.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
-
-=cut
-
