@@ -5,12 +5,17 @@ use warnings;
 
 package Validation::Class;
 {
-  $Validation::Class::VERSION = '1.9.5';
+  $Validation::Class::VERSION = '2.0.0';
 }
 
 use 5.008001;
 
-our $VERSION = '1.9.5'; # VERSION
+our $VERSION = '2.0.0'; # VERSION
+
+
+
+
+
 
 
 
@@ -107,7 +112,7 @@ Validation::Class - Centralized Input Validation for Any Application
 
 =head1 VERSION
 
-version 1.9.5
+version 2.0.0
 
 =head1 SYNOPSIS
 
@@ -832,10 +837,19 @@ directives during validation.
 
 =head2 reset_fields
 
-The reset_fields effectively resets any altered field objects at the class level.
-This method is called automatically everytime the new() method is triggered.
+The reset_fields attribute effectively resets any altered field objects at the
+class level. This method is called automatically everytime the new() method is
+triggered.
 
     $self->reset_fields();
+
+=head2 stashed
+
+The stashed attribute represents a list of field names stored to be used in
+validation later. If the stashed attribute contains a list you can omit
+arguments to the validate method. 
+
+    $self->stashed([qw/this that .../]);
 
 =head1 VALIDATION CLASS METHODS
 
@@ -933,6 +947,57 @@ L<Hash::Flatten>.
         print $params->{user}->{login};
     }
 
+=head2 param
+
+The param method returns a single parameter by name.
+
+    if ($self->param('chng_pass')) {
+        $self->validate('password_confirmation');
+    }
+
+=head2 queue
+
+The queue method is a convenience method used specifically to append the
+stashed attribute allowing you to *queue* field to be validated. This method
+also allows you to set fields that must always be validated. 
+
+    # conditional validation flow WITHOUT the queue method
+    # imagine a user profile update action
+    
+    my $rules = MyApp::Validation->new(params => $params);
+    my @fields = qw/name login/;
+    
+    push @fields, 'email_confirm' if $rules->param('chg_email');
+    push @fields, 'password_confirm' if $rules->param('chg_pass');
+    
+    ... if $rules->validate(@fields);
+    
+    # conditional validation WITH the queue method
+    
+    my $rules = MyApp::Validation->new(params => $params);
+    
+    $rules->queue(qw/name login/);
+    $rules->queue(qw/email_confirm/) if $rules->param('chg_email');
+    $rules->queue(qw/password_confirm/) if $rules->param('chg_pass');
+    
+    ... if $rules->validate();
+    
+    # set fields that must ALWAYS be validated
+    # imagine a simple REST server
+    
+    my $rules = MyApp::Validation->new(params => $params);
+    
+    $rules->queue(qw/login password/);
+    
+    if ($request eq '/resource/:id') {
+        
+        if ($rules->validate('id')) {
+            
+            # validated login, password and id
+            ...
+        }
+    }
+
 =head2 set_params_hash
 
 Depending on how parameters are being input into your application, if your
@@ -949,6 +1014,29 @@ default or custom configuration of the hash serializer L<Hash::Flatten>.
     
     my $serialized_params = $self->set_params_hash($params);
 
+=head2 reset
+
+The reset method clears all errors, fields and stashed field names, both at the
+class and individual field levels.
+
+    $self->reset();
+
+=head2 reset_errors
+
+The reset_errors method clears all errors, both at the class and individual
+field levels. This method is called automatically everytime the validate()
+method is triggered.
+
+    $self->reset_errors();
+
+=head2 reset_fields
+
+The reset_fields method clears all errors and field values, both at the class
+and individual field levels. This method is called automatically everytime the
+validate() method is triggered.
+
+    $self->reset_fields();
+
 =head2 validate
 
 The validate method returns true/false depending on whether all specified fields
@@ -963,32 +1051,26 @@ passed validation checks.
         return $input->errors_to_string;
     }
     
-    # validate all fields, regardless of parameter existence
+    # validate existing parameters, if no parameters exist,
+    # validate all fields ... which will return true unless field(s) exist
+    # with a required directive
     unless ($input->validate()){
         return $input->errors_to_string;
     }
     
-    # validate all existing parameters
-    unless ($input->validate(keys %{$input->params})){
+    # validate all fields period, obviously
+    unless ($input->validate(keys %{$input->fields})){
         return $input->errors_to_string;
     }
     
     # validate specific parameters (by name) after mapping them to other fields
-    my $map = {
-        param1 => 'field_abc',
-        param2 => 'field_def'
+    my $parameter_map = {
+        user => 'hey_im_not_named_login',
+        pass => 'password_is_that_really_you'
     };
-    unless ($input->validate($map)){
+    unless ($input->validate($parameter_map)){
         return $input->errors_to_string;
     }
-
-=head2 reset_errors
-
-The reset_errors method clears all errors, both at the class and individual
-field levels. This method is called automatically everytime the validate()
-method is triggered.
-
-    $self->reset_errors();
 
 =head1 AUTHOR
 

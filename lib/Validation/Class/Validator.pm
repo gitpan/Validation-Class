@@ -5,10 +5,10 @@ use warnings;
 
 package Validation::Class::Validator;
 {
-  $Validation::Class::Validator::VERSION = '1.9.5';
+  $Validation::Class::Validator::VERSION = '2.0.0';
 }
 
-our $VERSION = '1.9.5'; # VERSION
+our $VERSION = '2.0.0'; # VERSION
 
 use Moose::Role;
 use Array::Unique;
@@ -366,6 +366,13 @@ has 'report_unknown' => (
     default => 0
 );
 
+# collection of field names to be used in validation
+has 'stashed' => (
+    is      => 'rw',
+    isa     => 'ArrayRef',
+    default => sub { [] }
+);
+
 # mixin/field directives store
 has 'types' => (
     is      => 'rw',
@@ -630,11 +637,36 @@ sub get_params_hash {
     return $params;
 }
 
+sub param {
+    my  ($self, $name, $value) = @_;
+    
+    return undef unless $name;
+    
+    if ($value) {
+        $self->params->{$name} = $value;
+    }
+    
+    return $self->params->{$name};
+}
+
+sub queue {
+    my  ($self, @field_names) = @_;
+    push @{$self->stashed}, @field_names if @field_names;
+    return $self;
+}
+
 sub set_params_hash {
     my ($self, $params) = @_;
     my $serializer = Hash::Flatten->new($self->hash_inflator);
     
     return $self->params($serializer->flatten($params));
+}
+
+sub reset {
+    my  $self = shift;
+        $self->stashed([]);
+        $self->reset_fields;
+    return $self;
 }
 
 sub reset_errors {
@@ -771,6 +803,11 @@ sub validate {
             $self->params->{ $map->{$param} } = $param_value;
             push @fields, $map->{$param};
         }
+    }
+    
+    # include fields stashed by the queue method
+    if (@{$self->stashed}) {
+        push @fields, @{$self->stashed};
     }
     
     # create map from aliases if applicable
@@ -1027,7 +1064,7 @@ Validation::Class::Validator - Input Validation and Parameter Handling Routines
 
 =head1 VERSION
 
-version 1.9.5
+version 2.0.0
 
 =head1 AUTHOR
 
