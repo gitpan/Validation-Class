@@ -18,4 +18,4 @@ requires:
   Hash::Flatten: 0
   Moose: 0
   Scalar::Util: 0
-version: 2.0.0
+version: 2.0.01
