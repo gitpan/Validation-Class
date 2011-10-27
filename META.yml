@@ -16,6 +16,7 @@ requires:
   Array::Unique: 0
   Carp: 0
   Hash::Flatten: 0
+  Module::Find: 0
   Moose: 0
   Scalar::Util: 0
-version: 2.0.01
+version: 2.1.0

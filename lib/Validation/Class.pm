@@ -5,12 +5,15 @@ use warnings;
 
 package Validation::Class;
 {
-  $Validation::Class::VERSION = '2.0.01';
+  $Validation::Class::VERSION = '2.1.0';
 }
 
 use 5.008001;
 
-our $VERSION = '2.0.01'; # VERSION
+our $VERSION = '2.1.0'; # VERSION
+
+
+
 
 
 
@@ -81,26 +84,36 @@ my ($import, $unimport, $init_meta) = Moose::Exporter->build_import_methods(
     ],
 );
 
+sub init_meta {
+    my ($dummy, %opts) = @_;
+    Moose->init_meta(%opts);
+    Moose::Util::MetaRole::apply_base_class_roles(
+        for   => $opts{for_class},
+        roles => [
+            'Validation::Class::Validator',
+            'Validation::Class::Errors'
+        ]
+    );
+    return Class::MOP::class_of($opts{for_class});
+}
+
 sub import {
     return unless $import;
     goto &$import;
 }
-
 
 sub unimport {
     return unless $unimport;
     goto &$unimport;
 }
 
-sub init_meta {
-    my ($dummy, %opts) = @_;
-    Moose->init_meta(%opts);
-    Moose::Util::MetaRole::apply_base_class_roles(
-        for   => $opts{for_class},
-        roles => ['Validation::Class::Validator', 'Validation::Class::Errors']
-    );
-    return Class::MOP::class_of($opts{for_class});
+# REGISTER TRAITS
+
+package Moose::Meta::Attribute::Custom::Trait::Profile;
+{
+  $Moose::Meta::Attribute::Custom::Trait::Profile::VERSION = '2.1.0';
 }
+sub register_implementation { 'Validation::Class::Meta::Attribute::Profile' }
 
 1;
 __END__
@@ -112,7 +125,7 @@ Validation::Class - Centralized Input Validation for Any Application
 
 =head1 VERSION
 
-version 2.0.01
+version 2.1.0
 
 =head1 SYNOPSIS
 
@@ -192,17 +205,18 @@ validate class to validate input in various scenarios:
 
 =head1 CHANGE NOTICE
 
-B<Important Note!> Validation::Class is subject to change, you've been warned.
-You should be fine if you stay tuned.
+B<Important Note!> Validation::Class is subject to change, though not
+dramatically, you've been warned. Users of this library pre-v2 should not that 
+the error accessors were changed. 
 
 Validation::Class has been re-written using L<Moose>. Sorry
 if you feel this bloats your application but using Moose was the better approach.
 
-Validation::Class now supports hash serialization/deserialization which means
-that you can now set the parameters using a hashref of nested hashrefs and
-validate against them, or set the parameters using a hashref of key/value pairs
-and validate against that. This function is provided in Validation::Class via
-L<Hash::Flatten>. The following is an example of that:
+Validation::Class now supports hash automatic serialization/deserialization
+which means that you can now set the parameters using a hashref of nested
+hashrefs and validate against them, or set the parameters using a hashref of
+key/value pairs and validate against that. This function is provided in
+Validation::Class via L<Hash::Flatten>. The following is an example of that:
 
     my $params = {
         user => {
@@ -350,6 +364,46 @@ expected to be passed to your validation class.
 
 The field keword takes two arguments, the field name and a hashref of key/values
 pairs.
+
+=head1 SEPERATION OF CONCERNS
+
+For larger applications were a single validation class might become cluttered
+and inefficient Validation::Class come equipped to help you seperate your
+validation rules into seperate classes.
+
+The idea is that you'll end up with a main validation class (most-likely empty)
+that will simply serve as your point of entry into your relative (child)
+classes. The following is an example of this:
+
+    package MyVal::User;
+    use Validation::Class;
+    
+    field name => { ... };
+    field email => { ... };
+    field login => { ... };
+    field password => { ... };
+    
+    package MyVal::Profile;
+    use Validation::Class;
+    
+    field age => { ... };
+    field sex => { ... };
+    field birthday => { ... };
+    
+    package MyVal;
+    use Validation::Class;
+    
+    __PACKAGE__->load_classes;
+    
+    package main;
+    
+    my $rules = MyVal->new(params => $params);
+    my $user = $rules->class('user');
+    my $profile = $rules->class('profile');
+    
+    ...
+    
+    1;
 
 =head1 DEFAULT FIELD/MIXIN DIRECTIVES
 
@@ -853,6 +907,26 @@ arguments to the validate method.
 
 =head1 VALIDATION CLASS METHODS
 
+=head2 class
+
+The class method returns a new initialize child validation class under the
+namespace of the calling class that issued the load_classes() method call.
+Existing parameters and configuration options are passed to the child class's
+constructor. All attributes can be easily overwritten using the attribute's
+accessors on the child class.
+
+    package MyVal;
+    use Validation::Class; __PACKAGE__->load_classes;
+    
+    package main;
+    
+    my $rules = MyVal->new(params => $params);
+    
+    my $kid1 = $rules->class('child'); # loads MyVal::Child;
+    my $kid2 = $rules->class('step_child'); # loads MyVal::StepChild;
+    
+    1;
+
 =head2 error
 
 The error function is used to set and/or retrieve errors encountered during
@@ -946,6 +1020,18 @@ L<Hash::Flatten>.
         my $params = $self->get_params_hash;
         print $params->{user}->{login};
     }
+
+=head2 load_classes
+
+The load_classes method is uses L<Module::Find> to load child classes for
+convenient access through the class() method. Existing parameters and
+configuration options are passed to the child class's constructor. All
+attributes can be easily overwritten using the attribute's accessors on the
+child class.
+
+    package MyVal;
+    use Validation::Class; __PACKAGE__->load_classes;
+    1;
 
 =head2 param
 

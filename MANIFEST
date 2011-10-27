@@ -7,6 +7,7 @@ README
 README.mkdn
 lib/Validation/Class.pm
 lib/Validation/Class/Errors.pm
+lib/Validation/Class/Meta/Attribute/Profile.pm
 lib/Validation/Class/Sugar.pm
 lib/Validation/Class/Validator.pm
 t/00-load.t
@@ -17,6 +18,8 @@ t/04-parameters.t
 t/10-validation.t
 t/11-group-validation.t
 t/12-queued-rules.t
+t/13-independence.t
+t/14-relatives.t
 t/97-persistent-values.t
 t/98-anomaly.t
 t/98-unknown_params.t
@@ -31,6 +34,10 @@ t/filters/07-lowercase.t
 t/filters/08-titlecase.t
 t/filters/09-capitalize.t
 t/filters/10-alphanumeric.t
+t/modules/MyVal.pm
+t/modules/MyVal/Person.pm
+t/modules/MyVal/Staff.pm
+t/modules/MyVal/Ticket.pm
 t/validators/01-min_length.t
 t/validators/02-max_length.t
 t/validators/03-pattern.t
