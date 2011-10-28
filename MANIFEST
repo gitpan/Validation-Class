@@ -23,6 +23,7 @@ t/13-independence.t
 t/14-relatives.t
 t/15-toggling.t
 t/16-cascading.t
+t/20-plugins.t
 t/97-persistent-values.t
 t/98-anomaly.t
 t/98-unknown_params.t
@@ -39,6 +40,7 @@ t/filters/09-capitalize.t
 t/filters/10-alphanumeric.t
 t/modules/MyVal.pm
 t/modules/MyVal/Person.pm
+t/modules/MyVal/Plugin/Glade.pm
 t/modules/MyVal/Staff.pm
 t/modules/MyVal/Ticket.pm
 t/validators/01-min_length.t

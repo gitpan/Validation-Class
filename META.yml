@@ -18,5 +18,6 @@ requires:
   Hash::Flatten: 0
   Module::Find: 0
   Moose: 0
+  MooseX::Traits: 0
   Scalar::Util: 0
-version: 2.3.4
+version: 2.4.0

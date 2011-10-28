@@ -5,15 +5,15 @@ use warnings;
 
 package Validation::Class::Sugar;
 {
-  $Validation::Class::Sugar::VERSION = '2.3.4';
+  $Validation::Class::Sugar::VERSION = '2.4.0';
 }
 
-our $VERSION = '2.3.4'; # VERSION
+our $VERSION = '2.4.0'; # VERSION
 
 use Scalar::Util qw(blessed);
 use Carp qw(confess);
 
-use Moose ('has');
+use Moose::Role;
 use Moose::Exporter;
 use Module::Find;
 
@@ -24,8 +24,8 @@ Moose::Exporter->setup_import_methods(
         filter
         directive
         load_classes
-    )],
-    also => 'Moose',
+        load_plugins
+    )]
 );
 
 sub directive {
@@ -96,6 +96,28 @@ sub load_classes {
     };
     
     return $rels_map;
+}
+
+sub load_plugins {
+    my ($meta, $class, @plugins) = @_;
+    my $plgs = $meta->find_attribute_by_name('plugins');
+    
+    foreach my $plugin (@plugins) {
+        if ($plugin !~ /^\+/) {
+            $plugin = "Validation::Class::Plugin::$plugin";
+        }
+        else {
+            $plugin =~ s/^\+//;
+        }
+        
+        my $file = $plugin; $file =~ s/::/\//g;
+        require "$file.pm";
+    }
+    
+    push @plugins, @{$plgs->{default}->()} if @{$plgs->{default}->()};
+    $plgs->{default} = sub { [@plugins] };
+    
+    return $plgs;
 }
 
 sub mixin {
