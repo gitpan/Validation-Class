@@ -15,11 +15,14 @@ t/01-attributes.t
 t/02-package-declaration.t
 t/03-mixin-usages.t
 t/04-parameters.t
+t/10-custom-validation.t
 t/10-validation.t
 t/11-group-validation.t
 t/12-queued-rules.t
 t/13-independence.t
 t/14-relatives.t
+t/15-toggling.t
+t/16-cascading.t
 t/97-persistent-values.t
 t/98-anomaly.t
 t/98-unknown_params.t
@@ -45,3 +48,12 @@ t/validators/04-between.t
 t/validators/05-length.t
 t/validators/06-matches.t
 t/validators/07-options.t
+t/validators/08-depends_on.t
+t/validators/20-max_alpha.t
+t/validators/20-max_digit.t
+t/validators/20-max_sum.t
+t/validators/20-max_symbols.t
+t/validators/21-min_alpha.t
+t/validators/21-min_digit.t
+t/validators/21-min_sum.t
+t/validators/21-min_symbols.t

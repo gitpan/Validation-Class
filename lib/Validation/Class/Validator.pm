@@ -5,10 +5,10 @@ use warnings;
 
 package Validation::Class::Validator;
 {
-  $Validation::Class::Validator::VERSION = '2.1.0';
+  $Validation::Class::Validator::VERSION = '2.3.4';
 }
 
-our $VERSION = '2.1.0'; # VERSION
+our $VERSION = '2.3.4'; # VERSION
 
 use Moose::Role;
 use Array::Unique;
@@ -281,9 +281,7 @@ sub BUILD {
     }
     undef $aliastree;
 
-    # always done last!!! auto-generate the field name
-    # happens again at validation, FYI
-    $self->fields->{$_}->{name} = $_ for ( keys %{ $self->fields } );
+    $self->reset_fields;
 
     return $self;
 };
@@ -463,6 +461,10 @@ sub reset_fields {
        $self->reset_errors();
     
     for my $field ( keys %{ $self->fields } ) {
+        
+        # set default, reset, special directives, etc
+        $self->fields->{$field}->{name} = $field;
+        $self->fields->{$field}->{'.toggle'} = undef;
         delete $self->fields->{$field}->{value};
     }
     
@@ -529,18 +531,26 @@ sub use_validator {
     my ( $self, $field, $this ) = @_;
 
     # does field have a label, if not use field name
-    my $name = $this->{label} ? $this->{label} : "parameter $field";
+    my $name = $this->{label} ? $this->{label} : "Field $field";
     my $value = $this->{value};
 
     # check if required
-    if ( $this->{required} && ( !defined $value || $value eq '' ) ) {
-        my $error =
-          defined $this->{error} ? $this->{error} : "$name is required";
+    my $req = $this->{required} ? 1 : 0;
+    if (defined $this->{'.toggle'}) {
+        $req = 1 if $this->{'.toggle'} eq '+';
+        $req = 0 if $this->{'.toggle'} eq '-';
+    }
+    
+    if ( $req && ( !defined $value || $value eq '' ) ) {
+        my $error = defined $this->{error} ?
+            $this->{error} : "$name is required";
+        
         $self->error( $this, $error );
+        
         return 1;    # if required and fails, stop processing immediately
     }
 
-    if ( $this->{required} || $value ) {
+    if ( $req || $value ) {
 
         # find and process all the validators
         foreach my $key (keys %{$this}) {
@@ -565,10 +575,26 @@ sub use_validator {
 sub validate {
     my ( $self, @fields ) = @_;
     
+    # FIRST ALWAYS
     # first things first, reset the errors and value returning the validation
     # class to its pristine state
     $self->reset_fields();
     $self->reset_errors();
+    
+    # include fields stashed by the queue method
+    if (@{$self->stashed}) {
+        push @fields, @{$self->stashed};
+    }
+    
+    # process fields through toggler
+    foreach my $field (@fields) {
+        my ($switch) = $field =~ /^([\-\+]{1})./; 
+        if ($switch) {
+            # set fields toggle directive
+            $field =~ s/^[\-\+]{1}//;
+            $self->fields->{$field}->{'.toggle'} = $switch;
+        }
+    }
     
     # save unaltered state-of-parameters
     my %original_parameters = %{$self->params};
@@ -583,11 +609,6 @@ sub validate {
             $self->params->{ $map->{$param} } = $param_value;
             push @fields, $map->{$param};
         }
-    }
-    
-    # include fields stashed by the queue method
-    if (@{$self->stashed}) {
-        push @fields, @{$self->stashed};
     }
     
     # create map from aliases if applicable
@@ -621,8 +642,11 @@ sub validate {
                     next;
                 }
                 my $this = $self->fields->{$field};
+                
                 $this->{name}  = $field;
-                $this->{value} = $self->params->{$field};
+                $this->{value} = exists $self->params->{$field} ?
+                    $self->params->{$field} : $this->{default} || '';
+                
                 my @passed = ( $self, $this, $self->params );
 
                 # execute simple validation
@@ -630,11 +654,20 @@ sub validate {
 
                 # custom validation
                 if ( defined $self->fields->{$field}->{validation} ) {
+                    my $errcnt = $self->error_count;
                     unless ( $self->fields->{$field}->{validation}->(@passed) )
                     {
-                        if ( defined $self->fields->{$field}->{error} ) {
-                            $self->error( $self->fields->{$field},
-                                $self->fields->{$field}->{error} );
+                        # assuming the validation routine didnt issue an error
+                        if ($errcnt == $self->error_count) {
+                            if ( defined $self->fields->{$field}->{error} ) {
+                                $self->error( $self->fields->{$field},
+                                    $self->fields->{$field}->{error} );
+                            }
+                            else {
+                                $self->error( $self->fields->{$field},
+                                    (($this->{label} || $this->{name}) .
+                                     " did not pass validation") );
+                            }
                         }
                     }
                 }
@@ -649,8 +682,11 @@ sub validate {
                     next;
                 }
                 my $this = $self->fields->{$field};
+                
                 $this->{name}  = $field;
-                $this->{value} = $self->params->{$field};
+                $this->{value} = exists $self->params->{$field} ?
+                    $self->params->{$field} : $this->{default} || '';
+                    
                 my @passed = ( $self, $this, $self->params );
 
                 # execute simple validation
@@ -658,11 +694,20 @@ sub validate {
 
                 # custom validation
                 if ( defined $self->fields->{$field}->{validation} ) {
+                    my $errcnt = $self->error_count;
                     unless ( $self->fields->{$field}->{validation}->(@passed) )
                     {
-                        if ( defined $self->fields->{$field}->{error} ) {
-                            $self->error( $self->fields->{$field},
-                                $self->fields->{$field}->{error} );
+                        # assuming the validation routine didnt issue an error
+                        if ($errcnt == $self->error_count) {
+                            if ( defined $self->fields->{$field}->{error} ) {
+                                $self->error( $self->fields->{$field},
+                                    $self->fields->{$field}->{error} );
+                            }
+                            else {
+                                $self->error( $self->fields->{$field},
+                                    (($this->{label} || $this->{name}) .
+                                     " did not pass validation") );
+                            }
                         }
                     }
                 }
@@ -679,8 +724,11 @@ sub validate {
                     next;
                 }
                 my $this = $self->fields->{$field};
+                
                 $this->{name}  = $field;
-                $this->{value} = $self->params->{$field};
+                $this->{value} = exists $self->params->{$field} ?
+                    $self->params->{$field} : $this->{default} || '';
+                
                 my @passed = ( $self, $this, $self->params );
 
                 # execute simple validation
@@ -690,11 +738,20 @@ sub validate {
                 if ( $self->fields->{$field}->{value}
                     && defined $self->fields->{$field}->{validation} )
                 {
+                    my $errcnt = $self->error_count;
                     unless ( $self->fields->{$field}->{validation}->(@passed) )
                     {
-                        if ( defined $self->fields->{$field}->{error} ) {
-                            $self->error( $self->fields->{$field},
-                                $self->fields->{$field}->{error} );
+                        # assuming the validation routine didnt issue an error
+                        if ($errcnt == $self->error_count) {
+                            if ( defined $self->fields->{$field}->{error} ) {
+                                $self->error( $self->fields->{$field},
+                                    $self->fields->{$field}->{error} );
+                            }
+                            else {
+                                $self->error( $self->fields->{$field},
+                                    (($this->{label} || $this->{name}) .
+                                     " did not pass validation") );
+                            }
                         }
                     }
                 }
@@ -709,8 +766,10 @@ sub validate {
             #     "parameters are required for validation";
             foreach my $field ( keys %{ $self->fields } ) {
                 my $this = $self->fields->{$field};
+                
                 $this->{name}  = $field;
-                $this->{value} = $self->params->{$field};
+                $this->{value} = exists $self->params->{$field} ?
+                    $self->params->{$field} : $this->{default} || '';
 
                 # execute simple validation
                 $self->use_validator( $field, $this );
@@ -725,8 +784,10 @@ sub validate {
         else {
             foreach my $field ( keys %{ $self->fields } ) {
                 my $this = $self->fields->{$field};
+                
                 $this->{name}  = $field;
-                $this->{value} = $self->params->{$field};
+                $this->{value} = exists $self->params->{$field} ?
+                    $self->params->{$field} : $this->{default} || '';
 
                 # execute simple validation
                 $self->use_validator( $field, $this );
