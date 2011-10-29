@@ -5,10 +5,10 @@ use warnings;
 
 package Validation::Class::Validator;
 {
-  $Validation::Class::Validator::VERSION = '2.4.0';
+  $Validation::Class::Validator::VERSION = '2.4.3';
 }
 
-our $VERSION = '2.4.0'; # VERSION
+our $VERSION = '2.4.3'; # VERSION
 
 use Moose::Role;
 use Array::Unique;
@@ -101,9 +101,13 @@ has 'params' => (
 
 # class plugins store
 has plugins => (
-    is => 'rw',
-    isa => 'ArrayRef',
-    default => sub { [] }
+    is      => 'rw',
+    isa     => 'HashRef',
+    lazy    => 1,
+    default => sub {
+        return $_[0]->can('config') ?
+               $_[0]->config->{PLUGINS} : {};
+        }
 );
 
 # class relatives store
@@ -181,15 +185,15 @@ around BUILDARGS => sub {
 sub BUILD {
     my $self = shift;
     
-    # attach plugins
-    foreach my $plugin (@{$self->plugins}) {
-        $plugin->meta->apply($self);
-    }
-    
     # copy master (modified?) profile to config
     unless (keys %{$self->config}) {
         my $meta = $self->meta->find_attribute_by_name('config');
         $self->config($meta->profile);
+    }
+    
+    # attach plugins
+    foreach my $plugin (keys %{$self->plugins}) {
+        $plugin->meta->apply($self);
     }
     
     # automatically serialize params if nested hash detected

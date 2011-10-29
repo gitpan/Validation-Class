@@ -5,12 +5,12 @@ use warnings;
 
 package Validation::Class;
 {
-  $Validation::Class::VERSION = '2.4.0';
+  $Validation::Class::VERSION = '2.4.3';
 }
 
 use 5.008001;
 
-our $VERSION = '2.4.0'; # VERSION
+our $VERSION = '2.4.3'; # VERSION
 
 
 
@@ -147,7 +147,7 @@ Validation::Class - Centralized Input Validation for Any Application
 
 =head1 VERSION
 
-version 2.4.0
+version 2.4.3
 
 =head1 SYNOPSIS
 
