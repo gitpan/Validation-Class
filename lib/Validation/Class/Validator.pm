@@ -5,10 +5,10 @@ use warnings;
 
 package Validation::Class::Validator;
 {
-  $Validation::Class::Validator::VERSION = '2.4.3';
+  $Validation::Class::Validator::VERSION = '2.4.4';
 }
 
-our $VERSION = '2.4.3'; # VERSION
+our $VERSION = '2.4.4'; # VERSION
 
 use Moose::Role;
 use Array::Unique;
@@ -193,6 +193,7 @@ sub BUILD {
     
     # attach plugins
     foreach my $plugin (keys %{$self->plugins}) {
+        $plugin->new($self) if $plugin->meta->has_method('new'); # init hook
         $plugin->meta->apply($self);
     }
     

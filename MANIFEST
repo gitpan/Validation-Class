@@ -8,6 +8,7 @@ README.mkdn
 lib/Validation/Class.pm
 lib/Validation/Class/Errors.pm
 lib/Validation/Class/Meta/Attribute/Profile.pm
+lib/Validation/Class/Plugins.pod
 lib/Validation/Class/Sugar.pm
 lib/Validation/Class/Validator.pm
 t/00-load.t

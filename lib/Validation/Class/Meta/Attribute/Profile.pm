@@ -5,10 +5,10 @@ use warnings;
 
 package Validation::Class::Meta::Attribute::Profile;
 {
-  $Validation::Class::Meta::Attribute::Profile::VERSION = '2.4.3';
+  $Validation::Class::Meta::Attribute::Profile::VERSION = '2.4.4';
 }
 
-our $VERSION = '2.4.3'; # VERSION
+our $VERSION = '2.4.4'; # VERSION
 
 use Moose::Role;
 
