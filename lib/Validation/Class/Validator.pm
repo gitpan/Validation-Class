@@ -5,10 +5,10 @@ use warnings;
 
 package Validation::Class::Validator;
 {
-  $Validation::Class::Validator::VERSION = '2.4.4';
+  $Validation::Class::Validator::VERSION = '2.4.5';
 }
 
-our $VERSION = '2.4.4'; # VERSION
+our $VERSION = '2.4.5'; # VERSION
 
 use Moose::Role;
 use Array::Unique;

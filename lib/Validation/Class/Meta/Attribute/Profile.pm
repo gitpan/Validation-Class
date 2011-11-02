@@ -5,10 +5,10 @@ use warnings;
 
 package Validation::Class::Meta::Attribute::Profile;
 {
-  $Validation::Class::Meta::Attribute::Profile::VERSION = '2.4.4';
+  $Validation::Class::Meta::Attribute::Profile::VERSION = '2.4.5';
 }
 
-our $VERSION = '2.4.4'; # VERSION
+our $VERSION = '2.4.5'; # VERSION
 
 use Moose::Role;
 
@@ -422,10 +422,12 @@ has profile => (
                     if ($value) {
                         # build the regex
                         my $regex = $directive;
-                        $regex =~ s/([^#X ])/\\$1/g;
-                        $regex =~ s/#/\\d/g;
-                        $regex =~ s/X/[a-zA-Z]/g;
-                        $regex = qr/$regex/;
+                        unless ("Regexp" eq ref $regex) {
+                            $regex =~ s/([^#X ])/\\$1/g;
+                            $regex =~ s/#/\\d/g;
+                            $regex =~ s/X/[a-zA-Z]/g;
+                            $regex = qr/$regex/;
+                        }
                         unless ( $value =~ $regex ) {
                             my $handle = $field->{label} || $field->{name};
                             my $error = "$handle does not match the "

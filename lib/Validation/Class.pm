@@ -5,12 +5,12 @@ use warnings;
 
 package Validation::Class;
 {
-  $Validation::Class::VERSION = '2.4.4';
+  $Validation::Class::VERSION = '2.4.5';
 }
 
 use 5.008001;
 
-our $VERSION = '2.4.4'; # VERSION
+our $VERSION = '2.4.5'; # VERSION
 
 
 
@@ -147,7 +147,7 @@ Validation::Class - Centralized Input Validation for Any Application
 
 =head1 VERSION
 
-version 2.4.4
+version 2.4.5
 
 =head1 SYNOPSIS
 
@@ -852,13 +852,21 @@ declarations:
 
     # the pattern directive
     field 'telephone'  => {
+        # simple pattern
         pattern => '### ###-####',
         ...
     };
     
     field 'country_code'  => {
+        # simple pattern
         pattern => 'XX',
         filter  => 'uppercase'
+        ...
+    };
+    
+    field 'complex'  => {
+        # regex pattern
+        pattern => qr/[0-9]+\,\s\.\.\./,
         ...
     };
 
