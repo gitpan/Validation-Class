@@ -5,10 +5,10 @@ use warnings;
 
 package Validation::Class::Sugar;
 {
-  $Validation::Class::Sugar::VERSION = '2.4.5';
+  $Validation::Class::Sugar::VERSION = '2.4.7';
 }
 
-our $VERSION = '2.4.5'; # VERSION
+our $VERSION = '2.4.7'; # VERSION
 
 use Scalar::Util qw(blessed);
 use Carp qw(confess);

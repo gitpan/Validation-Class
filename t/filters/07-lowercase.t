@@ -6,7 +6,7 @@ package MyVal; use Validation::Class;  package main;
 my $v = MyVal->new(
     fields => {
         foobar => {
-            filter => 'lowercase'
+            filters => 'lowercase'
         }
     },
     params => {

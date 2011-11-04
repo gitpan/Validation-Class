@@ -5,12 +5,12 @@ use warnings;
 
 package Validation::Class;
 {
-  $Validation::Class::VERSION = '2.4.5';
+  $Validation::Class::VERSION = '2.4.7';
 }
 
 use 5.008001;
 
-our $VERSION = '2.4.5'; # VERSION
+our $VERSION = '2.4.7'; # VERSION
 
 
 
@@ -147,7 +147,7 @@ Validation::Class - Centralized Input Validation for Any Application
 
 =head1 VERSION
 
-version 2.4.5
+version 2.4.7
 
 =head1 SYNOPSIS
 
@@ -609,16 +609,16 @@ If you need to set a default value, see the default directive.
 
 =head1 DEFAULT FIELD/MIXIN FILTER DIRECTIVES
 
-=head2 filter/filters
+=head2 filters
 
-The filter/filters directive is used to correct, altering and/or format the
+The filters directive is used to correct, altering and/or format the
 values of the matching input parameter. Note: Filtering is applied before
 validation. The filter directive can have multiple filters (even a coderef)
 in the form of an arrayref of values.
 
     # the filter(s) directive
     field 'text'  => {
-        filter => [qw/trim strip/ => sub {
+        filters => [qw/trim strip/ => sub {
             $_[0] =~ s/\D//g;
         }],
         ...

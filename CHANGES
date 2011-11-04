@@ -1,5 +1,10 @@
 This file documents the revision history for the Perl library Validation::Class.
 
+2.4.7   2011-11-03
+        - Updated POD, removed the filter directive
+        - Adjusted how singular and multiple values are merged and applied
+        - Applies default directive at instantiation
+
 2.4.5   2011-11-02
         - Updated POD, and Plugins POD
         - Updated pattern validator tests and functionality

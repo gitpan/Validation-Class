@@ -5,10 +5,10 @@ use warnings;
 
 package Validation::Class::Meta::Attribute::Profile;
 {
-  $Validation::Class::Meta::Attribute::Profile::VERSION = '2.4.5';
+  $Validation::Class::Meta::Attribute::Profile::VERSION = '2.4.7';
 }
 
-our $VERSION = '2.4.5'; # VERSION
+our $VERSION = '2.4.7'; # VERSION
 
 use Moose::Role;
 
@@ -104,11 +104,6 @@ has profile => (
                 mixin => 0,
                 field => 1,
                 multi => 0
-            },
-            filter => {
-                mixin => 1,
-                field => 1,
-                multi => 1
             },
             filters => {
                 mixin => 1,
@@ -387,7 +382,7 @@ has profile => (
             mixin_field => {
                 mixin => 0,
                 field => 1,
-                multi => 1
+                multi => 0
             },
             name => {
                 mixin => 0,

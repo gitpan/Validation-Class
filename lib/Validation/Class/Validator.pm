@@ -5,10 +5,10 @@ use warnings;
 
 package Validation::Class::Validator;
 {
-  $Validation::Class::Validator::VERSION = '2.4.5';
+  $Validation::Class::Validator::VERSION = '2.4.7';
 }
 
-our $VERSION = '2.4.5'; # VERSION
+our $VERSION = '2.4.7'; # VERSION
 
 use Moose::Role;
 use Array::Unique;
@@ -242,21 +242,12 @@ sub BUILD {
     # check for and process input filters and default values
     foreach my $field ( keys %{ $self->fields } ) {
         
-        tie my @filters, 'Array::Unique';
-        @filters = @{ $self->fields->{$field}->{filters} };
-
-        if ( defined $self->fields->{$field}->{filter} ) {
-            
-            push @filters,
-                "ARRAY" eq ref $self->fields->{$field}->{filter} ?
-                    @{$self->fields->{$field}->{filter}} :
-                    $self->fields->{$field}->{filter} ;
-            
-            delete $self->fields->{$field}->{filter};
+        # apply filters
+        unless ("ARRAY" eq ref $self->fields->{$field}->{filters}) {
+            $self->fields->{$field}->{filters} = [
+                $self->fields->{$field}->{filters}
+            ];
         }
-
-        $self->fields->{$field}->{filters} = [@filters];
-
         foreach my $filter ( @{ $self->fields->{$field}->{filters} } ) {
             if ( defined $self->params->{$field} ) {
                 $self->use_filter( $filter, $field );
@@ -267,8 +258,8 @@ sub BUILD {
         if ( defined $self->params->{$field}
             && length( $self->params->{$field} ) == 0 )
         {
-            if ( $self->fields->{$field}->{value} ) {
-                $self->params->{$field} = $self->fields->{$field}->{value};
+            if ( $self->fields->{$field}->{default} ) {
+                $self->params->{$field} = $self->fields->{$field}->{default};
             }
         }
         
@@ -505,13 +496,11 @@ sub use_mixin {
 
     $mixin_s = ref($mixin_s) eq "ARRAY" ? $mixin_s : [$mixin_s];
 
-    if ( ref($mixin_s) eq "ARRAY" ) {
-        foreach my $mixin ( @{$mixin_s} ) {
-            if ( defined $self->{mixins}->{$mixin} ) {
-                $self->fields->{$field} =
-                  $self->_merge_field_with_mixin( $self->fields->{$field},
-                    $self->{mixins}->{$mixin} );
-            }
+    foreach my $mixin ( @{$mixin_s} ) {
+        if ( defined $self->{mixins}->{$mixin} ) {
+            $self->fields->{$field} =
+              $self->_merge_field_with_mixin( $self->fields->{$field},
+                $self->{mixins}->{$mixin} );
         }
     }
 
@@ -600,6 +589,9 @@ sub validate {
     # class to its pristine state
     $self->reset_fields();
     $self->reset_errors();
+    
+    # TODO: move filtering into its own routine
+    # TODO: apply filtering before validation and after instantiation
     
     # include fields stashed by the queue method
     if (@{$self->stashed}) {
@@ -851,7 +843,7 @@ sub _merge_field_with_mixin {
             # can the directive have multiple values, merge array
             if ($self->types->{field}->{$key}->{multi}) {
                 # if field has existing array value, merge unique
-                if ("ARRAY" eq ref $field->{key}) {
+                if ("ARRAY" eq ref $field->{$key}) {
                     tie my @values, 'Array::Unique';
                     @values = @{$field->{$key}};
                     push @values, "ARRAY" eq ref $value ?
