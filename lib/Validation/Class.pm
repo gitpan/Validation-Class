@@ -5,84 +5,12 @@ use warnings;
 
 package Validation::Class;
 {
-  $Validation::Class::VERSION = '2.4.7';
+  $Validation::Class::VERSION = '2.5.0';
 }
 
 use 5.008001;
 
-our $VERSION = '2.4.7'; # VERSION
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+our $VERSION = '2.5.0'; # VERSION
 
 use Moose ('has');
 use Moose::Exporter;
@@ -137,6 +65,78 @@ sub unimport {
             }
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 1;
 __END__
 =pod
@@ -147,7 +147,7 @@ Validation::Class - Centralized Input Validation for Any Application
 
 =head1 VERSION
 
-version 2.4.7
+version 2.5.0
 
 =head1 SYNOPSIS
 
@@ -1003,14 +1003,6 @@ directives during validation.
     $self->report_unknown(1);
     ...
 
-=head2 reset_fields
-
-The reset_fields attribute effectively resets any altered field objects at the
-class level. This method is called automatically everytime the new() method is
-triggered.
-
-    $self->reset_fields();
-
 =head2 stashed
 
 The stashed attribute represents a list of field names stored to be used in
@@ -1217,22 +1209,6 @@ also allows you to set fields that must always be validated.
         }
     }
 
-=head2 set_params_hash
-
-Depending on how parameters are being input into your application, if your
-input parameters are already complex hash structures, The set_params_hash method
-will set and return the serialized version of your hashref based on the the
-default or custom configuration of the hash serializer L<Hash::Flatten>.
-
-    my $params = {
-        user => {
-            login => 'member',
-            password => 'abc123456'
-        }
-    };
-    
-    my $serialized_params = $self->set_params_hash($params);
-
 =head2 reset
 
 The reset method clears all errors, fields and stashed field names, both at the
@@ -1251,10 +1227,34 @@ method is triggered.
 =head2 reset_fields
 
 The reset_fields method clears all errors and field values, both at the class
-and individual field levels. This method is called automatically everytime the
-validate() method is triggered.
+and individual field levels. This method is executed automatically at
+instantiation.
 
     $self->reset_fields();
+
+=head2 sanitize
+
+The sanitize method executes a set of routines that reset the parameter
+environment filtering any parameters present. This method is executed
+automatically at instantiation and validation. 
+
+    $self->sanitize();
+
+=head2 set_params_hash
+
+Depending on how parameters are being input into your application, if your
+input parameters are already complex hash structures, The set_params_hash method
+will set and return the serialized version of your hashref based on the the
+default or custom configuration of the hash serializer L<Hash::Flatten>.
+
+    my $params = {
+        user => {
+            login => 'member',
+            password => 'abc123456'
+        }
+    };
+    
+    my $serialized_params = $self->set_params_hash($params);
 
 =head2 validate
 

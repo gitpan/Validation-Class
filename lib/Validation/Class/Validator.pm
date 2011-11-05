@@ -5,10 +5,10 @@ use warnings;
 
 package Validation::Class::Validator;
 {
-  $Validation::Class::Validator::VERSION = '2.4.7';
+  $Validation::Class::Validator::VERSION = '2.5.0';
 }
 
-our $VERSION = '2.4.7'; # VERSION
+our $VERSION = '2.5.0'; # VERSION
 
 use Moose::Role;
 use Array::Unique;
@@ -197,102 +197,8 @@ sub BUILD {
         $plugin->meta->apply($self);
     }
     
-    # automatically serialize params if nested hash detected
-    if (grep { ref($_) } values %{$self->params}) {
-        $self->set_params_hash($self->params);
-    }
-    
-    # reset fields if applicable
-    $self->reset_fields();
-
-    # validate mixin directives
-    foreach my $mixin ( keys %{ $self->mixins } ) {
-        $self->check_mixin( $mixin, $self->mixins->{$mixin} );
-    }
-
-    # validate field directives and create filters arrayref if needed
-    foreach my $field ( keys %{ $self->fields } ) {
-        $self->check_field( $field, $self->fields->{$field} );
-        
-        if ( ! defined $self->fields->{$field}->{filters} ) {
-            $self->fields->{$field}->{filters} = [];
-        }
-        
-    }
-
-    # check for and process a mixin directive
-    foreach my $field ( keys %{ $self->fields } ) {
-        
-
-        $self->use_mixin( $field, $self->fields->{$field}->{mixin} )
-            if $self->fields->{$field}->{mixin};
-        
-    }
-
-    # check for and process a mixin_field directive
-    foreach my $field ( keys %{ $self->fields } ) {
-        
-
-        $self->use_mixin_field( $self->fields->{$field}->{mixin_field}, $field )
-          if $self->fields->{$field}->{mixin_field}
-              && $self->fields->{ $self->fields->{$field}->{mixin_field} };
-        
-    }
-
-    # check for and process input filters and default values
-    foreach my $field ( keys %{ $self->fields } ) {
-        
-        # apply filters
-        unless ("ARRAY" eq ref $self->fields->{$field}->{filters}) {
-            $self->fields->{$field}->{filters} = [
-                $self->fields->{$field}->{filters}
-            ];
-        }
-        foreach my $filter ( @{ $self->fields->{$field}->{filters} } ) {
-            if ( defined $self->params->{$field} ) {
-                $self->use_filter( $filter, $field );
-            }
-        }
-
-        # default values
-        if ( defined $self->params->{$field}
-            && length( $self->params->{$field} ) == 0 )
-        {
-            if ( $self->fields->{$field}->{default} ) {
-                $self->params->{$field} = $self->fields->{$field}->{default};
-            }
-        }
-        
-    }
-    
-    # alias checking, ... for duplicate aliases, etc
-    my $fieldtree = {};
-    my $aliastree = {};
-    foreach my $field (keys %{$self->fields}) {
-        $fieldtree->{$field} = $field;
-        my $f = $self->fields->{$field};
-        if (defined $f->{alias}) {
-            my $aliases = "ARRAY" eq ref $f->{alias} ?
-                $f->{alias} : [$f->{alias}];
-            
-            foreach my $alias (@{$aliases}) {
-                if ($aliastree->{$alias}) {
-                    die "The field $field contains the alias $alias which is ".
-                        "also defined in the field $aliastree->{$alias}";
-                }
-                elsif ($fieldtree->{$alias}) {
-                    die "The field $field contains the alias $alias which is ".
-                        "the name of an existing field";
-                }
-                else {
-                    $aliastree->{$alias} = $field;
-                }
-            }
-        }
-    }
-    undef $aliastree;
-
-    $self->reset_fields;
+    # setup environment
+    $self->sanitize;
 
     return $self;
 };
@@ -482,6 +388,109 @@ sub reset_fields {
     return $self;
 }
 
+sub sanitize {
+    my $self = shift;
+    
+    # automatically serialize params if nested hash detected
+    if (grep { ref($_) } values %{$self->params}) {
+        $self->set_params_hash($self->params);
+    }
+    
+    # reset fields if applicable
+    $self->reset_fields;
+
+    # validate mixin directives
+    foreach my $mixin ( keys %{ $self->mixins } ) {
+        $self->check_mixin( $mixin, $self->mixins->{$mixin} );
+    }
+
+    # validate field directives and create filters arrayref if needed
+    foreach my $field ( keys %{ $self->fields } ) {
+        $self->check_field( $field, $self->fields->{$field} );
+        
+        if ( ! defined $self->fields->{$field}->{filters} ) {
+            $self->fields->{$field}->{filters} = [];
+        }
+        
+    }
+
+    # check for and process a mixin directive
+    foreach my $field ( keys %{ $self->fields } ) {
+        
+
+        $self->use_mixin( $field, $self->fields->{$field}->{mixin} )
+            if $self->fields->{$field}->{mixin};
+        
+    }
+
+    # check for and process a mixin_field directive
+    foreach my $field ( keys %{ $self->fields } ) {
+        
+
+        $self->use_mixin_field( $self->fields->{$field}->{mixin_field}, $field )
+          if $self->fields->{$field}->{mixin_field}
+              && $self->fields->{ $self->fields->{$field}->{mixin_field} };
+        
+    }
+
+    # check for and process input filters and default values
+    foreach my $field ( keys %{ $self->fields } ) {
+        
+        # apply filters
+        unless ("ARRAY" eq ref $self->fields->{$field}->{filters}) {
+            $self->fields->{$field}->{filters} = [
+                $self->fields->{$field}->{filters}
+            ];
+        }
+        foreach my $filter ( @{ $self->fields->{$field}->{filters} } ) {
+            if ( defined $self->params->{$field} ) {
+                $self->use_filter( $filter, $field );
+            }
+        }
+
+        # default values
+        if ( defined $self->params->{$field}
+            && length( $self->params->{$field} ) == 0 )
+        {
+            if ( $self->fields->{$field}->{default} ) {
+                $self->params->{$field} = $self->fields->{$field}->{default};
+            }
+        }
+        
+    }
+    
+    # alias checking, ... for duplicate aliases, etc
+    my $fieldtree = {};
+    my $aliastree = {};
+    foreach my $field (keys %{$self->fields}) {
+        $fieldtree->{$field} = $field;
+        my $f = $self->fields->{$field};
+        if (defined $f->{alias}) {
+            my $aliases = "ARRAY" eq ref $f->{alias} ?
+                $f->{alias} : [$f->{alias}];
+            
+            foreach my $alias (@{$aliases}) {
+                if ($aliastree->{$alias}) {
+                    die "The field $field contains the alias $alias which is ".
+                        "also defined in the field $aliastree->{$alias}";
+                }
+                elsif ($fieldtree->{$alias}) {
+                    die "The field $field contains the alias $alias which is ".
+                        "the name of an existing field";
+                }
+                else {
+                    $aliastree->{$alias} = $field;
+                }
+            }
+        }
+    }
+    undef $aliastree;
+
+    $self->reset_fields;
+    
+    return $self;
+}
+
 sub use_filter {
     my ( $self, $filter, $field ) = @_;
 
@@ -587,6 +596,7 @@ sub validate {
     # FIRST ALWAYS
     # first things first, reset the errors and value returning the validation
     # class to its pristine state
+    $self->sanitize();
     $self->reset_fields();
     $self->reset_errors();
     

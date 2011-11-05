@@ -1,5 +1,10 @@
 This file documents the revision history for the Perl library Validation::Class.
 
+2.5.0   2011-11-05
+        - Updated/Fixed POD
+        - Moved filtering and initialization routines into the sanitize method
+          which will run per validate() call
+
 2.4.7   2011-11-03
         - Updated POD, removed the filter directive
         - Adjusted how singular and multiple values are merged and applied
