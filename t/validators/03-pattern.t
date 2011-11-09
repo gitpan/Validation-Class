@@ -7,27 +7,24 @@ package main;
 
 my $r = MyVal->new(
     fields => {
-        telephone => {
-            pattern => '### ###-####'
-        },
-        url => {
-            pattern => qr/https?:\/\/.+/
-        }
+        telephone => {pattern => '### ###-####'},
+        url       => {pattern => qr/https?:\/\/.+/}
     },
     params => {
         telephone => '123 456-7890',
-        url => 'dept.site.com'
+        url       => 'dept.site.com'
     }
 );
 
-ok  $r->validate('telephone'), 'telephone validates';
-    $r->params->{telephone} = '1234567890';
-    
-ok  ! $r->validate('telephone'), 'telephone doesnt validate';
-ok  'telephone does not match the pattern ### ###-####' eq $r->errors_to_string(),
-    'displays proper error message';
-    
-ok  ! $r->validate('url'), 'url doesnt validate';
-    $r->params->{url} = 'http://dept.site.com/';
-    
-ok  $r->validate('url'), 'url validates';
+ok $r->validate('telephone'), 'telephone validates';
+$r->params->{telephone} = '1234567890';
+
+ok !$r->validate('telephone'), 'telephone doesnt validate';
+ok 'telephone does not match the pattern ### ###-####' eq
+  $r->errors_to_string(),
+  'displays proper error message';
+
+ok !$r->validate('url'), 'url doesnt validate';
+$r->params->{url} = 'http://dept.site.com/';
+
+ok $r->validate('url'), 'url validates';

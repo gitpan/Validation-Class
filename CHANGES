@@ -1,5 +1,15 @@
 This file documents the revision history for the Perl library Validation::Class.
 
+2.5.2   2011-11-09
+        - Now using Perl::Critic (fixed various syntactical nuances)
+        - Add PerlTidy to the build process
+
+2.5.1   2011-11-08
+        - Updated POD
+        - The class method now uses shortnames and classnames. Fields
+          without labels are not prefixed with 'Field' when an error message is
+          generated
+
 2.5.0   2011-11-05
         - Updated/Fixed POD
         - Moved filtering and initialization routines into the sanitize method

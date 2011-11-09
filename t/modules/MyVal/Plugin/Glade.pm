@@ -9,7 +9,7 @@ has smell => (
 );
 
 sub squirt {
-    1
+    1;
 }
 
 1;

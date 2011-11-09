@@ -5,10 +5,10 @@ use warnings;
 
 package Validation::Class::Sugar;
 {
-  $Validation::Class::Sugar::VERSION = '2.5.0';
+    $Validation::Class::Sugar::VERSION = '2.5.2';
 }
 
-our $VERSION = '2.5.0'; # VERSION
+our $VERSION = '2.5.2';    # VERSION
 
 use Scalar::Util qw(blessed);
 use Carp qw(confess);
@@ -18,14 +18,16 @@ use Moose::Exporter;
 use Module::Find;
 
 Moose::Exporter->setup_import_methods(
-    with_meta => [qw(
-        field
-        mixin
-        filter
-        directive
-        load_classes
-        load_plugins
-    )]
+    with_meta => [
+        qw(
+          field
+          mixin
+          filter
+          directive
+          load_classes
+          load_plugins
+          )
+    ]
 );
 
 sub directive {
@@ -34,13 +36,13 @@ sub directive {
     confess("config attribute not present") unless blessed($config);
 
     if ($name && $data) {
-        
+
         my $CFG = $config->profile;
-           $CFG->{DIRECTIVES}->{$name} = {
-                mixin     => 1,
-                field     => 1,
-                validator => $data
-           };
+        $CFG->{DIRECTIVES}->{$name} = {
+            mixin     => 1,
+            field     => 1,
+            validator => $data
+        };
     }
 
     return 'directive', $name, $data;
@@ -52,12 +54,12 @@ sub field {
     confess("config attribute not present") unless blessed($config);
 
     if (%spec) {
-        my $name = ( keys(%spec) )[0];
-        my $data = ( values(%spec) )[0];
+        my $name = (keys(%spec))[0];
+        my $data = (values(%spec))[0];
 
         my $CFG = $config->profile;
-           $CFG->{FIELDS}->{$name} = $data;
-           $CFG->{FIELDS}->{$name}->{errors} = [];
+        $CFG->{FIELDS}->{$name} = $data;
+        $CFG->{FIELDS}->{$name}->{errors} = [];
     }
 
     return 'field', %spec;
@@ -69,9 +71,9 @@ sub filter {
     confess("config attribute not present") unless blessed($config);
 
     if ($name && ref $data) {
-        
+
         my $CFG = $config->profile;
-           $CFG->{FILTERS}->{$name} = $data;
+        $CFG->{FILTERS}->{$name} = $data;
     }
 
     return 'filter', $name, $data;
@@ -79,22 +81,28 @@ sub filter {
 
 sub load_classes {
     my ($meta, $parent) = @_;
-    my $rels = $meta->find_attribute_by_name('relatives');
+    my $rels     = $meta->find_attribute_by_name('relatives');
     my $rels_map = {};
-    
+
     # load sub-validation classes
     foreach my $child (usesub $parent) {
         my $nickname = $child;
-           $nickname =~ s/^$parent//; $nickname =~ s/^:://;
-           $nickname =~ s/([a-z])([A-Z])/$1\_$2/g;
-           
+        $nickname =~ s/^$parent//;
+        $nickname =~ s/^:://;
+        $nickname =~ s/([a-z])([A-Z])/$1\_$2/g;
+
+        my $quickname = $child;
+        $quickname =~ s/^$parent//;
+        $quickname =~ s/^:://;
+
         $rels_map->{lc $nickname} = $child;
+        $rels_map->{$quickname} = $child;
     }
-    
+
     $rels->{default} = sub {
         return $rels_map;
     };
-    
+
     return $rels_map;
 }
 
@@ -102,7 +110,7 @@ sub load_plugins {
     my ($meta, $class, @plugins) = @_;
     my $config = __get_config($meta);
     confess("config attribute not present") unless blessed($config);
-    
+
     foreach my $plugin (@plugins) {
         if ($plugin !~ /^\+/) {
             $plugin = "Validation::Class::Plugin::$plugin";
@@ -110,17 +118,19 @@ sub load_plugins {
         else {
             $plugin =~ s/^\+//;
         }
-        
+
         {
-            my $file = $plugin; $file =~ s/::/\//g;
+            my $file = $plugin;
+            $file =~ s/::/\//g;
+            $file .= ".pm";
             no warnings 'redefine';
-            require "$file.pm";
+            require $file;
         }
     }
-    
+
     my $CFG = $config->profile;
-       $CFG->{PLUGINS}->{$_} = 1 for @plugins;
-    
+    $CFG->{PLUGINS}->{$_} = 1 for @plugins;
+
     return [@plugins];
 }
 
@@ -130,11 +140,11 @@ sub mixin {
     confess("config attribute not present") unless blessed($config);
 
     if (%spec) {
-        my $name = ( keys(%spec) )[0];
-        my $data = ( values(%spec) )[0];
+        my $name = (keys(%spec))[0];
+        my $data = (values(%spec))[0];
 
         my $CFG = $config->profile;
-           $CFG->{MIXINS}->{$name} = $data;
+        $CFG->{MIXINS}->{$name} = $data;
     }
 
     return 'mixin', %spec;
@@ -146,13 +156,13 @@ sub __get_config {
     unless ($config) {
         $config = $meta->add_attribute(
             'config',
-            'is'    => 'rw',
-            'isa'   => 'HashRef',
-            'traits'=> ['Profile']
+            'is'     => 'rw',
+            'isa'    => 'HashRef',
+            'traits' => ['Profile']
         );
         $config->{default} = sub {
-            return $config->profile
-        }
+            return $config->profile;
+          }
     }
     return $config;
 }

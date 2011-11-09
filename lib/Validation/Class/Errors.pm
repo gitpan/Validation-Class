@@ -5,10 +5,10 @@ use warnings;
 
 package Validation::Class::Errors;
 {
-  $Validation::Class::Errors::VERSION = '2.5.0';
+    $Validation::Class::Errors::VERSION = '2.5.2';
 }
 
-our $VERSION = '2.5.0'; # VERSION
+our $VERSION = '2.5.2';    # VERSION
 
 use Moose::Role;
 
@@ -17,7 +17,7 @@ sub error_count {
 }
 
 sub errors_to_string {
-    return join(($_[1]||', '), @{$_[0]->{errors}});
+    return join(($_[1] || ', '), @{$_[0]->{errors}});
 }
 
 no Moose::Role;

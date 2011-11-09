@@ -5,12 +5,12 @@ use warnings;
 
 package Validation::Class;
 {
-  $Validation::Class::VERSION = '2.5.0';
+    $Validation::Class::VERSION = '2.5.2';
 }
 
 use 5.008001;
 
-our $VERSION = '2.5.0'; # VERSION
+our $VERSION = '2.5.2';    # VERSION
 
 use Moose ('has');
 use Moose::Exporter;
@@ -18,29 +18,23 @@ use MooseX::Traits;
 use Validation::Class::Sugar ();
 
 my ($import, $unimport, $init_meta) = Moose::Exporter->build_import_methods(
-    also             => [
-        'Moose',
-        'Validation::Class::Sugar'
-    ],
-    base_class_roles => [        
-        'Validation::Class::Validator',
-        'Validation::Class::Errors'
-    ],
+    also => ['Moose', 'Validation::Class::Sugar'],
+    base_class_roles =>
+      ['Validation::Class::Validator', 'Validation::Class::Errors'],
 );
 
 sub init_meta {
     my ($dummy, %opts) = @_;
-    
+
     Moose->init_meta(%opts);
     Moose::Util::MetaRole::apply_base_class_roles(
         for   => $opts{for_class},
         roles => [
-            'MooseX::Traits',
-            'Validation::Class::Validator',
+            'MooseX::Traits', 'Validation::Class::Validator',
             'Validation::Class::Errors'
         ]
     );
-    
+
     return Class::MOP::class_of($opts{for_class});
 }
 
@@ -56,89 +50,21 @@ sub unimport {
 
 # REGISTER TRAITS - Escape the PAUSE
 
-    {
-        # Profile
-        package # No you dont
-            Moose::Meta::Attribute::Custom::Trait::Profile
-        ;   sub register_implementation {
-                'Validation::Class::Meta::Attribute::Profile'
-            }
+{
+
+    # Profile
+    package    # No you dont
+      Moose::Meta::Attribute::Custom::Trait::Profile;
+
+    sub register_implementation {
+        'Validation::Class::Meta::Attribute::Profile';
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+}
 
 
 1;
 __END__
+
 =pod
 
 =head1 NAME
@@ -147,7 +73,7 @@ Validation::Class - Centralized Input Validation for Any Application
 
 =head1 VERSION
 
-version 2.5.0
+version 2.5.2
 
 =head1 SYNOPSIS
 
@@ -1028,8 +954,11 @@ accessors on the child class.
     
     my $rules = MyVal->new(params => $params);
     
-    my $kid1 = $rules->class('child'); # loads MyVal::Child;
-    my $kid2 = $rules->class('step_child'); # loads MyVal::StepChild;
+    my $kid1 = $rules->class('Child'); # loads MyVal::Child;
+    my $kid2 = $rules->class('StepChild'); # loads MyVal::StepChild;
+    
+    my $kid3 = $rules->class('child'); # loads MyVal::Child;
+    my $kid4 = $rules->class('step_child'); # loads MyVal::StepChild;
     
     1;
 

@@ -7,18 +7,16 @@ package main;
 
 my $v = MyVal->new(
     fields => {
-        'user.login' => {
-            error => 'login error'
-        },
+        'user.login'    => {error => 'login error'},
         'user.password' => {
-            error => 'password error',
+            error      => 'password error',
             min_length => 3,
             max_length => 9,
-            pattern => 'XXX######'
+            pattern    => 'XXX######'
         }
     },
     params => {
-        'user.login' => 'member',
+        'user.login'    => 'member',
         'user.password' => 'abc123456'
     }
 );
@@ -29,8 +27,8 @@ ok defined $v->params->{'user.login'}, 'login param exists';
 
 # check min_length directive
 $v->fields->{'user.login'}->{min_length} = 10;
-ok ! $v->validate('user.login'), 'error found as expected';
-ok ! $v->validate, 'alternate use of validation found error also';
+ok !$v->validate('user.login'), 'error found as expected';
+ok !$v->validate, 'alternate use of validation found error also';
 ok $v->error_count == 1, 'error count is correct';
 ok $v->errors_to_string eq 'login error', 'error message specified captured';
 
@@ -42,8 +40,8 @@ ok $v->errors_to_string eq '', 'no error messages found';
 
 # check max_length directive
 $v->fields->{'user.login'}->{max_length} = 5;
-ok ! $v->validate('user.login'), 'error found as expected';
-ok ! $v->validate, 'alternate use of validation found error also';
+ok !$v->validate('user.login'), 'error found as expected';
+ok !$v->validate, 'alternate use of validation found error also';
 ok $v->error_count == 1, 'error count is correct';
 ok $v->errors_to_string eq 'login error', 'error message specified captured';
 
@@ -57,27 +55,27 @@ ok $v->errors_to_string eq '', 'no error messages found';
 # extraction routines
 
 my $obj = $v->get_params_hash();
-ok defined $obj->{user}->{login} && $obj->{user}->{login}, 'get_params_hash has user hash with login key';
-ok defined $obj->{user}->{password} && $obj->{user}->{password}, 'get_params_hash has user hash with password key';
+ok defined $obj->{user}->{login} && $obj->{user}->{login},
+  'get_params_hash has user hash with login key';
+ok defined $obj->{user}->{password} && $obj->{user}->{password},
+  'get_params_hash has user hash with password key';
 
 # crude method of testing the automatic hash serialization conversion on build
 # against the exact same tests as above
 
 $v = MyVal->new(
     fields => {
-        'user.login' => {
-            error => 'login error'
-        },
+        'user.login'    => {error => 'login error'},
         'user.password' => {
-            error => 'password error',
+            error      => 'password error',
             min_length => 3,
             max_length => 9,
-            pattern => 'XXX######'
+            pattern    => 'XXX######'
         }
     },
     params => {
         'user' => {
-            'login' => 'member',
+            'login'    => 'member',
             'password' => 'abc123456'
         }
     }
@@ -89,8 +87,8 @@ ok defined $v->params->{'user.login'}, 'login param exists';
 
 # check min_length directive
 $v->fields->{'user.login'}->{min_length} = 10;
-ok ! $v->validate('user.login'), 'error found as expected';
-ok ! $v->validate, 'alternate use of validation found error also';
+ok !$v->validate('user.login'), 'error found as expected';
+ok !$v->validate, 'alternate use of validation found error also';
 ok $v->error_count == 1, 'error count is correct';
 ok $v->errors_to_string eq 'login error', 'error message specified captured';
 
@@ -102,8 +100,8 @@ ok $v->errors_to_string eq '', 'no error messages found';
 
 # check max_length directive
 $v->fields->{'user.login'}->{max_length} = 5;
-ok ! $v->validate('user.login'), 'error found as expected';
-ok ! $v->validate, 'alternate use of validation found error also';
+ok !$v->validate('user.login'), 'error found as expected';
+ok !$v->validate, 'alternate use of validation found error also';
 ok $v->error_count == 1, 'error count is correct';
 ok $v->errors_to_string eq 'login error', 'error message specified captured';
 
@@ -114,6 +112,8 @@ ok $v->error_count == 0, 'error count is zero';
 ok $v->errors_to_string eq '', 'no error messages found';
 
 $obj = $v->get_params_hash();
-ok defined $obj->{user}->{login} && $obj->{user}->{login}, 'get_params_hash has user hash with login key';
-ok defined $obj->{user}->{password} && $obj->{user}->{password}, 'get_params_hash has user hash with password key';
+ok defined $obj->{user}->{login} && $obj->{user}->{login},
+  'get_params_hash has user hash with login key';
+ok defined $obj->{user}->{password} && $obj->{user}->{password},
+  'get_params_hash has user hash with password key';
 
