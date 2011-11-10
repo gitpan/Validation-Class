@@ -20,4 +20,6 @@ requires:
   Moose: 0
   MooseX::Traits: 0
   Scalar::Util: 0
-version: 2.5.2
+resources:
+  repository: http://github.com/alnewkirk/Validation-Class-Moose.git
+version: 2.6.0

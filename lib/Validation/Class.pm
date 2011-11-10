@@ -5,12 +5,12 @@ use warnings;
 
 package Validation::Class;
 {
-    $Validation::Class::VERSION = '2.5.2';
+    $Validation::Class::VERSION = '2.6.0';
 }
 
 use 5.008001;
 
-our $VERSION = '2.5.2';    # VERSION
+our $VERSION = '2.6.0';    # VERSION
 
 use Moose ('has');
 use Moose::Exporter;
@@ -73,7 +73,7 @@ Validation::Class - Centralized Input Validation for Any Application
 
 =head1 VERSION
 
-version 2.5.2
+version 2.6.0
 
 =head1 SYNOPSIS
 
@@ -962,6 +962,35 @@ accessors on the child class.
     
     1;
 
+=head2 clone
+
+The clone method is used to create new fields (rules) from existing fields
+on-the-fly. This is useful when you have a variable number of parameters being
+validated that can share existing validation rules. E.g., a web-form on a user's
+profile page may have dynamically created input boxes for the person's phone
+numbers allowing the user to add additional parameters to the web-form as
+needed, in that case as opposed to having multiple validation rules hardcoded
+for each parameter, you could hardcode one single rule and clone the rule at
+runtime.
+
+    package MyVal;
+    use Validation::Class;
+    
+    field phone => { required => 1 };
+    
+    package main;
+    
+    my $rules = MyVal->new(params => $params);
+    
+    # clone phone rule at runtime to validate dynamically created parameters
+    $rules->clone('phone', 'phone2', { label => 'Other Phone', required => 0 });
+    $rules->clone('phone', 'phone3', { label => 'Third Phone', required => 0 });
+    $rules->clone('phone', 'phone4', { label => 'Forth Phone', required => 0 });
+    
+    $rules->validate(qw/phone phone2 phone3 phone4/);
+    
+    1;
+
 =head2 error
 
 The error function is used to set and/or retrieve errors encountered during
@@ -1196,6 +1225,11 @@ passed validation checks.
     
     # validate specific fields
     unless ($input->validate('field1','field2')){
+        return $input->errors_to_string;
+    }
+    
+    # validate fields based on a regex pattern
+    unless ($input->validate(qr/^field(\d+)?/)){
         return $input->errors_to_string;
     }
     

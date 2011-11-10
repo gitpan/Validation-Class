@@ -1,5 +1,10 @@
 This file documents the revision history for the Perl library Validation::Class.
 
+2.6.0   2011-11-09
+        - Updated POD, documented clone method and regex spec
+        - Validate method accepts regexps' to validate variable field
+        - Clone method allows the creating/cloning of fields on-the-fly
+
 2.5.2   2011-11-09
         - Now using Perl::Critic (fixed various syntactical nuances)
         - Add PerlTidy to the build process

@@ -24,6 +24,8 @@ t/13-independence.t
 t/14-relatives.t
 t/15-toggling.t
 t/16-cascading.t
+t/17-pattern-matching.t
+t/18-cloning.t
 t/20-plugins.t
 t/97-persistent-values.t
 t/98-anomaly.t

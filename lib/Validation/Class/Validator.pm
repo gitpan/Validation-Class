@@ -5,10 +5,10 @@ use warnings;
 
 package Validation::Class::Validator;
 {
-    $Validation::Class::Validator::VERSION = '2.5.2';
+    $Validation::Class::Validator::VERSION = '2.6.0';
 }
 
-our $VERSION = '2.5.2';    # VERSION
+our $VERSION = '2.6.0';    # VERSION
 
 use Moose::Role;
 use Array::Unique;
@@ -248,6 +248,15 @@ sub check_mixin {
     }
 
     return 1;
+}
+
+sub clone {
+    my ($self, $field_name, $new_field_name, $directives) = @_;
+
+    $self->fields->{$new_field_name} = $directives || {};
+    $self->use_mixin_field($field_name, $new_field_name);
+
+    return $self;
 }
 
 sub error {
@@ -588,19 +597,34 @@ sub validate {
     # FIRST ALWAYS
     # first things first, reset the errors and value returning the validation
     # class to its pristine state
+
     $self->sanitize();
     $self->reset_fields();
     $self->reset_errors();
 
-    # TODO: move filtering into its own routine
-    # TODO: apply filtering before validation and after instantiation
-
     # include fields stashed by the queue method
+
     if (@{$self->stashed}) {
         push @fields, @{$self->stashed};
     }
 
-    # process fields through toggler
+    # process field patterns
+
+    my @new_fields = ();
+
+    foreach my $field (@fields) {
+        if ("Regexp" eq ref $field) {
+            push @new_fields, grep { $_ =~ $field } sort keys %{$self->fields};
+        }
+        else {
+            push @new_fields, $field;
+        }
+    }
+
+    @fields = @new_fields;
+
+    # process toggled fields
+
     foreach my $field (@fields) {
         my ($switch) = $field =~ /^([\-\+]{1})./;
         if ($switch) {
