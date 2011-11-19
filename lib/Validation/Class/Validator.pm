@@ -5,10 +5,10 @@ use warnings;
 
 package Validation::Class::Validator;
 {
-    $Validation::Class::Validator::VERSION = '2.6.0';
+    $Validation::Class::Validator::VERSION = '2.7.0';
 }
 
-our $VERSION = '2.6.0';    # VERSION
+our $VERSION = '2.7.0';    # VERSION
 
 use Moose::Role;
 use Array::Unique;
@@ -39,6 +39,13 @@ has 'fields' => (
     default => sub {
         return $_[0]->can('config') ? $_[0]->config->{FIELDS} : {};
     }
+);
+
+# pre/post filtering switch
+has 'filtering' => (
+    is      => 'rw',
+    isa     => 'Str',
+    default => 'pre'
 );
 
 # mixin/field types store
@@ -176,6 +183,37 @@ around BUILDARGS => sub {
 
     return $class->$code(@args);
 };
+
+sub apply_filters {
+    my $self = shift;
+
+    # check for and process input filters and default values
+    foreach my $field (keys %{$self->fields}) {
+
+        # apply filters
+        unless ("ARRAY" eq ref $self->fields->{$field}->{filters}) {
+            $self->fields->{$field}->{filters} =
+              [$self->fields->{$field}->{filters}];
+        }
+        foreach my $filter (@{$self->fields->{$field}->{filters}}) {
+            if (defined $self->params->{$field}) {
+                $self->use_filter($filter, $field);
+            }
+        }
+
+        # default values
+        if (defined $self->params->{$field}
+            && length($self->params->{$field}) == 0)
+        {
+            if ($self->fields->{$field}->{default}) {
+                $self->params->{$field} = $self->fields->{$field}->{default};
+            }
+        }
+
+    }
+
+    return $self;
+}
 
 # tie it all together after instantiation
 sub BUILD {
@@ -435,29 +473,7 @@ sub sanitize {
     }
 
     # check for and process input filters and default values
-    foreach my $field (keys %{$self->fields}) {
-
-        # apply filters
-        unless ("ARRAY" eq ref $self->fields->{$field}->{filters}) {
-            $self->fields->{$field}->{filters} =
-              [$self->fields->{$field}->{filters}];
-        }
-        foreach my $filter (@{$self->fields->{$field}->{filters}}) {
-            if (defined $self->params->{$field}) {
-                $self->use_filter($filter, $field);
-            }
-        }
-
-        # default values
-        if (defined $self->params->{$field}
-            && length($self->params->{$field}) == 0)
-        {
-            if ($self->fields->{$field}->{default}) {
-                $self->params->{$field} = $self->fields->{$field}->{default};
-            }
-        }
-
-    }
+    $self->apply_filters if $self->filtering eq 'pre';
 
     # alias checking, ... for duplicate aliases, etc
     my $fieldtree = {};
@@ -857,7 +873,11 @@ sub validate {
         }
     }
 
+    # restore sanity
     $self->params({%original_parameters});
+
+    # run post-validation filtering
+    $self->apply_filters if $self->filtering eq 'post';
 
     return @{$self->{errors}} ? 0 : 1;    # returns true if no errors
 }

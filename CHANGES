@@ -1,5 +1,9 @@
 This file documents the revision history for the Perl library Validation::Class.
 
+2.7.0   2011-11-19
+        - Updated POD, documented filtering attributes and appy_filters method
+        - Now supports pre/post filtering
+
 2.6.0   2011-11-09
         - Updated POD, documented clone method and regex spec
         - Validate method accepts regexps' to validate variable field

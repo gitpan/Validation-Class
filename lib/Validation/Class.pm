@@ -5,12 +5,12 @@ use warnings;
 
 package Validation::Class;
 {
-    $Validation::Class::VERSION = '2.6.0';
+    $Validation::Class::VERSION = '2.7.0';
 }
 
 use 5.008001;
 
-our $VERSION = '2.6.0';    # VERSION
+our $VERSION = '2.7.0';    # VERSION
 
 use Moose ('has');
 use Moose::Exporter;
@@ -73,7 +73,7 @@ Validation::Class - Centralized Input Validation for Any Application
 
 =head1 VERSION
 
-version 2.6.0
+version 2.7.0
 
 =head1 SYNOPSIS
 
@@ -123,7 +123,7 @@ in both the Controller and Model. A validation class is defined as follows:
     1;
 
 The fields defined will be used to validate the specified input parameters.
-You specify the input parameters at instantiaton, parameters should take the
+You specify the input parameters at instantiation, parameters should take the
 form of a hashref of key/value pairs. Multi-level (nested) hashrefs are allowed
 and are inflated/deflated in accordance with the rules of L<Hash::Flatten> or
 your hash inflator configuration. The following is an example on using your
@@ -280,8 +280,28 @@ expected to be passed to your validation class.
         ...
     };
 
-The field keword takes two arguments, the field name and a hashref of key/values
+The field keyword takes two arguments, the field name and a hashref of key/values
 pairs.
+
+=head1 FILTERING INCOMING DATA
+
+Validation::Class supports pre/post filtering but is configured to pre-filter
+incoming data. This means that based upon the filtering options supplied within
+the individual fields, filtering will happen before validation (technically at
+instantiation and again just before validation). As expected, this is configurable
+via the filtering attribute.
+
+A WORD OF CAUTION: Validation::Class is configured to pre-filter incoming data
+which boosts application security and is best used with passive filtering 
+(e.g. converting character case - filtering which only alters the input in
+predictable ways), versus aggressive filtering (e.g. formatting a telephone
+number) which completely and permanently changes the incoming data ... so much
+so that if the validation still fails ... errors that are reported may not
+match the data that was submitted.
+
+If you're sure you'd rather employ aggressive filtering, I suggest setting
+the filtering attribute to 'post' for post-filtering or setting it to '' non
+and applying the filters manually via apply_filters().
 
 =head1 AUTO-SERIALIZATION/DESERIALIZATION
 
@@ -320,8 +340,8 @@ Validation::Class via L<Hash::Flatten>. The following is an example of that:
 =head1 SEPERATION OF CONCERNS
 
 For larger applications were a single validation class might become cluttered
-and inefficient Validation::Class come equipped to help you seperate your
-validation rules into seperate classes.
+and inefficient Validation::Class come equipped to help you separate your
+validation rules into separate classes.
 
 The idea is that you'll end up with a main validation class (most-likely empty)
 that will simply serve as your point of entry into your relative (child)
@@ -499,7 +519,7 @@ effect and *in-fact* all filtering, validation, etc is then skipped.
     $rules->validate('foobar');
     
     # pass
-    my $rules = MyApp::Validation->new(params => {  foobar => 'Nii=cce });
+    my $rules = MyApp::Validation->new(params => {  foobar => 'Nii=cce' });
     $rules->validate('foobar');
 
 See the toggle functionality within the validate() method. This method allows
@@ -573,7 +593,7 @@ field's value.
 =head3 capitalize
 
 The capitalize filter attempts to capitalize the first word in each sentence,
-where sentences are seperated by a period and space, within the field's value.
+where sentences are separated by a period and space, within the field's value.
 
     field 'foobar'  => {
         filter => 'capitalize',
@@ -600,7 +620,7 @@ value.
 =head3 strip
 
 As with the trim filter the strip filter removes leading and trailing
-whitespaces from the field's value and additionally removes multiple whitespaces
+white-spaces from the field's value and additionally removes multiple white-spaces
 from between the values characters.
 
     field 'foobar'  => {
@@ -618,7 +638,7 @@ first letter of each word.
 
 =head3 trim
 
-The trim filter removes leading and trailing whitespaces from the field's value.
+The trim filter removes leading and trailing white-spaces from the field's value.
 
     field 'foobar'  => {
         filter => 'trim',
@@ -868,10 +888,22 @@ upon encountering unregistered field directives during validation.
 =head2 fields
 
 The fields attribute returns a hashref of defined fields, filtered and merged
-with thier parameter counterparts.
+with their parameter counterparts.
 
     my $self = MyApp::Validation->new(fields => $fields);
     my $fields = $self->fields();
+    ...
+
+=head2 filtering
+
+The filtering attribute (by default set to 'pre') controls when incoming data
+is filtered. Setting this attribute to 'post' will defer filtering until after
+validation which allows any errors messages to report errors based on the
+unaltered data. Alternatively, setting the filtering attribute to '' will bypass
+all filtering.
+
+    my $self = MyApp::Validation->new(filtering => 'post');
+    $self->validate();
     ...
 
 =head2 filters
@@ -886,7 +918,7 @@ The filters attribute returns a hashref of pre-defined filter definitions.
 The hash_inflator value determines how the hash serializer (inflation/deflation)
 behaves. The value must be a hashref of L<Hash::Flatten/OPTIONS> options. Purely
 for the sake of consistency, you can use lowercase keys (with underscores) which
-will be converted to camelcased keys before passed to the serializer.
+will be converted to camel-cased keys before passed to the serializer.
 
     my $self = MyApp::Validation->new(
         hash_inflator => {
@@ -938,6 +970,22 @@ arguments to the validate method.
     $self->stashed([qw/this that .../]);
 
 =head1 VALIDATION CLASS METHODS
+
+=head2 apply_filters
+
+The apply_filters method (usually called automatically based on the filtering
+attribute) can be used to run the currently defined parameters through the
+filters defined in the fields.
+
+    my $rules = MyVal->new(filtering => '', params => $params);
+    
+    if ($rules->validate) {
+        $rules->apply_filters;
+    }
+    else {
+        print $rules->errors_to_string;
+        # print errors on unaltered parameters
+    }
 
 =head2 class
 

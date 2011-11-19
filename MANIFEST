@@ -27,6 +27,7 @@ t/16-cascading.t
 t/17-pattern-matching.t
 t/18-cloning.t
 t/20-plugins.t
+t/21-filtering-behavior.t
 t/97-persistent-values.t
 t/98-anomaly.t
 t/98-unknown_params.t
