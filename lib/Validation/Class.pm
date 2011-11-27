@@ -5,12 +5,12 @@ use warnings;
 
 package Validation::Class;
 {
-    $Validation::Class::VERSION = '2.7.5';
+    $Validation::Class::VERSION = '2.7.6';
 }
 
 use 5.008001;
 
-our $VERSION = '2.7.5';    # VERSION
+our $VERSION = '2.7.6';    # VERSION
 
 use Moose ('has');
 use Moose::Exporter;
@@ -73,7 +73,7 @@ Validation::Class - Centralized Input Validation for Any Application
 
 =head1 VERSION
 
-version 2.7.5
+version 2.7.6
 
 =head1 SYNOPSIS
 

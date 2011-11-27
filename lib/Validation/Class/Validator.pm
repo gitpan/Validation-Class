@@ -5,10 +5,10 @@ use warnings;
 
 package Validation::Class::Validator;
 {
-    $Validation::Class::Validator::VERSION = '2.7.5';
+    $Validation::Class::Validator::VERSION = '2.7.6';
 }
 
-our $VERSION = '2.7.5';    # VERSION
+our $VERSION = '2.7.6';    # VERSION
 
 use Moose::Role;
 use Array::Unique;
@@ -887,13 +887,15 @@ sub validate {
         }
     }
 
+    my $valid = @{$self->{errors}} ? 0 : 1;
+
     # restore sanity
     $self->params({%original_parameters});
 
     # run post-validation filtering
-    $self->apply_filters('post') if $self->filtering;
+    $self->apply_filters('post') if $self->filtering && $valid;
 
-    return @{$self->{errors}} ? 0 : 1;    # returns true if no errors
+    return $valid;    # returns true if no errors
 }
 
 sub _suicide_by_unknown_field {
