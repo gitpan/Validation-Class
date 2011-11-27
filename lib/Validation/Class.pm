@@ -5,12 +5,12 @@ use warnings;
 
 package Validation::Class;
 {
-    $Validation::Class::VERSION = '2.7.0';
+    $Validation::Class::VERSION = '2.7.5';
 }
 
 use 5.008001;
 
-our $VERSION = '2.7.0';    # VERSION
+our $VERSION = '2.7.5';    # VERSION
 
 use Moose ('has');
 use Moose::Exporter;
@@ -73,7 +73,7 @@ Validation::Class - Centralized Input Validation for Any Application
 
 =head1 VERSION
 
-version 2.7.0
+version 2.7.5
 
 =head1 SYNOPSIS
 
@@ -150,14 +150,6 @@ validate class to validate input in various scenarios:
         
         return 'you have authenticated';
     };
-
-=head1 CHANGE NOTICE
-
-B<Important Note!> Validation::Class is subject to change, though not
-dramatically, you've been warned. Users of this library pre-v2 should not that 
-the error accessors were changed. Validation::Class has been re-written using
-L<Moose>. Sorry if you feel this bloats your application but using Moose was the
-better approach.
 
 =head1 BUILDING A VALIDATION CLASS
 
@@ -444,6 +436,21 @@ error is registered and displayed.
     # the error(s) directive
     field 'foobar'  => {
         errors => 'Foobar failed processing, Wtf?',
+        ...
+    };
+
+=head2 filtering
+
+The filtering directive is used to control when field filters are applied. The
+default recognized values are pre/post. A value of 'pre' instructs the validation
+class to apply the field's filters at instatiation and before validation whereas
+a value of 'post' instructs the validation class to apply the field's filters
+after validation. Alternatively, a value of undef or '' will bypass filtering
+altogether.
+
+    # the filtering directive
+    field 'foobar'  => {
+        filtering => 'post',
         ...
     };
 
@@ -899,8 +906,8 @@ with their parameter counterparts.
 The filtering attribute (by default set to 'pre') controls when incoming data
 is filtered. Setting this attribute to 'post' will defer filtering until after
 validation which allows any errors messages to report errors based on the
-unaltered data. Alternatively, setting the filtering attribute to '' will bypass
-all filtering.
+unaltered data. Alternatively, setting the filtering attribute to '' or undef
+will bypass all filtering unless explicitly defined at the field-level.
 
     my $self = MyApp::Validation->new(filtering => 'post');
     $self->validate();

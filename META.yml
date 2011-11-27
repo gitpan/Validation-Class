@@ -22,4 +22,4 @@ requires:
   Scalar::Util: 0
 resources:
   repository: http://github.com/alnewkirk/Validation-Class-Moose.git
-version: 2.7.0
+version: 2.7.5

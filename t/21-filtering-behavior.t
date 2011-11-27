@@ -54,15 +54,23 @@ $nope = MyVal->new(
 );
 
 ok $nope->params->{foobar} =~ /^1@%23abc45@%#@#%6d666ef\.\.$/,
-  'explicit no-filtering ok';
+  'explicit no pre/post filtering ok';
 
 $nope->validate;
+
 ok $nope->params->{foobar} =~ /^1@%23abc45@%#@#%6d666ef\.\.$/,
   'explicit no-filtering after validate ok';
 
-ok $nope->apply_filters, 'applying filters manually';
+ok $nope->apply_filters('manual'), 'applying filters manually';
 ok $nope->params->{foobar} =~ /^123abc456d666ef$/,
   'filtering applied manually';
+
+$nope = MyVal->new(
+    fields    => {foobar => {filters => 'alphanumeric'}},
+    params    => {foobar => '1@%23abc45@%#@#%6d666ef..'},
+    filtering => 'pre'
+);
+
 ok $nope->filtering('pre'), 'changing filtering behavior: pre';
 
 $nope->fields->{foobar}->{pattern} = qr/^\d{3}\w{3}\d{3}\w\d{3}\w{2}$/;

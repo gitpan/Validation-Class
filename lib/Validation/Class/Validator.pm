@@ -5,10 +5,10 @@ use warnings;
 
 package Validation::Class::Validator;
 {
-    $Validation::Class::Validator::VERSION = '2.7.0';
+    $Validation::Class::Validator::VERSION = '2.7.5';
 }
 
-our $VERSION = '2.7.0';    # VERSION
+our $VERSION = '2.7.5';    # VERSION
 
 use Moose::Role;
 use Array::Unique;
@@ -44,7 +44,7 @@ has 'fields' => (
 # pre/post filtering switch
 has 'filtering' => (
     is      => 'rw',
-    isa     => 'Str',
+    isa     => 'Maybe[Str]',
     default => 'pre'
 );
 
@@ -185,29 +185,38 @@ around BUILDARGS => sub {
 };
 
 sub apply_filters {
-    my $self = shift;
+    my ($self, $state) = @_;
+
+    $state ||= 'pre';
 
     # check for and process input filters and default values
     foreach my $field (keys %{$self->fields}) {
 
-        # apply filters
-        unless ("ARRAY" eq ref $self->fields->{$field}->{filters}) {
-            $self->fields->{$field}->{filters} =
-              [$self->fields->{$field}->{filters}];
-        }
-        foreach my $filter (@{$self->fields->{$field}->{filters}}) {
-            if (defined $self->params->{$field}) {
-                $self->use_filter($filter, $field);
-            }
-        }
-
-        # default values
-        if (defined $self->params->{$field}
-            && length($self->params->{$field}) == 0)
+        if (   $self->fields->{$field}->{filtering}
+            && $self->fields->{$field}->{filtering} eq $state)
         {
-            if ($self->fields->{$field}->{default}) {
-                $self->params->{$field} = $self->fields->{$field}->{default};
+
+            # apply filters
+            unless ("ARRAY" eq ref $self->fields->{$field}->{filters}) {
+                $self->fields->{$field}->{filters} =
+                  [$self->fields->{$field}->{filters}];
             }
+            foreach my $filter (@{$self->fields->{$field}->{filters}}) {
+                if (defined $self->params->{$field}) {
+                    $self->use_filter($filter, $field);
+                }
+            }
+
+            # default values
+            if (defined $self->params->{$field}
+                && length($self->params->{$field}) == 0)
+            {
+                if ($self->fields->{$field}->{default}) {
+                    $self->params->{$field} =
+                      $self->fields->{$field}->{default};
+                }
+            }
+
         }
 
     }
@@ -233,6 +242,7 @@ sub BUILD {
 
     # setup environment
     $self->sanitize;
+    $self->apply_filters('pre') if $self->filtering;
 
     return $self;
 }
@@ -443,12 +453,17 @@ sub sanitize {
         $self->check_mixin($mixin, $self->mixins->{$mixin});
     }
 
-    # validate field directives and create filters arrayref if needed
+    # validate field directives and create default directives if needed
     foreach my $field (keys %{$self->fields}) {
         $self->check_field($field, $self->fields->{$field});
 
         if (!defined $self->fields->{$field}->{filters}) {
             $self->fields->{$field}->{filters} = [];
+        }
+
+        if (!defined $self->fields->{$field}->{filtering}) {
+            $self->fields->{$field}->{filtering} = $self->filtering
+              if $self->filtering;
         }
 
     }
@@ -471,9 +486,6 @@ sub sanitize {
               && $self->fields->{$self->fields->{$field}->{mixin_field}};
 
     }
-
-    # check for and process input filters and default values
-    $self->apply_filters if $self->filtering eq 'pre';
 
     # alias checking, ... for duplicate aliases, etc
     my $fieldtree = {};
@@ -511,9 +523,10 @@ sub use_filter {
     my ($self, $filter, $field) = @_;
 
     if (defined $self->params->{$field} && $self->filters->{$filter}) {
-        $self->params->{$field} =
-          $self->filters->{$filter}->($self->params->{$field})
-          if $self->params->{$field};
+        if ($self->params->{$field}) {
+            $self->fields->{$field}->{value} = $self->params->{$field} =
+              $self->filters->{$filter}->($self->params->{$field});
+        }
     }
 }
 
@@ -615,6 +628,7 @@ sub validate {
     # class to its pristine state
 
     $self->sanitize();
+    $self->apply_filters('pre') if $self->filtering;
     $self->reset_fields();
     $self->reset_errors();
 
@@ -877,7 +891,7 @@ sub validate {
     $self->params({%original_parameters});
 
     # run post-validation filtering
-    $self->apply_filters if $self->filtering eq 'post';
+    $self->apply_filters('post') if $self->filtering;
 
     return @{$self->{errors}} ? 0 : 1;    # returns true if no errors
 }

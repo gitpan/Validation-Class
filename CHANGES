@@ -1,5 +1,9 @@
 This file documents the revision history for the Perl library Validation::Class.
 
+2.7.5   2011-11-26
+        - Updated POD, removed disclaimer documented filtering directive
+        - Auto-apply filtering directive - allow field-level filtering option
+
 2.7.0   2011-11-19
         - Updated POD, documented filtering attributes and appy_filters method
         - Now supports pre/post filtering

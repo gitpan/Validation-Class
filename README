@@ -2,7 +2,7 @@ NAME
     Validation::Class - Centralized Input Validation for Any Application
 
 VERSION
-    version 2.7.0
+    version 2.7.5
 
 SYNOPSIS
         use MyApp::Validation;
@@ -79,13 +79,6 @@ DESCRIPTION
             
         return 'you have authenticated';
         };
-
-CHANGE NOTICE
-    Important Note! Validation::Class is subject to change, though not
-    dramatically, you've been warned. Users of this library pre-v2 should
-    not that the error accessors were changed. Validation::Class has been
-    re-written using Moose. Sorry if you feel this bloats your application
-    but using Moose was the better approach.
 
 BUILDING A VALIDATION CLASS
         package MyApp::Validation;
@@ -366,6 +359,20 @@ DEFAULT FIELD/MIXIN DIRECTIVES
         # the error(s) directive
         field 'foobar'  => {
             errors => 'Foobar failed processing, Wtf?',
+            ...
+        };
+
+  filtering
+    The filtering directive is used to control when field filters are
+    applied. The default recognized values are pre/post. A value of 'pre'
+    instructs the validation class to apply the field's filters at
+    instatiation and before validation whereas a value of 'post' instructs
+    the validation class to apply the field's filters after validation.
+    Alternatively, a value of undef or '' will bypass filtering altogether.
+
+        # the filtering directive
+        field 'foobar'  => {
+            filtering => 'post',
             ...
         };
 
@@ -789,7 +796,8 @@ VALIDATION CLASS ATTRIBUTES
     data is filtered. Setting this attribute to 'post' will defer filtering
     until after validation which allows any errors messages to report errors
     based on the unaltered data. Alternatively, setting the filtering
-    attribute to '' will bypass all filtering.
+    attribute to '' or undef will bypass all filtering unless explicitly
+    defined at the field-level.
 
         my $self = MyApp::Validation->new(filtering => 'post');
         $self->validate();
