@@ -1,9 +1,20 @@
-use Test::More tests => 8;
+use Test::More tests => 9;
 
 # begin
 package MyVal;
 
 use Validation::Class;
+
+mixin 'trim' => {filters => [qw/trim strip/]};
+
+field 'dist' => {
+    mixin      => 'trim',
+    label      => 'distribution',
+    error      => 'invalid distribution description',
+    filters    => sub { $_[0] =~ s/::/-/g; $_[0] },
+    pattern    => qr/[a-zA-Z0-9\-:]+(\-[0-9\.\_\-]+)?/,
+    max_length => 150
+};
 
 field 'login',
   { label     => 'user login',
@@ -33,6 +44,7 @@ my $rules = MyVal->new(
         name     => 'george 3',
         login    => 'admin@abco.com',
         password => '#!/bin/bash',
+        dist     => ' Validation::Class    '
     }
 );
 
@@ -47,4 +59,4 @@ ok $rules->params->{name}     =~ /^George$/,        'name as expected';
 ok $rules->params->{login}    =~ /^adminabcocom$/,  'login as expected';
 ok $rules->params->{password} =~ /^#!\/bin\/bash$/, 'password as expected';
 
-
+ok $rules->params->{dist} =~ /^Validation-Class$/, 'dist as expected';

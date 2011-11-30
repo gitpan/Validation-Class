@@ -5,10 +5,10 @@ use warnings;
 
 package Validation::Class::Validator;
 {
-    $Validation::Class::Validator::VERSION = '2.7.6';
+    $Validation::Class::Validator::VERSION = '2.7.7';
 }
 
-our $VERSION = '2.7.6';    # VERSION
+our $VERSION = '2.7.7';    # VERSION
 
 use Moose::Role;
 use Array::Unique;
@@ -522,10 +522,16 @@ sub sanitize {
 sub use_filter {
     my ($self, $filter, $field) = @_;
 
-    if (defined $self->params->{$field} && $self->filters->{$filter}) {
+    if (defined $self->params->{$field}
+        && ($self->filters->{$filter} || "CODE" eq ref $filter))
+    {
+
         if ($self->params->{$field}) {
+            my $code =
+              "CODE" eq ref $filter ? $filter : $self->filters->{$filter};
+
             $self->fields->{$field}->{value} = $self->params->{$field} =
-              $self->filters->{$filter}->($self->params->{$field});
+              $code->($self->params->{$field});
         }
     }
 }
@@ -935,10 +941,14 @@ sub _merge_field_with_mixin {
                     $field->{$key} = [@values];
                 }
 
-                # simple copy
+                # merge copy
                 else {
-                    $field->{$key} =
-                      "ARRAY" eq ref $value ? [@{$value}] : $value;
+                    tie my @values, 'Array::Unique';
+                    @values = "ARRAY" eq ref $value ? @{$value} : ($value);
+
+                    push @values, $field->{$key} if $field->{$key};
+
+                    $field->{$key} = [@values];
                 }
             }
 
