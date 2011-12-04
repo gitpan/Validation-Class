@@ -5,10 +5,10 @@ use warnings;
 
 package Validation::Class::Meta::Attribute::Profile;
 {
-    $Validation::Class::Meta::Attribute::Profile::VERSION = '2.7.7';
+    $Validation::Class::Meta::Attribute::Profile::VERSION = '3.0.0';
 }
 
-our $VERSION = '2.7.7';    # VERSION
+our $VERSION = '3.0.0';    # VERSION
 
 use Moose::Role;
 
@@ -17,7 +17,7 @@ has profile => (
     isa     => 'HashRef',
     default => sub {
         {   DIRECTIVES => {
-                '.toggle' => {
+                '&toggle' => {
                     mixin => 0,
                     field => 1,
                     multi => 0

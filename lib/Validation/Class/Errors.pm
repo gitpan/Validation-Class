@@ -5,19 +5,37 @@ use warnings;
 
 package Validation::Class::Errors;
 {
-    $Validation::Class::Errors::VERSION = '2.7.7';
+    $Validation::Class::Errors::VERSION = '3.0.0';
 }
 
-our $VERSION = '2.7.7';    # VERSION
+our $VERSION = '3.0.0';    # VERSION
 
 use Moose::Role;
 
+# class errors store
+has 'errors' => (
+    is      => 'rw',
+    isa     => 'ArrayRef',
+    default => sub { [] }
+);
+
+# return the number of errors
 sub error_count {
-    return scalar(@{shift->{errors}});
+
+    return scalar(@{shift->errors});
 }
 
+# return arrayref of class errors as a string
 sub errors_to_string {
-    return join(($_[1] || ', '), @{$_[0]->{errors}});
+    my ($self, $delimiter, $transformer) = @_;
+
+    $delimiter ||= ', ';    # default delimiter is a comma
+
+    return join $delimiter, map {
+
+        # maybe? tranforms each error
+        "CODE" eq ref $transformer ? $transformer->($_) : $_
+    } @{$self->errors};
 }
 
 no Moose::Role;

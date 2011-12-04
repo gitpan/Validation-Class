@@ -51,7 +51,7 @@ The following is an example of including a plugin.
     1;
     
 Your plugin is loaded at runtime and can manipulate the L<Validation::Class>
-object by declaring a B<new> method. The following is an example of a ficticious
+object by declaring a B<new> method. The following is an example of a fictitious
 plugin for formatting telephone numbers:
 
     package Validation::Class::Plugin::TelephoneFormatting;

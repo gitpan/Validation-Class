@@ -1,5 +1,5 @@
 ---
-abstract: 'Centralized Input Validation for Any Application'
+abstract: 'Centralized Data Validation Framework'
 author:
   - 'Al Newkirk <awncorp@cpan.org>'
 build_requires: {}
@@ -16,10 +16,13 @@ requires:
   Array::Unique: 0
   Carp: 0
   Hash::Flatten: 0
+  Hash::Merge: 0
   Module::Find: 0
   Moose: 0
   MooseX::Traits: 0
   Scalar::Util: 0
 resources:
+  bugtracker: http://rt.cpan.org/NoAuth/Bugs.html?Dist=Validation-Class
+  homepage: http://ana.io/
   repository: http://github.com/alnewkirk/Validation-Class-Moose.git
-version: 2.7.7
+version: 3.0.0

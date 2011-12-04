@@ -5,10 +5,10 @@ use warnings;
 
 package Validation::Class::Sugar;
 {
-    $Validation::Class::Sugar::VERSION = '2.7.7';
+    $Validation::Class::Sugar::VERSION = '3.0.0';
 }
 
-our $VERSION = '2.7.7';    # VERSION
+our $VERSION = '3.0.0';    # VERSION
 
 use Scalar::Util qw(blessed);
 use Carp qw(confess);
@@ -20,9 +20,13 @@ use Module::Find;
 Moose::Exporter->setup_import_methods(
     with_meta => [
         qw(
+          fld
           field
+          mxn
           mixin
+          flt
           filter
+          dir
           directive
           load_classes
           load_plugins
@@ -30,51 +34,55 @@ Moose::Exporter->setup_import_methods(
     ]
 );
 
+sub dir { directive(@_) }
+
 sub directive {
     my ($meta, $name, $data) = @_;
-    my $config = __get_config($meta);
+    my $config = find_or_create_cfg_attribute($meta);
+
     confess("config attribute not present") unless blessed($config);
 
-    if ($name && $data) {
+    return undef unless ($name && $data);
 
-        my $CFG = $config->profile;
-        $CFG->{DIRECTIVES}->{$name} = {
-            mixin     => 1,
-            field     => 1,
-            validator => $data
-        };
-    }
+    my $CFG = $config->profile;
+    $CFG->{DIRECTIVES}->{$name} = {
+        mixin     => 1,
+        field     => 1,
+        validator => $data
+    };
 
     return 'directive', $name, $data;
 }
 
+sub fld { field(@_) }
+
 sub field {
-    my ($meta, %spec) = @_;
-    my $config = __get_config($meta);
+    my ($meta, $name, $data) = @_;
+    my $config = find_or_create_cfg_attribute($meta);
+
     confess("config attribute not present") unless blessed($config);
 
-    if (%spec) {
-        my $name = (keys(%spec))[0];
-        my $data = (values(%spec))[0];
+    return undef unless ($name && $data);
 
-        my $CFG = $config->profile;
-        $CFG->{FIELDS}->{$name} = $data;
-        $CFG->{FIELDS}->{$name}->{errors} = [];
-    }
+    my $CFG = $config->profile;
+    $CFG->{FIELDS}->{$name} = $data;
+    $CFG->{FIELDS}->{$name}->{errors} = [];
 
-    return 'field', %spec;
+    return 'field', $name, $data;
 }
+
+sub flt { filter(@_) }
 
 sub filter {
     my ($meta, $name, $data) = @_;
-    my $config = __get_config($meta);
+    my $config = find_or_create_cfg_attribute($meta);
+
     confess("config attribute not present") unless blessed($config);
 
-    if ($name && ref $data) {
+    return undef unless ($name && $data);
 
-        my $CFG = $config->profile;
-        $CFG->{FILTERS}->{$name} = $data;
-    }
+    my $CFG = $config->profile;
+    $CFG->{FILTERS}->{$name} = $data;
 
     return 'filter', $name, $data;
 }
@@ -84,7 +92,7 @@ sub load_classes {
     my $rels     = $meta->find_attribute_by_name('relatives');
     my $rels_map = {};
 
-    # load sub-validation classes
+    # load class children and create relationship map (hash)
     foreach my $child (usesub $parent) {
         my $nickname = $child;
         $nickname =~ s/^$parent//;
@@ -108,24 +116,22 @@ sub load_classes {
 
 sub load_plugins {
     my ($meta, $class, @plugins) = @_;
-    my $config = __get_config($meta);
+    my $config = find_or_create_cfg_attribute($meta);
+
     confess("config attribute not present") unless blessed($config);
 
     foreach my $plugin (@plugins) {
         if ($plugin !~ /^\+/) {
             $plugin = "Validation::Class::Plugin::$plugin";
         }
-        else {
-            $plugin =~ s/^\+//;
-        }
 
-        {
-            my $file = $plugin;
-            $file =~ s/::/\//g;
-            $file .= ".pm";
-            no warnings 'redefine';
-            require $file;
-        }
+        $plugin =~ s/^\+//;
+
+        # require plugin
+        my $file = $plugin;
+        $file =~ s/::/\//g;
+        $file .= ".pm";
+        eval "require $plugin" unless $INC{$file};    # unless already loaded
     }
 
     my $CFG = $config->profile;
@@ -134,25 +140,26 @@ sub load_plugins {
     return [@plugins];
 }
 
+sub mxn { mixin(@_) }
+
 sub mixin {
-    my ($meta, %spec) = @_;
-    my $config = __get_config($meta);
+    my ($meta, $name, $data) = @_;
+    my $config = find_or_create_cfg_attribute($meta);
+
     confess("config attribute not present") unless blessed($config);
 
-    if (%spec) {
-        my $name = (keys(%spec))[0];
-        my $data = (values(%spec))[0];
+    return undef unless ($name && $data);
 
-        my $CFG = $config->profile;
-        $CFG->{MIXINS}->{$name} = $data;
-    }
+    my $CFG = $config->profile;
+    $CFG->{MIXINS}->{$name} = $data;
 
-    return 'mixin', %spec;
+    return 'mixin', $name, $data;
 }
 
-sub __get_config {
-    my ($meta) = @_;
+sub find_or_create_cfg_attribute {
+    my $meta   = shift;
     my $config = $meta->find_attribute_by_name('config');
+
     unless ($config) {
         $config = $meta->add_attribute(
             'config',
@@ -160,10 +167,14 @@ sub __get_config {
             'isa'    => 'HashRef',
             'traits' => ['Profile']
         );
+
         $config->{default} = sub {
+
+            # not recommended (but i know not what i do)
             return $config->profile;
           }
     }
+
     return $config;
 }
 

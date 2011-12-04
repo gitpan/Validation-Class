@@ -1,5 +1,12 @@
 This file documents the revision history for the Perl library Validation::Class.
 
+3.0.0   2011-12-04
+        - Completly refactored all code (mainly for aesthetics and readability)
+        - added Validation::Class::Simple for drop-in data validation
+        - renamed sanitize method to normalize
+        - added fld, mxn, flt, dir keyword aliases
+        - new and updated POD, tests, etc
+
 2.7.7   2011-11-29
         - Fixed custom filter execution issue (esp. with multi-filters)
         

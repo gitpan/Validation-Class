@@ -1,16 +1,16 @@
-# ABSTRACT: Centralized Input Validation for Any Application
+# ABSTRACT: Centralized Data Validation Framework
 
 use strict;
 use warnings;
 
 package Validation::Class;
 {
-    $Validation::Class::VERSION = '2.7.7';
+    $Validation::Class::VERSION = '3.0.0';
 }
 
 use 5.008001;
 
-our $VERSION = '2.7.7';    # VERSION
+our $VERSION = '3.0.0';    # VERSION
 
 use Moose ('has');
 use Moose::Exporter;
@@ -20,18 +20,19 @@ use Validation::Class::Sugar ();
 my ($import, $unimport, $init_meta) = Moose::Exporter->build_import_methods(
     also => ['Moose', 'Validation::Class::Sugar'],
     base_class_roles =>
-      ['Validation::Class::Validator', 'Validation::Class::Errors'],
+      ['Validation::Class::Errors', 'Validation::Class::Validator',],
 );
 
 sub init_meta {
     my ($dummy, %opts) = @_;
 
     Moose->init_meta(%opts);
+
     Moose::Util::MetaRole::apply_base_class_roles(
         for   => $opts{for_class},
         roles => [
-            'MooseX::Traits', 'Validation::Class::Validator',
-            'Validation::Class::Errors'
+            'MooseX::Traits', 'Validation::Class::Errors',
+            'Validation::Class::Validator',
         ]
     );
 
@@ -52,14 +53,16 @@ sub unimport {
 
 {
 
-    # Profile
-    package    # No you dont
+    # Profile Trait
+    package    # Don't register with PAUSE (pause.perl.org)
       Moose::Meta::Attribute::Custom::Trait::Profile;
 
     sub register_implementation {
         'Validation::Class::Meta::Attribute::Profile';
     }
 }
+
+# BEGIN MEGA-POD
 
 
 1;
@@ -69,11 +72,11 @@ __END__
 
 =head1 NAME
 
-Validation::Class - Centralized Input Validation for Any Application
+Validation::Class - Centralized Data Validation Framework
 
 =head1 VERSION
 
-version 2.7.7
+version 3.0.0
 
 =head1 SYNOPSIS
 
