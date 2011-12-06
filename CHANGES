@@ -1,5 +1,8 @@
 This file documents the revision history for the Perl library Validation::Class.
 
+3.1.1   2011-12-06
+        - Updated POD, Fixed broken MANIFEST
+
 3.1.0   2011-12-06
         - Updated POD
         - Added Validation::Class::MooseRules, superior validation for your

@@ -2,12 +2,12 @@
 
 package Validation::Class::Simple;
 {
-    $Validation::Class::Simple::VERSION = '3.1.0';
+    $Validation::Class::Simple::VERSION = '3.1.1';
 }
 
 use Validation::Class;
 
-our $VERSION = '3.1.0';    # VERSION
+our $VERSION = '3.1.1';    # VERSION
 
 sub BUILD { }
 
@@ -23,7 +23,7 @@ Validation::Class::Simple - Drop-in Data Validation Class
 
 =head1 VERSION
 
-version 3.1.0
+version 3.1.1
 
 =head1 DESCRIPTION
 

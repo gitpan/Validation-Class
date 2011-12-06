@@ -2,13 +2,13 @@
 
 package Validation::Class::MooseRules;
 {
-    $Validation::Class::MooseRules::VERSION = '3.1.0';
+    $Validation::Class::MooseRules::VERSION = '3.1.1';
 }
 
 use Moose::Role;
 use Validation::Class::Simple;
 
-our $VERSION = '3.1.0';    # VERSION
+our $VERSION = '3.1.1';    # VERSION
 
 
 sub rules {
@@ -16,13 +16,12 @@ sub rules {
     my $self = shift;
     my $data = {fields => {}, params => {}};
 
-    foreach my $attribute ($self->meta->get_attribute_list) {
+    foreach my $attribute ($self->meta->get_all_attributes) {
 
-        $data->{fields}->{$attribute} =
-          $self->meta->get_attribute($attribute)->rules;
-
-        $data->{params}->{$attribute} =
-          $self->meta->get_attribute($attribute)->get_value($self);
+        $data->{params}->{$attribute->name} = $attribute->get_value($self);
+        $data->{fields}->{$attribute->name} = $attribute->rules;
+        $data->{fields}->{$attribute->name}->{required} = 1
+          if $attribute->{required};    # required attr condition
 
     }
 
@@ -67,16 +66,16 @@ Validation::Class::MooseRules - Marries Validation::Class and Moose through Trai
 
 =head1 VERSION
 
-version 3.1.0
+version 3.1.1
 
 =head1 DESCRIPTION
 
 Validation::Class::MooseRules is a L<Moose> role that infuses the power and
 flexibility of L<Validation::Class> into your Moose classes.
 
-Validation::Class::Traitor, by policy, is not designed for attribute type
+Validation::Class::MooseRules, by policy, is not designed for attribute type
 checking, the Moose type constraint system exists for that purpose and works well,
-... instead, its purpose is suited to validating attribute values.
+... instead, its purpose is suited for validating attribute values (parameters).
 
 This class is experimental and hasn't been used in production. While it has been
 tested, please note, the API may change.
