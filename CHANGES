@@ -1,5 +1,12 @@
 This file documents the revision history for the Perl library Validation::Class.
 
+3.1.0   2011-12-06
+        - Updated POD
+        - Added Validation::Class::MooseRules, superior validation for your
+          Moose class
+        - Added Validation::Class::Simple, adds drop-in data validation for
+          scripts, etc
+
 3.0.0   2011-12-04
         - Completly refactored all code (mainly for aesthetics and readability)
         - added Validation::Class::Simple for drop-in data validation

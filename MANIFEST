@@ -1,13 +1,14 @@
 CHANGES
 LICENSE
 MANIFEST
+MANIFEST.SKIP
 META.yml
 Makefile.PL
 README
 README.mkdn
 lib/Validation/Class.pm
 lib/Validation/Class/Errors.pm
-lib/Validation/Class/Meta/Attribute/Profile.pm
+lib/Validation/Class/MooseRules.pm
 lib/Validation/Class/Plugins.pod
 lib/Validation/Class/Simple.pm
 lib/Validation/Class/Sugar.pm
@@ -31,6 +32,7 @@ t/20-plugins.t
 t/21-filtering-behavior.t
 t/22-filtering-behavior.t
 t/30-classless-behavior.t
+t/40-mooserules.t
 t/97-persistent-values.t
 t/98-anomaly.t
 t/98-unknown_params.t

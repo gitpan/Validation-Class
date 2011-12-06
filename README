@@ -2,7 +2,7 @@ NAME
     Validation::Class - Centralized Data Validation Framework
 
 VERSION
-    version 3.0.0
+    version 3.1.0
 
 SYNOPSIS
         use MyApp::Validation;
@@ -27,7 +27,7 @@ DESCRIPTION
     use Validation::Class;
         
     # a validation rule
-        field 'login'  => {
+        fld 'login'  => {
             label      => 'User Login',
             error      => 'Login invalid.',
             required   => 1,
@@ -38,7 +38,7 @@ DESCRIPTION
         };
         
     # a validation rule
-        field 'password'  => {
+        fld 'password'  => {
             label         => 'User Password',
             error         => 'Password invalid.',
             required      => 1,
@@ -118,8 +118,8 @@ BUILDING A VALIDATION CLASS
     1;
 
   THE MIXIN KEYWORD
-    The mixin keyword creates a validation rules template that can be
-    applied to any field using the mixin directive.
+    The mixin keyword (or mxn) creates a validation rules template that can
+    be applied to any field using the mixin directive.
 
         package MyApp::Validation;
         use Validation::Class;
@@ -138,8 +138,8 @@ BUILDING A VALIDATION CLASS
         };
 
   THE FILTER KEYWORD
-    The filter keyword creates custom filters to be used in your field
-    definitions.
+    The filter keyword (or flt) creates custom filters to be used in your
+    field definitions.
 
         package MyApp::Validation;
         use Validation::Class;
@@ -157,10 +157,10 @@ BUILDING A VALIDATION CLASS
         };
 
   THE DIRECTIVE KEYWORD
-    The directive keyword creates custom validator directives to be used in
-    your field definitions. The routine is passed two parameters, the value
-    of directive and the value of the field the validator is being processed
-    against. The validator should return true or false.
+    The directive keyword (or dir) creates custom validator directives to be
+    used in your field definitions. The routine is passed two parameters,
+    the value of directive and the value of the field the validator is being
+    processed against. The validator should return true or false.
 
         package MyApp::Validation;
         use Validation::Class;
@@ -183,9 +183,9 @@ BUILDING A VALIDATION CLASS
         };
 
   THE FIELD KEYWORD
-    The field keyword creates a validation block and defines validation
-    rules for reuse in code. The field keyword should correspond with the
-    parameter name expected to be passed to your validation class.
+    The field keyword (or fld) creates a validation block and defines
+    validation rules for reuse in code. The field keyword should correspond
+    with the parameter name expected to be passed to your validation class.
 
         package MyApp::Validation;
         use Validation::Class;

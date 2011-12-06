@@ -64,7 +64,7 @@ plugin for formatting telephone numbers:
         my ($class, $self) = @_;
         
         # US Telephones
-        $self->filters->{telephone_usa} = sub {
+        $class->filters->{telephone_usa} = sub {
             my $phone = shift;
                $phone =~ s/\D//g;
             
@@ -89,12 +89,13 @@ Once we create, test and deploy our plugin, we can use it in our code as follows
         error      => 'Phone number invalid.',
         required   => 1,
         filters    => 'telephone_usa',
+        filtering  => 'post',
         pattern    => '+1 (###) ###-####'
     };
     
     package main ;
     
-    my $rules = MyApp::Validation;
+    my $rules = MyApp::Validation->new(...);
     
     # ...
     

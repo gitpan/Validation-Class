@@ -5,12 +5,12 @@ use warnings;
 
 package Validation::Class;
 {
-    $Validation::Class::VERSION = '3.0.0';
+    $Validation::Class::VERSION = '3.1.0';
 }
 
 use 5.008001;
 
-our $VERSION = '3.0.0';    # VERSION
+our $VERSION = '3.1.0';    # VERSION
 
 use Moose ('has');
 use Moose::Exporter;
@@ -58,7 +58,9 @@ sub unimport {
       Moose::Meta::Attribute::Custom::Trait::Profile;
 
     sub register_implementation {
-        'Validation::Class::Meta::Attribute::Profile';
+        my $pkg = 'Validation_Class_Meta_Attribute_Profile';
+        $pkg =~ s/_/::/g;
+        $pkg;
     }
 }
 
@@ -76,7 +78,7 @@ Validation::Class - Centralized Data Validation Framework
 
 =head1 VERSION
 
-version 3.0.0
+version 3.1.0
 
 =head1 SYNOPSIS
 
@@ -102,7 +104,7 @@ in both the Controller and Model. A validation class is defined as follows:
     use Validation::Class;
     
     # a validation rule
-    field 'login'  => {
+    fld 'login'  => {
         label      => 'User Login',
         error      => 'Login invalid.',
         required   => 1,
@@ -113,7 +115,7 @@ in both the Controller and Model. A validation class is defined as follows:
     };
     
     # a validation rule
-    field 'password'  => {
+    fld 'password'  => {
         label         => 'User Password',
         error         => 'Password invalid.',
         required      => 1,
@@ -194,7 +196,7 @@ validate class to validate input in various scenarios:
 
 =head2 THE MIXIN KEYWORD
 
-The mixin keyword creates a validation rules template that can be applied to any
+The mixin keyword (or mxn) creates a validation rules template that can be applied to any
 field using the mixin directive.
 
     package MyApp::Validation;
@@ -215,7 +217,7 @@ field using the mixin directive.
 
 =head2 THE FILTER KEYWORD
 
-The filter keyword creates custom filters to be used in your field definitions.
+The filter keyword (or flt) creates custom filters to be used in your field definitions.
 
     package MyApp::Validation;
     use Validation::Class;
@@ -234,7 +236,7 @@ The filter keyword creates custom filters to be used in your field definitions.
 
 =head2 THE DIRECTIVE KEYWORD
 
-The directive keyword creates custom validator directives to be used in your field
+The directive keyword (or dir) creates custom validator directives to be used in your field
 definitions. The routine is passed two parameters, the value of directive and the
 value of the field the validator is being processed against. The validator should
 return true or false.
@@ -261,7 +263,7 @@ return true or false.
 
 =head2 THE FIELD KEYWORD
 
-The field keyword creates a validation block and defines validation rules for
+The field keyword (or fld) creates a validation block and defines validation rules for
 reuse in code. The field keyword should correspond with the parameter name
 expected to be passed to your validation class.
 
