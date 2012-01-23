@@ -5,15 +5,22 @@ use warnings;
 
 package Validation::Class::Validator;
 {
-    $Validation::Class::Validator::VERSION = '3.1.1';
+    $Validation::Class::Validator::VERSION = '3.2.1';
 }
 
-our $VERSION = '3.1.1';    # VERSION
+our $VERSION = '3.2.1';    # VERSION
 
 use Moose::Role;
 use Array::Unique;
 use Hash::Flatten;
 use Hash::Merge 'merge';
+
+# stash object for custom validation routines
+has '_stash' => (
+    is      => 'rw',
+    isa     => 'HashRef',
+    default => sub { {} }
+);
 
 # hash of directives
 has 'directives' => (
@@ -501,14 +508,6 @@ sub queue {
     return $self;
 }
 
-sub set_params_hash {
-    my ($self, $params) = @_;
-
-    my $serializer = Hash::Flatten->new($self->hash_inflator);
-
-    return $self->params($serializer->flatten($params));
-}
-
 sub reset {
     my $self = shift;
 
@@ -546,6 +545,53 @@ sub reset_fields {
     $self->reset_errors();
 
     return $self;
+}
+
+sub set_params_hash {
+    my ($self, $params) = @_;
+
+    my $serializer = Hash::Flatten->new($self->hash_inflator);
+
+    return $self->params($serializer->flatten($params));
+}
+
+sub stash {
+    my ($self, @requests) = @_;
+
+    if (@requests) {
+
+        if (@requests == 1) {
+
+            my $request = $requests[0];
+
+            if ("HASH" eq ref $request) {
+
+                @requests = %{$request};
+
+            }
+            else {
+
+                return $self->_stash->{$request};
+
+            }
+
+        }
+
+        if (@requests > 1) {
+
+            my %data = @requests;
+
+            while (my ($key, $value) = each %data) {
+
+                $self->_stash->{$key} = $value;
+
+            }
+
+        }
+
+    }
+
+    return $self->_stash;
 }
 
 sub use_filter {

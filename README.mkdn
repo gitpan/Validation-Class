@@ -4,7 +4,7 @@ Validation::Class - Centralized Data Validation Framework
 
 # VERSION
 
-version 3.1.1
+version 3.2.1
 
 # SYNOPSIS
 
@@ -911,7 +911,7 @@ The filters attribute returns a hashref of pre-defined filter definitions.
 ## hash_inflator
 
 The hash_inflator value determines how the hash serializer (inflation/deflation)
-behaves. The value must be a hashref of L<Hash::Flatten/OPTIONS> options. Purely
+behaves. The value must be a hashref of ["OPTIONS" in Hash::Flatten](http://search.cpan.org/perldoc?Hash::Flatten#OPTIONS) options. Purely
 for the sake of consistency, you can use lowercase keys (with underscores) which
 will be converted to camel-cased keys before passed to the serializer.
 
@@ -1295,6 +1295,29 @@ default or custom configuration of the hash serializer [Hash::Flatten](http://se
     
 
     my $serialized_params = $self->set_params_hash($params);
+
+## stash
+
+The stash method provides a container for context/instance specific information.
+The stash particularly useful when custom validation routines require insight
+into context/instance specific operations.
+
+    $self->stash( { database => $dbix_object } );
+    $self->stash( ftp => $net_ftp, database => $dbix_object );
+    
+
+    ...
+    
+
+    fld 'email' => {
+        validation => sub {
+            my $db = shift->stash->{database};
+            my $this = shift;
+            
+
+            return $db->find('email', $this->{value}) ? 0 : 1
+        }
+    };
 
 ## validate
 

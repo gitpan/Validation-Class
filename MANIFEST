@@ -19,6 +19,7 @@ t/02-package-declaration.t
 t/03-mixin-usages.t
 t/04-parameters.t
 t/10-custom-validation.t
+t/10-stash.t
 t/10-validation.t
 t/11-group-validation.t
 t/12-queued-rules.t

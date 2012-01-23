@@ -5,12 +5,12 @@ use warnings;
 
 package Validation::Class;
 {
-    $Validation::Class::VERSION = '3.1.1';
+    $Validation::Class::VERSION = '3.2.1';
 }
 
 use 5.008001;
 
-our $VERSION = '3.1.1';    # VERSION
+our $VERSION = '3.2.1';    # VERSION
 
 use Moose ('has');
 use Moose::Exporter;
@@ -78,7 +78,7 @@ Validation::Class - Centralized Data Validation Framework
 
 =head1 VERSION
 
-version 3.1.1
+version 3.2.1
 
 =head1 SYNOPSIS
 
@@ -1273,6 +1273,26 @@ default or custom configuration of the hash serializer L<Hash::Flatten>.
     };
     
     my $serialized_params = $self->set_params_hash($params);
+
+=head2 stash
+
+The stash method provides a container for context/instance specific information.
+The stash particularly useful when custom validation routines require insight
+into context/instance specific operations.
+
+    $self->stash( { database => $dbix_object } );
+    $self->stash( ftp => $net_ftp, database => $dbix_object );
+    
+    ...
+    
+    fld 'email' => {
+        validation => sub {
+            my $db = shift->stash->{database};
+            my $this = shift;
+            
+            return $db->find('email', $this->{value}) ? 0 : 1
+        }
+    };
 
 =head2 validate
 
