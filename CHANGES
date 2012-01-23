@@ -2,7 +2,10 @@ This file documents the revision history for the Perl library Validation::Class.
 
 - Document setting errors and stash usage
 
-3.2.1   2011-12-06
+3.2.2   2012-01-23
+        - Fixed the matches directive (had bad comparison expression)
+
+3.2.1   2012-01-23
         - Add a stash method/object for injecting instance specific data into
           custom validation routine
 

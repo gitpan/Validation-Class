@@ -6,7 +6,7 @@ use warnings;
 package    # Don't register with PAUSE (pause.perl.org)
   Validation::Class::Meta::Attribute::Profile;
 
-our $VERSION = '3.2.1';    # VERSION
+our $VERSION = '3.2.2';    # VERSION
 
 use Moose::Role;
 
@@ -157,7 +157,7 @@ has profile => (
                             # build the regex
                             my $this = $value;
                             my $that = $class->params->{$directive} || '';
-                            unless ($this =~ /^$that$/) {
+                            unless ($this eq $that) {
                                 my $handle = $field->{label} || $field->{name};
                                 my $handle2 =
                                      $class->fields->{$directive}->{label}

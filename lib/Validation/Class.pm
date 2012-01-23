@@ -5,12 +5,12 @@ use warnings;
 
 package Validation::Class;
 {
-    $Validation::Class::VERSION = '3.2.1';
+    $Validation::Class::VERSION = '3.2.2';
 }
 
 use 5.008001;
 
-our $VERSION = '3.2.1';    # VERSION
+our $VERSION = '3.2.2';    # VERSION
 
 use Moose ('has');
 use Moose::Exporter;
@@ -78,7 +78,7 @@ Validation::Class - Centralized Data Validation Framework
 
 =head1 VERSION
 
-version 3.2.1
+version 3.2.2
 
 =head1 SYNOPSIS
 
@@ -334,13 +334,13 @@ Validation::Class via L<Hash::Flatten>. The following is an example of that:
     
     my $params = $rules->get_params_hash;
 
-=head1 SEPERATION OF CONCERNS
+=head1 SEPARATION OF CONCERNS
 
-For larger applications were a single validation class might become cluttered
-and inefficient Validation::Class come equipped to help you separate your
+For larger applications where a single validation class might become cluttered
+and inefficient, Validation::Class comes equipped to help you separate your
 validation rules into separate classes.
 
-The idea is that you'll end up with a main validation class (most-likely empty)
+The idea is that you'll end up with a main validation class (most likely empty)
 that will simply serve as your point of entry into your relative (child)
 classes. The following is an example of this:
 
@@ -394,14 +394,14 @@ classes. The following is an example of this:
     1;
 
 When building a validation class, the first encountered and arguably two most
-important keyword functions are field() and mixin() which are used to declare
+important keyword functions are field() and mixin(), which are used to declare
 their respective properties. A mixin() declares a validation template where
 its properties are intended to be copied within field() declarations which
 declares validation rules, filters and other properties.
 
 Both the field() and mixin() declarations/functions require two parameters, the
 first being a name, used to identify the declaration and to be matched against
-incoming input parameters, and the second being a hashref of key/value pairs.
+incoming input parameters and the second being a hashref of key/value pairs.
 The key(s) within a declaration are commonly referred to as directives.
 
 The following is a list of default directives which can be used in field/mixin
@@ -434,7 +434,7 @@ when a matching parameter is not present.
 
 The error/errors directive is used to replace the system generated error
 messages when a particular field doesn't validate. If a field fails multiple
-directives, multiple errors will be generate for the same field. This may not
+directives, multiple errors will be generated for the same field. This may not
 be desirable, the error directive overrides this behavior and only the specified
 error is registered and displayed.
 
@@ -448,7 +448,7 @@ error is registered and displayed.
 
 The filtering directive is used to control when field filters are applied. The
 default recognized values are pre/post. A value of 'pre' instructs the validation
-class to apply the field's filters at instatiation and before validation whereas
+class to apply the field's filters at instantiation and before validation whereas
 a value of 'post' instructs the validation class to apply the field's filters
 after validation. Alternatively, a value of undef or '' will bypass filtering
 altogether.
@@ -569,7 +569,7 @@ If you need to set a default value, see the default directive.
 
 =head2 filters
 
-The filters directive is used to correct, altering and/or format the
+The filters directive is used to correct, alter and/or format the
 values of the matching input parameter. Note: Filtering is applied before
 validation. The filter directive can have multiple filters (even a coderef)
 in the form of an arrayref of values.
@@ -614,7 +614,7 @@ where sentences are separated by a period and space, within the field's value.
 =head3 decimal
 
 The decimal filter removes all non-decimal-based characters from the field's
-value. Allows-only: decimal, comma, and numbers.
+value. Allows only: decimal, comma, and numbers.
 
     field 'foobar'  => {
         filter => 'decimal',
@@ -622,7 +622,7 @@ value. Allows-only: decimal, comma, and numbers.
 
 =head3 numeric
 
-The numeric filter removes all non-Numeric characters from the field's
+The numeric filter removes all non-numeric characters from the field's
 value.
 
     field 'foobar'  => {
@@ -632,7 +632,7 @@ value.
 =head3 strip
 
 As with the trim filter the strip filter removes leading and trailing
-white-spaces from the field's value and additionally removes multiple white-spaces
+whitespaces from the field's value and additionally removes multiple whitespaces
 from between the values characters.
 
     field 'foobar'  => {
@@ -650,7 +650,7 @@ first letter of each word.
 
 =head3 trim
 
-The trim filter removes leading and trailing white-spaces from the field's value.
+The trim filter removes leading and trailing whitespace from the field's value.
 
     field 'foobar'  => {
         filter => 'trim',
@@ -680,7 +680,7 @@ The uppercase filter converts the field's value to uppercase.
     1;
 
 Validator directives are special directives with associated validation code that
-is used to validate common use-cases such as "checking the length of a parameter",
+is used to validate common use cases such as "checking the length of a parameter",
 etc.
 
 The following is a list of the default validators which can be used in field/mixin
@@ -840,7 +840,7 @@ other code, .e.g. Web App Controller, etc.
         return $input->errors_to_string;
     }
 
-Feeling lazy, have your validation class automatically find the appropriate fields
+Feeling lazy? Have your validation class automatically find the appropriate fields
 to validate against (params must match field names).
 
     use MyApp::Validation;
@@ -1130,7 +1130,7 @@ specified.
 
 =head2 get_params_hash
 
-If your fields and parameters are designed with complex hash structures, The
+If your fields and parameters are designed with complex hash structures, the
 get_params_hash method returns the deserialized hashref of specified parameters
 based on the the default or custom configuration of the hash serializer
 L<Hash::Flatten>.
@@ -1277,22 +1277,28 @@ default or custom configuration of the hash serializer L<Hash::Flatten>.
 =head2 stash
 
 The stash method provides a container for context/instance specific information.
-The stash particularly useful when custom validation routines require insight
+The stash is particularly useful when custom validation routines require insight
 into context/instance specific operations.
 
-    $self->stash( { database => $dbix_object } );
-    $self->stash( ftp => $net_ftp, database => $dbix_object );
+    package MyApp::Validation;
     
-    ...
+    use Validation::Class;
     
     fld 'email' => {
         validation => sub {
             my $db = shift->stash->{database};
             my $this = shift;
             
-            return $db->find('email', $this->{value}) ? 0 : 1
+            return $db->find('email' => $this->{value}) ? 0 : 1 ; # email exists
         }
     };
+    
+    package main;
+    
+    $self->stash( { database => $dbix_object } );
+    $self->stash( ftp => $net_ftp, database => $dbix_object );
+    
+    ...
 
 =head2 validate
 

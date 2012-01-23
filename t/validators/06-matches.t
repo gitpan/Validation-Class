@@ -14,8 +14,8 @@ my $r = MyVal->new(
         },
     },
     params => {
-        password  => 'secret',
-        password2 => 'secret',
+        password  => 'secret$',
+        password2 => 'secret$',
     }
 );
 

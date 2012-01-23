@@ -29,7 +29,7 @@ my %WriteMakefileArgs = (
     "MooseX::Traits" => 0,
     "Scalar::Util" => 0
   },
-  "VERSION" => "3.2.1",
+  "VERSION" => "3.2.2",
   "test" => {
     "TESTS" => "t/*.t t/filters/*.t t/validators/*.t"
   }
