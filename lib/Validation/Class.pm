@@ -5,12 +5,12 @@ use warnings;
 
 package Validation::Class;
 {
-    $Validation::Class::VERSION = '3.2.2';
+    $Validation::Class::VERSION = '3.3.2';
 }
 
 use 5.008001;
 
-our $VERSION = '3.2.2';    # VERSION
+our $VERSION = '3.3.2';    # VERSION
 
 use Moose ('has');
 use Moose::Exporter;
@@ -78,7 +78,7 @@ Validation::Class - Centralized Data Validation Framework
 
 =head1 VERSION
 
-version 3.2.2
+version 3.3.2
 
 =head1 SYNOPSIS
 
@@ -1019,6 +1019,26 @@ accessors on the child class.
     
     my $kid3 = $rules->class('child'); # loads MyVal::Child;
     my $kid4 = $rules->class('step_child'); # loads MyVal::StepChild;
+    
+    1;
+
+=head2 clear_queue
+
+The clear_queue method resets the queue container, see the queue method for more
+information on queuing fields to be validated. The clear_queue method has yet
+another useful behavior in that it can assign the values of the queued
+parameters to the list it is passed, where the values are assigned in the same
+order queued.
+
+    my $rules = MyVal->new(params => $params);
+    
+    $rules->queue(qw(name +email +login +password));
+    
+    unless ($rules->validate) {
+        return $rules->errors_to_string;
+    }
+    
+    $rules->clear_queue(my($name, $email));
     
     1;
 

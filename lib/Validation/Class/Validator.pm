@@ -5,10 +5,10 @@ use warnings;
 
 package Validation::Class::Validator;
 {
-    $Validation::Class::Validator::VERSION = '3.2.2';
+    $Validation::Class::Validator::VERSION = '3.3.2';
 }
 
-our $VERSION = '3.2.2';    # VERSION
+our $VERSION = '3.3.2';    # VERSION
 
 use Moose::Role;
 use Array::Unique;
@@ -318,6 +318,21 @@ sub check_mixin {
     return 1;
 }
 
+sub clear_queue {
+    my $self = shift;
+
+    my @names = @{$self->stashed};
+
+    $self->stashed([]);
+
+    for (my $i = 0; $i < @names; $i++) {
+        $names[$i] =~ s/^[\-\+]{1}//;
+        $_[$i] = $self->params->{$names[$i]};
+    }
+
+    return @_;
+}
+
 sub clone {
     my ($self, $field_name, $new_field_name, $directives) = @_;
 
@@ -495,7 +510,7 @@ sub param {
 
     return unless $name;
 
-    $self->params->{$name} = $value if $value;
+    $self->params->{$name} = $value if defined $value;
 
     return $self->params->{$name};
 }

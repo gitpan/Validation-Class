@@ -1,4 +1,4 @@
-use Test::More tests => 15;
+use Test::More tests => 26;
 
 package MyVal;
 
@@ -47,7 +47,8 @@ my $p = {name => '', email => 'awncorp@cpan.org'};
 my $v = MyVal->new(params => $p);
 
 ok $v, 'initialization successful';
-ok $v->queue(qw/name email/);
+ok !$v->clear_queue, 'queue cleared, no errors';
+ok $v->queue(qw/name email/), 'queued name and email';
 ok !$v->validate, 'validation failed';
 ok $v->error_count == 1, 'expected number of errors';
 ok !$v->validate('id'), 'validation failed';
@@ -62,4 +63,17 @@ ok $v->reset, 'reset ok';
 ok !$v->validate(keys %{$v->fields}), 'validate all (not stashed) failed';
 ok $v->error_count == 1, 'error - email_confirm not set';
 
-
+# advanced queue usage
+$v->param($_ => '') for qw(id name);
+ok $v->queue('+id'),   'queued id w/requirement';
+ok $v->queue('+name'), 'queued name w/requirement';
+ok $v->queue('email'), 'queued email';
+ok 3 == @{$v->stashed}, '3 fields queued';
+ok !$v->validate, 'error: both fields required, no input';
+ok 2 == $v->error_count, '2 errors encoutered';
+$v->param(id   => 123);
+$v->param(name => 456);
+ok 3 == $v->clear_queue(my ($id, $name)), 'rid the queue of 3 fields, 2 set';
+ok $id == 123,   'local variable (id) set correctly';
+ok $name == 456, 'local variable (name) set correctly';
+ok !@{$v->stashed}, 'no fields queued';
