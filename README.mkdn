@@ -4,7 +4,7 @@ Validation::Class - Centralized Data Validation Framework
 
 # VERSION
 
-version 3.3.2
+version 3.3.3
 
 # SYNOPSIS
 
@@ -486,9 +486,10 @@ The name directive is used *internally* and cannot be changed.
 ## required
 
 The required directive is an important directive but can be misunderstood.
-The required directive used to ensure the *submitted* parameter exists and has
-a value. If the parameter is never submitted, the required directive has no
-effect and *in-fact* all filtering, validation, etc is then skipped.
+The required directive is used to ensure the submitted parameter exists and
+has a value. If the parameter is never submitted, the directive is effectively
+skipped. This directive can be thought of as the "must-have-a-value-if-exists"
+directive.
 
     # the required directive
     field 'foobar'  => {
@@ -502,8 +503,13 @@ effect and *in-fact* all filtering, validation, etc is then skipped.
     $rules->validate('foobar');
     
 
+    # fail
+    my $rules = MyApp::Validation->new(params => { foobar => '' });
+    $rules->validate('foobar');
+    
+
     # pass
-    my $rules = MyApp::Validation->new(params => {  foobar => 'Nii=cce' });
+    my $rules = MyApp::Validation->new(params => {  foobar => 'Nice' });
     $rules->validate('foobar');
 
 See the toggle functionality within the validate() method. This method allows
@@ -512,7 +518,10 @@ you to temporarily alter whether a field is required or not.
 ## validation
 
 The validation directive is a coderef used add additional custom validation to
-the field.
+the field. The coderef must return true (to pass) or false (to fail). Custom
+error messages can be set from within the coderef so make sure they are set
+based on appropriate logic as the registration of error message are not
+contingent on the success or failure of the routine. 
 
     # the validation directive
     field 'login'  => {
@@ -528,7 +537,7 @@ the field.
 
 The value directive is used internally to store the field's matching parameter's
 value. This value can be set in the definition but SHOULD NOT be used as a
-default value unless you're sure no parameter will overwrite it during runtime.
+default value unless you're sure no parameter will overwrite it during run-time.
 If you need to set a default value, see the default directive.
 
     # the value directive
@@ -1047,7 +1056,7 @@ profile page may have dynamically created input boxes for the person's phone
 numbers allowing the user to add additional parameters to the web-form as
 needed, in that case as opposed to having multiple validation rules hardcoded
 for each parameter, you could hardcode one single rule and clone the rule at
-runtime.
+run-time.
 
     package MyVal;
     use Validation::Class;
@@ -1062,7 +1071,7 @@ runtime.
     my $rules = MyVal->new(params => $params);
     
 
-    # clone phone rule at runtime to validate dynamically created parameters
+    # clone phone rule at run-time to validate dynamically created parameters
     $rules->clone('phone', 'phone2', { label => 'Other Phone', required => 0 });
     $rules->clone('phone', 'phone3', { label => 'Third Phone', required => 0 });
     $rules->clone('phone', 'phone4', { label => 'Forth Phone', required => 0 });
@@ -1282,7 +1291,7 @@ class and individual field levels.
 ## reset_errors
 
 The reset_errors method clears all errors, both at the class and individual
-field levels. This method is called automatically everytime the validate()
+field levels. This method is called automatically every time the validate()
 method is triggered.
 
     $self->reset_errors();
@@ -1399,7 +1408,7 @@ passed validation checks.
     }
 
 Another cool trick the validate() method can perform is the ability to temporarily
-alter whether a field is required or not during runtime. This functionality is
+alter whether a field is required or not during run-time. This functionality is
 often referred to as the *toggle* function.
 
 This function is important when you define a field (or two or three) as required

@@ -2,6 +2,9 @@ This file documents the revision history for the Perl library Validation::Class.
 
 - Document setting errors and stash usage
 
+3.3.3   2012-01-26
+        - POD updates
+
 3.3.2   2012-01-23
         - Fixed minor error in using the param method to assign an empty string
         - Added a clear_queue method 
