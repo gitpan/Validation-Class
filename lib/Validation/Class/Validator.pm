@@ -5,10 +5,10 @@ use warnings;
 
 package Validation::Class::Validator;
 {
-    $Validation::Class::Validator::VERSION = '3.3.3';
+    $Validation::Class::Validator::VERSION = '3.4.3';
 }
 
-our $VERSION = '3.3.3';    # VERSION
+our $VERSION = '3.4.3';    # VERSION
 
 use Moose::Role;
 use Array::Unique;
@@ -823,6 +823,36 @@ sub validate {
     }
 
     if (values %{$self->params}) {
+
+        # check for parameters the are arrayrefs and handle them appropriately
+        my $params = $self->get_params_hash;
+
+        while (my ($name, $value) = each(%{$params})) {
+
+            my $field = $self->fields->{$name};
+
+            next unless $field;
+
+            if ("ARRAY" eq ref $value) {
+
+                for (my $i = 0; $i < @$value; $i++) {
+
+                    my $label = ($field->{label} || $field->{name});
+
+                    $self->clone($name, "$name:$i",
+                        {label => $label . " #" . ($i + 1)});
+
+                    push @fields, "$name:$i"    # black hackery
+                      if @fields && grep { $_ eq $name } @fields;
+
+                }
+
+                # like it never existed ...
+                @fields = grep { $_ ne $name } @fields if @fields;    # ...
+
+            }
+
+        }
 
         # validate all parameters against all defined fields because no fields
         # were explicitly requested to be validated

@@ -6,7 +6,7 @@ use warnings;
 package    # Don't register with PAUSE (pause.perl.org)
   Validation::Class::Meta::Attribute::Profile;
 
-our $VERSION = '3.3.3';    # VERSION
+our $VERSION = '3.4.3';    # VERSION
 
 use Moose::Role;
 
