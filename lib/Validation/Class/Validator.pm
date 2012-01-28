@@ -5,10 +5,10 @@ use warnings;
 
 package Validation::Class::Validator;
 {
-    $Validation::Class::Validator::VERSION = '3.4.3';
+    $Validation::Class::Validator::VERSION = '3.4.4';
 }
 
-our $VERSION = '3.4.3';    # VERSION
+our $VERSION = '3.4.4';    # VERSION
 
 use Moose::Role;
 use Array::Unique;
@@ -825,32 +825,43 @@ sub validate {
     if (values %{$self->params}) {
 
         # check for parameters the are arrayrefs and handle them appropriately
-        my $params = $self->get_params_hash;
+        my $params = $self->params;
 
-        while (my ($name, $value) = each(%{$params})) {
+        my ($ad, $hd) =
+          @{$self->hash_inflator}{'ArrayDelimiter', 'HashDelimiter'};
+
+        # ^^ pun here
+
+        my %seen = ();
+
+        while (my ($key, $value) = each(%{$params})) {
+
+            next unless my ($name) = $key =~ /(.*)$ad\d+$/;
+
+            next unless not $seen{$name};
 
             my $field = $self->fields->{$name};
 
             next unless $field;
 
-            if ("ARRAY" eq ref $value) {
+            $seen{$name}++;
 
-                for (my $i = 0; $i < @$value; $i++) {
+            my $varcount = scalar grep {/$name$ad\d+$/} keys %{$params};
 
-                    my $label = ($field->{label} || $field->{name});
+            for (my $i = 0; $i < $varcount; $i++) {
 
-                    $self->clone($name, "$name:$i",
-                        {label => $label . " #" . ($i + 1)});
+                my $label = ($field->{label} || $field->{name});
 
-                    push @fields, "$name:$i"    # black hackery
-                      if @fields && grep { $_ eq $name } @fields;
+                $self->clone($name, "$name:$i",
+                    {label => $label . " #" . ($i + 1)});
 
-                }
-
-                # like it never existed ...
-                @fields = grep { $_ ne $name } @fields if @fields;    # ...
+                push @fields, "$name:$i"    # black hackery
+                  if @fields && grep { $_ eq $name } @fields;
 
             }
+
+            # like it never existed ...
+            @fields = grep { $_ ne $name } @fields if @fields;    # ...
 
         }
 

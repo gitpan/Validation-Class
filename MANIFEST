@@ -55,6 +55,7 @@ t/modules/MyVal/Person.pm
 t/modules/MyVal/Plugin/Glade.pm
 t/modules/MyVal/Staff.pm
 t/modules/MyVal/Ticket.pm
+t/tmpsorZOd.html
 t/validators/01-min_length.t
 t/validators/02-max_length.t
 t/validators/03-pattern.t

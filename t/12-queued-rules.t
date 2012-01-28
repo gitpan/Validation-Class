@@ -43,6 +43,10 @@ field email_confirm => {
 };
 
 package main;
+
+use strict;
+use warnings;
+
 my $p = {name => '', email => 'awncorp@cpan.org'};
 my $v = MyVal->new(params => $p);
 

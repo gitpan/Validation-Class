@@ -2,6 +2,9 @@ This file documents the revision history for the Perl library Validation::Class.
 
 - Document setting errors and stash usage
 
+3.4.4   2012-01-28
+        - Handling of parameters submitted as arrayrefs (n-levels deep)
+
 3.4.3   2012-01-27
         - Intelligent handling of parameters submitted as arrayrefs
 
