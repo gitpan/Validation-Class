@@ -64,7 +64,7 @@ ok !$v->error_count, 'no errors';
 ok $v->validate('id'), 'validation succesful';
 ok !$v->error_count, 'no errors';
 ok $v->reset, 'reset ok';
-ok !$v->validate(keys %{$v->fields}), 'validate all (not stashed) failed';
+ok !$v->validate(keys %{$v->fields}), 'validate all (not queued) failed';
 ok $v->error_count == 1, 'error - email_confirm not set';
 
 # advanced queue usage
@@ -72,7 +72,7 @@ $v->param($_ => '') for qw(id name);
 ok $v->queue('+id'),   'queued id w/requirement';
 ok $v->queue('+name'), 'queued name w/requirement';
 ok $v->queue('email'), 'queued email';
-ok 3 == @{$v->stashed}, '3 fields queued';
+ok 3 == @{$v->queued}, '3 fields queued';
 ok !$v->validate, 'error: both fields required, no input';
 ok 2 == $v->error_count, '2 errors encoutered';
 $v->param(id   => 123);
@@ -80,4 +80,4 @@ $v->param(name => 456);
 ok 3 == $v->clear_queue(my ($id, $name)), 'rid the queue of 3 fields, 2 set';
 ok $id == 123,   'local variable (id) set correctly';
 ok $name == 456, 'local variable (name) set correctly';
-ok !@{$v->stashed}, 'no fields queued';
+ok !@{$v->queued}, 'no fields queued';

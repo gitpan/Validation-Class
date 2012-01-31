@@ -6,7 +6,7 @@ use warnings;
 package    # Don't register with PAUSE (pause.perl.org)
   Validation::Class::Meta::Attribute::Profile;
 
-our $VERSION = '3.4.4';    # VERSION
+our $VERSION = '3.5.4';    # VERSION
 
 use Moose::Role;
 
@@ -514,8 +514,9 @@ has profile => (
                     uc $_[0];
                   }
             },
-            MIXINS  => {},
-            PLUGINS => {},
+            MIXINS   => {},
+            PLUGINS  => {},
+            PROFILES => {},
         };
     }
 );

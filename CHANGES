@@ -1,6 +1,7 @@
 This file documents the revision history for the Perl library Validation::Class.
 
-- Document setting errors and stash usage
+3.5.4   2012-01-28
+        - Implement a profile mechanism for quickly executing a validation sequence
 
 3.4.4   2012-01-28
         - Handling of parameters submitted as arrayrefs (n-levels deep)
@@ -113,3 +114,7 @@ This file documents the revision history for the Perl library Validation::Class.
 1.9.5   2011-10-23
         - Completely rewritten with Moose
         - Fixed mixin and mixin_field merging policy
+
+x.x.x
+        - Eliminate Moose dependency
+        - Document properly setting errors and stash usage

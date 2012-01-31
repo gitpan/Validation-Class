@@ -5,22 +5,15 @@ use warnings;
 
 package Validation::Class::Validator;
 {
-    $Validation::Class::Validator::VERSION = '3.4.4';
+    $Validation::Class::Validator::VERSION = '3.5.4';
 }
 
-our $VERSION = '3.4.4';    # VERSION
+our $VERSION = '3.5.4';    # VERSION
 
 use Moose::Role;
 use Array::Unique;
 use Hash::Flatten;
 use Hash::Merge 'merge';
-
-# stash object for custom validation routines
-has '_stash' => (
-    is      => 'rw',
-    isa     => 'HashRef',
-    default => sub { {} }
-);
 
 # hash of directives
 has 'directives' => (
@@ -135,8 +128,27 @@ has plugins => (
     }
 );
 
+# hash of input validation profiles
+has 'profiles' => (
+    is      => 'rw',
+    isa     => 'HashRef',
+    lazy    => 1,
+    default => sub {
+        my $class = $_[0];
+
+        return $class->can('config') ? $class->config->{PROFILES} : {};
+    }
+);
+
+# queued fields for (auto) validation
+has 'queued' => (
+    is      => 'rw',
+    isa     => 'ArrayRef',
+    default => sub { [] }
+);
+
 # class relatives (child-classes) store
-has relatives => (
+has 'relatives' => (
     is      => 'rw',
     isa     => 'HashRef',
     default => sub { {} }
@@ -149,11 +161,11 @@ has 'report_unknown' => (
     default => 0
 );
 
-# queue of field for (auto) validation
+# stash object for custom validation routines
 has 'stashed' => (
     is      => 'rw',
-    isa     => 'ArrayRef',
-    default => sub { [] }
+    isa     => 'HashRef',
+    default => sub { {} }
 );
 
 # hash of directives by type
@@ -269,6 +281,7 @@ sub class {
 
     my %defaults = (
         'params'         => $self->params,
+        'stashed'        => $self->stashed,
         'ignore_unknown' => $self->ignore_unknown,
         'report_unknown' => $self->report_unknown,
         'hash_inflator'  => $self->hash_inflator
@@ -321,9 +334,9 @@ sub check_mixin {
 sub clear_queue {
     my $self = shift;
 
-    my @names = @{$self->stashed};
+    my @names = @{$self->queued};
 
-    $self->stashed([]);
+    $self->queued([]);
 
     for (my $i = 0; $i < @names; $i++) {
         $names[$i] =~ s/^[\-\+]{1}//;
@@ -376,8 +389,20 @@ sub error {
     # retrieve an error message on a particular field
     if (@args == 1) {
 
+        #if ($self->fields->{ $args[0] }) {
+
         # return param-specific errors
-        return $self->fields->{$args[0]}->{errors};
+        #    return $self->fields->{ $args[0] }->{errors};
+
+        #}
+        #else {
+
+        # add error to class-level errors
+        return push @{$self->errors}, $args[0]
+          unless grep { $_ eq $args[0] } @{$self->errors};
+
+        #}
+
     }
 
     # return all class-level error messages
@@ -508,7 +533,7 @@ sub normalize {
 sub param {
     my ($self, $name, $value) = @_;
 
-    return unless $name;
+    return 0 unless $name;
 
     $self->params->{$name} = $value if defined $value;
 
@@ -518,7 +543,7 @@ sub param {
 sub queue {
     my $self = shift;
 
-    push @{$self->stashed}, @_;
+    push @{$self->queued}, @_;
 
     return $self;
 }
@@ -526,7 +551,7 @@ sub queue {
 sub reset {
     my $self = shift;
 
-    $self->stashed([]);
+    $self->queued([]);
 
     $self->reset_fields;
 
@@ -586,7 +611,7 @@ sub stash {
             }
             else {
 
-                return $self->_stash->{$request};
+                return $self->stashed->{$request};
 
             }
 
@@ -598,7 +623,7 @@ sub stash {
 
             while (my ($key, $value) = each %data) {
 
-                $self->_stash->{$key} = $value;
+                $self->stashed->{$key} = $value;
 
             }
 
@@ -606,7 +631,7 @@ sub stash {
 
     }
 
-    return $self->_stash;
+    return $self->stashed;
 }
 
 sub use_filter {
@@ -742,9 +767,9 @@ sub validate {
     $self->reset_fields();
     $self->reset_errors();
 
-    # include fields stashed by the queue method
-    if (@{$self->stashed}) {
-        push @fields, @{$self->stashed};
+    # include fields queued by the queue method
+    if (@{$self->queued}) {
+        push @fields, @{$self->queued};
     }
 
     # process field patterns
@@ -1081,6 +1106,20 @@ sub validate {
     $self->apply_filters('post') if $self->filtering && $valid;
 
     return $valid;    # returns true if no errors
+}
+
+sub validate_profile {
+    my ($self, $name, @args) = @_;
+
+    return 0 unless $name;
+
+    if ("CODE" eq ref $self->profiles->{$name}) {
+
+        return $self->profiles->{$name}->($self, @args)
+
+    }
+
+    return 0;
 }
 
 sub xxx_suicide_by_unknown_field {

@@ -5,12 +5,12 @@ use warnings;
 
 package Validation::Class;
 {
-    $Validation::Class::VERSION = '3.4.4';
+    $Validation::Class::VERSION = '3.5.4';
 }
 
 use 5.008001;
 
-our $VERSION = '3.4.4';    # VERSION
+our $VERSION = '3.5.4';    # VERSION
 
 use Moose ('has');
 use Moose::Exporter;
@@ -78,7 +78,7 @@ Validation::Class - Centralized Data Validation Framework
 
 =head1 VERSION
 
-version 3.4.4
+version 3.5.4
 
 =head1 SYNOPSIS
 
@@ -276,6 +276,40 @@ expected to be passed to your validation class.
         max_length => 255,
         ...
     };
+
+The field keyword takes two arguments, the field name and a hashref of key/values
+pairs.
+
+=head2 THE PROFILE KEYWORD
+
+The profile keyword (or pro) stores a validation profile (coderef) which is a
+validation sequence avaiable for reuse in code. 
+
+    package MyApp::Validation;
+    use Validation::Class;
+    
+    profile 'app_signup' => sub {
+        
+        my ($self, @args) = @_;
+        
+        return $self->validate(qw(
+            +name
+            +email
+            +email_confirmation
+            -login
+            +password
+            +password_confirmation
+        ));
+        
+    };
+    
+    package main;
+    
+    my $val = MyApp::Validation->new(params => $params);
+    
+    unless ($val->profile('app_signup')) {
+        die $val->errors_to_string;
+    }
 
 The field keyword takes two arguments, the field name and a hashref of key/values
 pairs.
@@ -1090,7 +1124,7 @@ which is an arrayref of error messages stored at class-level.
     
     # return all errors specific to the specified field (at the field-level)
     # as an arrayref
-    return $self->error('some_param');
+    return $self->error('some_field_name');
     
     # set an error specific to the specified field (at the field-level)
     # using the field object (hashref not field name)
@@ -1210,6 +1244,14 @@ The param method returns a single parameter by name.
 
     if ($self->param('chng_pass')) {
         $self->validate('password_confirmation');
+    }
+
+=head2 profile
+
+The profile method executes a stored validation profile.
+
+    unless ($self->profile('password_change')) {
+        die $self->errors_to_string;
     }
 
 =head2 queue

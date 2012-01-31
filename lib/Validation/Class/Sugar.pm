@@ -5,10 +5,10 @@ use warnings;
 
 package Validation::Class::Sugar;
 {
-    $Validation::Class::Sugar::VERSION = '3.4.4';
+    $Validation::Class::Sugar::VERSION = '3.5.4';
 }
 
-our $VERSION = '3.4.4';    # VERSION
+our $VERSION = '3.5.4';    # VERSION
 
 use Scalar::Util qw(blessed);
 use Carp qw(confess);
@@ -28,13 +28,15 @@ Moose::Exporter->setup_import_methods(
           filter
           dir
           directive
+          pro
+          profile
           load_classes
           load_plugins
           )
     ]
 );
 
-sub dir { directive(@_) }
+sub dir { goto &directive }
 
 sub directive {
     my ($meta, $name, $data) = @_;
@@ -54,7 +56,7 @@ sub directive {
     return 'directive', $name, $data;
 }
 
-sub fld { field(@_) }
+sub fld { goto &field }
 
 sub field {
     my ($meta, $name, $data) = @_;
@@ -71,7 +73,7 @@ sub field {
     return 'field', $name, $data;
 }
 
-sub flt { filter(@_) }
+sub flt { goto &filter }
 
 sub filter {
     my ($meta, $name, $data) = @_;
@@ -140,7 +142,7 @@ sub load_plugins {
     return [@plugins];
 }
 
-sub mxn { mixin(@_) }
+sub mxn { goto &mixin }
 
 sub mixin {
     my ($meta, $name, $data) = @_;
@@ -154,6 +156,22 @@ sub mixin {
     $CFG->{MIXINS}->{$name} = $data;
 
     return 'mixin', $name, $data;
+}
+
+sub pro { goto &profile }
+
+sub profile {
+    my ($meta, $name, $data) = @_;
+    my $config = find_or_create_cfg_attribute($meta);
+
+    confess("config attribute not present") unless blessed($config);
+
+    return undef unless ($name && "CODE" eq ref $data);
+
+    my $CFG = $config->profile;
+    $CFG->{PROFILES}->{$name} = $data;
+
+    return 'profile', $name, $data;
 }
 
 sub find_or_create_cfg_attribute {

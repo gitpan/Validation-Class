@@ -18,6 +18,7 @@ t/01-attributes.t
 t/02-package-declaration.t
 t/03-mixin-usages.t
 t/04-parameters.t
+t/04-profile-usages.t
 t/10-custom-validation.t
 t/10-stash.t
 t/10-validation.t
@@ -55,7 +56,6 @@ t/modules/MyVal/Person.pm
 t/modules/MyVal/Plugin/Glade.pm
 t/modules/MyVal/Staff.pm
 t/modules/MyVal/Ticket.pm
-t/tmpsorZOd.html
 t/validators/01-min_length.t
 t/validators/02-max_length.t
 t/validators/03-pattern.t
