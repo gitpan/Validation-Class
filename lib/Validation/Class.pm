@@ -5,12 +5,12 @@ use warnings;
 
 package Validation::Class;
 {
-    $Validation::Class::VERSION = '3.5.4';
+    $Validation::Class::VERSION = '3.5.5';
 }
 
 use 5.008001;
 
-our $VERSION = '3.5.4';    # VERSION
+our $VERSION = '3.5.5';    # VERSION
 
 use Moose ('has');
 use Moose::Exporter;
@@ -78,7 +78,7 @@ Validation::Class - Centralized Data Validation Framework
 
 =head1 VERSION
 
-version 3.5.4
+version 3.5.5
 
 =head1 SYNOPSIS
 
@@ -282,8 +282,10 @@ pairs.
 
 =head2 THE PROFILE KEYWORD
 
-The profile keyword (or pro) stores a validation profile (coderef) which is a
-validation sequence avaiable for reuse in code. 
+The profile keyword (or pro) stores a validation profile (coderef) which as in
+the traditional use of the term is a sequence of validation routines that validate
+data relevant to a specific action. The profile keyword takes a name and coderef
+as arguments.
 
     package MyApp::Validation;
     use Validation::Class;
@@ -1248,9 +1250,15 @@ The param method returns a single parameter by name.
 
 =head2 profile
 
-The profile method executes a stored validation profile.
+The profile method executes a stored validation profile, it requires a profile
+name and can be passed additional parameters which get forwarded into the
+profile routine in the order received.
 
     unless ($self->profile('password_change')) {
+        die $self->errors_to_string;
+    }
+    
+    unless ($self->profile('email_change', $dbi_handle)) {
         die $self->errors_to_string;
     }
 
