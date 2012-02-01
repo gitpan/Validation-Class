@@ -5,12 +5,12 @@ use warnings;
 
 package Validation::Class;
 {
-    $Validation::Class::VERSION = '3.5.5';
+    $Validation::Class::VERSION = '3.5.6';
 }
 
 use 5.008001;
 
-our $VERSION = '3.5.5';    # VERSION
+our $VERSION = '3.5.6';    # VERSION
 
 use Moose ('has');
 use Moose::Exporter;
@@ -78,7 +78,7 @@ Validation::Class - Centralized Data Validation Framework
 
 =head1 VERSION
 
-version 3.5.5
+version 3.5.6
 
 =head1 SYNOPSIS
 
@@ -86,7 +86,11 @@ version 3.5.5
     
     my $input = MyApp::Validation->new(params => $params);
     
-    unless ($input->validate()){
+    unless ($input->validate('user', 'pass')){
+        return $input->errors_to_string;
+    }
+    
+    unless ($input->profile('registration')) {
         return $input->errors_to_string;
     }
 
@@ -103,11 +107,16 @@ in both the Controller and Model. A validation class is defined as follows:
     
     use Validation::Class;
     
+    # a mixin template
+    mxn 'basic'  => {
+        required   => 1
+    };
+    
     # a validation rule
     fld 'login'  => {
         label      => 'User Login',
         error      => 'Login invalid.',
-        required   => 1,
+        mixin      => 'basic',
         validation => sub {
             my ($self, $this_field, $all_params) = @_;
             return $this_field->{value} eq 'admin' ? 1 : 0;
@@ -118,11 +127,22 @@ in both the Controller and Model. A validation class is defined as follows:
     fld 'password'  => {
         label         => 'User Password',
         error         => 'Password invalid.',
-        required      => 1,
+        mixin         => 'basic',
         validation    => sub {
             my ($self, $this_field, $all_params) = @_;
             return $this_field->{value} eq 'pass' ? 1 : 0;
         }
+    };
+    
+    # a validation profile
+    pro 'registration'  => sub {
+        my ($self, @args) = shift;
+        return $self->validate(qw(
+            +name
+            +email
+            -login
+            +password
+        ))
     };
     
     1;

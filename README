@@ -2,14 +2,18 @@ NAME
     Validation::Class - Centralized Data Validation Framework
 
 VERSION
-    version 3.5.5
+    version 3.5.6
 
 SYNOPSIS
         use MyApp::Validation;
     
         my $input = MyApp::Validation->new(params => $params);
     
-        unless ($input->validate()){
+        unless ($input->validate('user', 'pass')){
+            return $input->errors_to_string;
+        }
+    
+        unless ($input->profile('registration')) {
             return $input->errors_to_string;
         }
 
@@ -26,11 +30,16 @@ DESCRIPTION
     
         use Validation::Class;
     
+        # a mixin template
+        mxn 'basic'  => {
+            required   => 1
+        };
+    
         # a validation rule
         fld 'login'  => {
             label      => 'User Login',
             error      => 'Login invalid.',
-            required   => 1,
+            mixin      => 'basic',
             validation => sub {
                 my ($self, $this_field, $all_params) = @_;
                 return $this_field->{value} eq 'admin' ? 1 : 0;
@@ -41,11 +50,22 @@ DESCRIPTION
         fld 'password'  => {
             label         => 'User Password',
             error         => 'Password invalid.',
-            required      => 1,
+            mixin         => 'basic',
             validation    => sub {
                 my ($self, $this_field, $all_params) = @_;
                 return $this_field->{value} eq 'pass' ? 1 : 0;
             }
+        };
+    
+        # a validation profile
+        pro 'registration'  => sub {
+            my ($self, @args) = shift;
+            return $self->validate(qw(
+                +name
+                +email
+                -login
+                +password
+            ))
         };
     
         1;
