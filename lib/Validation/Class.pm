@@ -5,12 +5,12 @@ use warnings;
 
 package Validation::Class;
 {
-    $Validation::Class::VERSION = '3.6.3';
+    $Validation::Class::VERSION = '3.6.4';
 }
 
 use 5.008001;
 
-our $VERSION = '3.6.3';    # VERSION
+our $VERSION = '3.6.4';    # VERSION
 
 use Moose ('has');
 use Moose::Exporter;
@@ -78,7 +78,7 @@ Validation::Class - Centralized Data Validation Framework
 
 =head1 VERSION
 
-version 3.6.3
+version 3.6.4
 
 =head1 SYNOPSIS
 
@@ -96,7 +96,7 @@ version 3.6.3
 
 =head1 DESCRIPTION
 
-Validation::Class takes a different approach toward data validation, ... it
+Validation::Class takes a different approach towards data validation, ... it
 attempts to simplify and centralize data validation rules to ensure DRY
 (don't repeat yourself) code. The primary intent of this module is to provide
 a simplistic data modeling/validation framework.
@@ -108,12 +108,13 @@ Controller and Model alike.
 The benefits this approach provides might require you to change your perspective
 on parameter handling. Typically when designing an application we tend to name
 parameters arbitrarily with the only purpose being to identify incoming data within
-a script on a per use-case base.
+a script on a per use-case basis.
 
 To get the most out of Validation::Class you should consider each parameter
 hitting your application (individually) as a transmission fitting a very specific
-criteria. Your validation rules will act as filters which, rejects, or accepts and
-formats the transmission for use within your application. Yes, .. like a firewall.
+criteria. Your validation rules will act as filters which will reject or accept and
+format the transmission for use within your application. Yes, .. almost exactly
+like a firewall.
 
 A validation class is defined as follows:
 
@@ -368,16 +369,19 @@ so that if the validation still fails ... errors that are reported may not
 match the data that was submitted.
 
 If you're sure you'd rather employ aggressive filtering, I suggest setting
-the filtering attribute to 'post' for post-filtering or setting it to '' non
-and applying the filters manually via apply_filters().
+the filtering attribute to 'post' for post-filtering or setting it to null
+and applying the filters manually by calling the apply_filters() method.
 
 =head1 AUTO-SERIALIZATION/DESERIALIZATION
 
-Validation::Class supports hash automatic serialization/deserialization
-which means that you can set the parameters using a hashref of nested
-hashrefs and validate against them, or set the parameters using a hashref of
-key/value pairs and validate against that. This method is provided in
-Validation::Class via L<Hash::Flatten>. The following is an example of that:
+Validation::Class supports automatic serialization and deserialization of
+parameters with complex data structures which means that you can set a parameter
+as an arrayref or hashref of nested data structures and validate against them, 
+likewise you can set a parameters using parameter names which are serialized
+string representations of the keys within the complex structure you wish to set
+and validate against. The serialization rules are as documented in L<Hash::Flatten>.
+
+The following is an example of that:
 
     my $params = {
         user => {

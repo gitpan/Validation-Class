@@ -5,10 +5,10 @@ use warnings;
 
 package Validation::Class::Validator;
 {
-    $Validation::Class::Validator::VERSION = '3.6.3';
+    $Validation::Class::Validator::VERSION = '3.6.4';
 }
 
-our $VERSION = '3.6.3';    # VERSION
+our $VERSION = '3.6.4';    # VERSION
 
 use Moose::Role;
 use Array::Unique;
@@ -910,6 +910,8 @@ sub validate {
             my $varcount = scalar grep {/$name$ad\d+$/} keys %{$params};
 
             for (my $i = 0; $i < $varcount; $i++) {
+
+                next if defined $self->fields->{"$name:$i"};
 
                 my $label = ($field->{label} || $field->{name});
 
