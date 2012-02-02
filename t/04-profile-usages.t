@@ -3,7 +3,7 @@ BEGIN {
     use lib $FindBin::Bin. "/modules/";
 }
 
-use Test::More tests => 11;
+use Test::More tests => 12;
 
 package MyValAlt;
 
@@ -106,3 +106,12 @@ $v2->param(description => 'the bomb dot com');
 
 ok $v2->validate_profile('new_ticket'), 'new_ticket profile validated OK';
 ok $v2->error_count == 0, 'NO errors set';
+
+my $v3 = MyVal->new(
+    params => {
+        'person.name'        => 'the dude',
+        'ticket.description' => 'hot diggidy dog'
+    }
+);
+
+ok $v3->validate_profile('new_ticket'), 'new_ticket profile validated OK';

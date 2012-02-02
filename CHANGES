@@ -1,5 +1,9 @@
 This file documents the revision history for the Perl library Validation::Class.
 
+3.6.3   2012-02-02
+        - Updated POD (lots of updates)
+        - Updated the class method, intelligent handling of nested parameters within child classes
+
 3.6.0   2012-02-01
         - Updated POD (lots of updates)
         - Added the set_errors and get_errors methods

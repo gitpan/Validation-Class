@@ -5,10 +5,10 @@ use warnings;
 
 package Validation::Class::Validator;
 {
-    $Validation::Class::Validator::VERSION = '3.6.1';
+    $Validation::Class::Validator::VERSION = '3.6.3';
 }
 
-our $VERSION = '3.6.1';    # VERSION
+our $VERSION = '3.6.3';    # VERSION
 
 use Moose::Role;
 use Array::Unique;
@@ -293,7 +293,23 @@ sub class {
         'hash_inflator'  => $self->hash_inflator
     );
 
-    return $self->relatives->{$class}->new(merge(\%args, \%defaults));
+    my $child = $self->relatives->{$class}->new(merge(\%args, \%defaults));
+
+    foreach my $name (keys %{$child->params}) {
+
+        if ($name =~ /^$class\.(.*)/) {
+
+            if (defined $child->fields->{$1}) {
+
+                push @{$child->fields->{$1}->{alias}}, $name;
+
+            }
+
+        }
+
+    }
+
+    return $child;
 }
 
 sub check_field {
@@ -1105,7 +1121,7 @@ sub validate {
 
             if ($self->ignore_unknown) {
                 if ($self->report_unknown) {
-                    push @{$self->errors}, $error
+                    $self->set_errors($error)
                       unless grep { $_ eq $error } @{$self->errors};
                 }
             }
@@ -1155,7 +1171,7 @@ sub xxx_suicide_by_unknown_field {
     if ($self->ignore_unknown) {
 
         if ($self->report_unknown) {
-            push @{$self->errors}, $error
+            $self->set_errors($error)
               unless grep { $_ eq $error } @{$self->errors};
         }
 

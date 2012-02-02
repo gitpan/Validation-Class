@@ -5,12 +5,12 @@ use warnings;
 
 package Validation::Class;
 {
-    $Validation::Class::VERSION = '3.6.1';
+    $Validation::Class::VERSION = '3.6.3';
 }
 
 use 5.008001;
 
-our $VERSION = '3.6.1';    # VERSION
+our $VERSION = '3.6.3';    # VERSION
 
 use Moose ('has');
 use Moose::Exporter;
@@ -78,7 +78,7 @@ Validation::Class - Centralized Data Validation Framework
 
 =head1 VERSION
 
-version 3.6.1
+version 3.6.3
 
 =head1 SYNOPSIS
 
@@ -96,13 +96,26 @@ version 3.6.1
 
 =head1 DESCRIPTION
 
-Validation::Class (aka compartmentalization-overkill for the data validation Nazi)
-is a different approach to data validation, it attempts to simplify and centralize
-data validation rules to ensure DRY (don't repeat yourself) code. The primary
-intent of this module is to provide a simplistic validation framework. Your
-validation class is your data input firewall and can be used anywhere and is
-flexible enough in an MVC environment to be used in both the Controller and
-Model. A validation class is defined as follows:
+Validation::Class takes a different approach toward data validation, ... it
+attempts to simplify and centralize data validation rules to ensure DRY
+(don't repeat yourself) code. The primary intent of this module is to provide
+a simplistic data modeling/validation framework.
+
+Your validation class can be thought of as your data input firewall which can be
+used anywhere and is flexible enough in an MVC environment to be used in the
+Controller and Model alike.
+
+The benefits this approach provides might require you to change your perspective
+on parameter handling. Typically when designing an application we tend to name
+parameters arbitrarily with the only purpose being to identify incoming data within
+a script on a per use-case base.
+
+To get the most out of Validation::Class you should consider each parameter
+hitting your application (individually) as a transmission fitting a very specific
+criteria. Your validation rules will act as filters which, rejects, or accepts and
+formats the transmission for use within your application. Yes, .. like a firewall.
+
+A validation class is defined as follows:
 
     package MyApp::Validation;
     
@@ -957,7 +970,8 @@ The new method instantiates and returns an instance of your validation class.
 =head2 ignore_unknown
 
 The ignore_unknown boolean determines whether your application will live or die
-upon encountering unregistered field directives during validation.
+upon encountering unregistered field directives during validation. This is off
+(0) by default, attempts to validate unknown fields WILL cause the program to die.
 
     my $self = MyApp::Validation->new(params => $params, ignore_unknown => 1);
     $self->ignore_unknown(1);
@@ -1032,7 +1046,8 @@ The params attribute gets/sets the parameters to be validated.
 
 The report_unknown boolean determines whether your application will report
 unregistered fields as class-level errors upon encountering unregistered field
-directives during validation.
+directives during validation. This is off (0) by default, attempts to validate
+unknown fields will NOT be registered as class-level variables.
 
     my $self = MyApp::Validation->new(params => $params,
     ignore_unknown => 1, report_unknown => 1);
@@ -1072,8 +1087,12 @@ namespace of the calling class that issued the load_classes() method call.
 Existing parameters and configuration options are passed to the child class's
 constructor. All attributes can be easily overwritten using the attribute's
 accessors on the child class. Also, you may prevent/override arguments from
-being copy to the new child class object by supplying the them as aruments to
+being copy to the new child class object by supplying the them as arguments to
 this method.
+
+The class method is also quite handy in that it will detect parameters that are
+prefixed with the name of the class being fetched, and adjust the matching rule
+(if any) to allow validation to occur.
 
     package MyVal;
     use Validation::Class; __PACKAGE__->load_classes;
@@ -1089,7 +1108,7 @@ this method.
     my $kid4 = $rules->class('step_child'); # loads MyVal::StepChild;
     
     # WITHOUT COPYING PARAMS FROM MyVal
-    my $kid5 = $rules->class('child', params => {});
+    my $kid5 = $rules->class('child', params => {}); # .. etc
     
     1;
 
