@@ -26,6 +26,7 @@ t/11-array-param-validation.t
 t/11-group-validation.t
 t/12-queued-rules.t
 t/13-independence.t
+t/13-multiline-labels-and-errors.t
 t/14-relatives.t
 t/15-toggling.t
 t/16-cascading.t

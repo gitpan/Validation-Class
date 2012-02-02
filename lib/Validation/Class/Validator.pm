@@ -5,10 +5,10 @@ use warnings;
 
 package Validation::Class::Validator;
 {
-    $Validation::Class::Validator::VERSION = '3.6.5';
+    $Validation::Class::Validator::VERSION = '3.6.6';
 }
 
-our $VERSION = '3.6.5';    # VERSION
+our $VERSION = '3.6.6';    # VERSION
 
 use Moose::Role;
 use Array::Unique;
@@ -499,6 +499,16 @@ sub normalize {
         # by default fields should have a filtering directive
         if (!defined $field->{filtering}) {
             $field->{filtering} = $self->filtering if $self->filtering;
+        }
+
+        # static labels and error messages may contain multiline
+        # strings for the sake of aesthetics, correct this
+        foreach my $string ('error', 'label') {
+            if (defined $field->{$string}) {
+                $field->{$string} =~ s/^[\n\s\t\r]+//g;
+                $field->{$string} =~ s/[\n\s\t\r]+$//g;
+                $field->{$string} =~ s/[\n\s\t\r]+/ /g;
+            }
         }
 
     }

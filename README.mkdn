@@ -4,7 +4,7 @@ Validation::Class - Centralized Data Validation Framework
 
 # VERSION
 
-version 3.6.5
+version 3.6.6
 
 # SYNOPSIS
 

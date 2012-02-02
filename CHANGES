@@ -1,5 +1,8 @@
 This file documents the revision history for the Perl library Validation::Class.
 
+3.6.6   2012-02-02
+        - error and label directives now handle multiline strings with DWIM formatting
+
 3.6.5   2012-02-02
         - Parameters arrayref magic doesn't overwrite existing array element rules
 
