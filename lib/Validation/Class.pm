@@ -5,12 +5,12 @@ use warnings;
 
 package Validation::Class;
 {
-    $Validation::Class::VERSION = '3.6.0';
+    $Validation::Class::VERSION = '3.6.1';
 }
 
 use 5.008001;
 
-our $VERSION = '3.6.0';    # VERSION
+our $VERSION = '3.6.1';    # VERSION
 
 use Moose ('has');
 use Moose::Exporter;
@@ -78,7 +78,7 @@ Validation::Class - Centralized Data Validation Framework
 
 =head1 VERSION
 
-version 3.6.0
+version 3.6.1
 
 =head1 SYNOPSIS
 
@@ -90,7 +90,7 @@ version 3.6.0
         return $input->errors_to_string;
     }
     
-    unless ($input->validation_profile('registration')) {
+    unless ($input->validate_profile('registration')) {
         return $input->errors_to_string;
     }
 
@@ -331,7 +331,7 @@ as arguments.
     
     my $val = MyApp::Validation->new(params => $params);
     
-    unless ($val->validation_profile('app_signup')) {
+    unless ($val->validate_profile('app_signup')) {
         die $val->errors_to_string;
     }
 
@@ -1474,11 +1474,11 @@ The validate_profile method executes a stored validation profile, it requires a
 profile name and can be passed additional parameters which get forwarded into the
 profile routine in the order received.
 
-    unless ($self->validation_profile('password_change')) {
+    unless ($self->validate_profile('password_change')) {
         die $self->errors_to_string;
     }
     
-    unless ($self->validation_profile('email_change', $dbi_handle)) {
+    unless ($self->validate_profile('email_change', $dbi_handle)) {
         die $self->errors_to_string;
     }
 
