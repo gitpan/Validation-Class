@@ -2,7 +2,7 @@ NAME
     Validation::Class - Centralized Data Validation Framework
 
 VERSION
-    version 3.5.6
+    version 3.6.0
 
 SYNOPSIS
         use MyApp::Validation;
@@ -13,18 +13,19 @@ SYNOPSIS
             return $input->errors_to_string;
         }
     
-        unless ($input->profile('registration')) {
+        unless ($input->validation_profile('registration')) {
             return $input->errors_to_string;
         }
 
 DESCRIPTION
-    Validation::Class is a different approach to data validation, it
-    attempts to simplify and centralize data validation rules to ensure DRY
-    (don't repeat yourself) code. The primary intent of this module is to
-    provide a simplistic validation framework. Your validation class is your
-    data input firewall and can be used anywhere and is flexible enough in
-    an MVC environment to be used in both the Controller and Model. A
-    validation class is defined as follows:
+    Validation::Class (aka compartmentalization-overkill for the data
+    validation Nazi) is a different approach to data validation, it attempts
+    to simplify and centralize data validation rules to ensure DRY (don't
+    repeat yourself) code. The primary intent of this module is to provide a
+    simplistic validation framework. Your validation class is your data
+    input firewall and can be used anywhere and is flexible enough in an MVC
+    environment to be used in both the Controller and Model. A validation
+    class is defined as follows:
 
         package MyApp::Validation;
     
@@ -74,9 +75,8 @@ DESCRIPTION
     parameters. You specify the input parameters at instantiation,
     parameters should take the form of a hashref of key/value pairs.
     Multi-level (nested) hashrefs are allowed and are inflated/deflated in
-    accordance with the rules of Hash::Flatten or your hash inflator
-    configuration. The following is an example on using your validate class
-    to validate input in various scenarios:
+    accordance with the rules of Hash::Flatten. The following is an example
+    on using your validate class to validate input in various scenarios:
 
         # web app
         package MyApp;
@@ -95,6 +95,7 @@ DESCRIPTION
             
                 # print errors to browser unless validation is successful
                 return $rules->errors_to_string;
+            
             }
         
             return 'you have authenticated';
@@ -248,7 +249,7 @@ BUILDING A VALIDATION CLASS
     
         my $val = MyApp::Validation->new(params => $params);
     
-        unless ($val->profile('app_signup')) {
+        unless ($val->validation_profile('app_signup')) {
             die $val->errors_to_string;
         }
 
@@ -279,7 +280,7 @@ AUTO-SERIALIZATION/DESERIALIZATION
     Validation::Class supports hash automatic serialization/deserialization
     which means that you can set the parameters using a hashref of nested
     hashrefs and validate against them, or set the parameters using a
-    hashref of key/value pairs and validate against that. This function is
+    hashref of key/value pairs and validate against that. This method is
     provided in Validation::Class via Hash::Flatten. The following is an
     example of that:
 
@@ -946,7 +947,9 @@ VALIDATION CLASS METHODS
     the namespace of the calling class that issued the load_classes() method
     call. Existing parameters and configuration options are passed to the
     child class's constructor. All attributes can be easily overwritten
-    using the attribute's accessors on the child class.
+    using the attribute's accessors on the child class. Also, you may
+    prevent/override arguments from being copy to the new child class object
+    by supplying the them as aruments to this method.
 
         package MyVal;
         use Validation::Class; __PACKAGE__->load_classes;
@@ -960,6 +963,9 @@ VALIDATION CLASS METHODS
     
         my $kid3 = $rules->class('child'); # loads MyVal::Child;
         my $kid4 = $rules->class('step_child'); # loads MyVal::StepChild;
+    
+        # WITHOUT COPYING PARAMS FROM MyVal
+        my $kid5 = $rules->class('child', params => {});
     
         1;
 
@@ -1011,9 +1017,9 @@ VALIDATION CLASS METHODS
         1;
 
   error
-    The error function is used to set and/or retrieve errors encountered
-    during validation. The error function with no parameters returns the
-    error message object which is an arrayref of error messages stored at
+    The error method is used to set and/or retrieve errors encountered
+    during validation. The error method with no parameters returns the error
+    message object which is an arrayref of error messages stored at
     class-level.
 
         # return all errors encountered/set as an arrayref
@@ -1032,7 +1038,7 @@ VALIDATION CLASS METHODS
         }
 
   error_count
-    The error_count function returns the total number of error encountered
+    The error_count method returns the total number of error encountered
     from the last validation call.
 
         return $self->error_count();
@@ -1050,8 +1056,8 @@ VALIDATION CLASS METHODS
         }
 
   errors_to_string
-    The errors_to_string function stringifies the error arrayref object
-    using the specified delimiter or ', ' by default.
+    The errors_to_string method stringifies the error arrayref object using
+    the specified delimiter or ', ' by default.
 
         return $self->errors_to_string();
         return $self->errors_to_string("<br/>\n");
@@ -1059,6 +1065,12 @@ VALIDATION CLASS METHODS
         unless ($self->validate) {
             return $self->errors_to_string;
         }
+
+  get_errors
+    The get_errors method returns the list of class-level error set on the
+    current class.
+
+        my @errors = $self->get_errors();
 
   get_params
     The get_params method returns the values (in list form) of the
@@ -1136,19 +1148,6 @@ VALIDATION CLASS METHODS
             $self->validate('password_confirmation');
         }
 
-  profile
-    The profile method executes a stored validation profile, it requires a
-    profile name and can be passed additional parameters which get forwarded
-    into the profile routine in the order received.
-
-        unless ($self->profile('password_change')) {
-            die $self->errors_to_string;
-        }
-    
-        unless ($self->profile('email_change', $dbi_handle)) {
-            die $self->errors_to_string;
-        }
-
   queue
     The queue method is a convenience method used specifically to append the
     stashed attribute allowing you to *queue* field to be validated. This
@@ -1217,6 +1216,12 @@ VALIDATION CLASS METHODS
     automatically at instantiation and validation.
 
         $self->sanitize();
+
+  set_errors
+    The set_errors method pushes its arguments (error messages) onto the
+    class-level error stack of the current class.
+
+        my $count = $self->set_errors('Oops', 'OMG', 'WTF');
 
   set_params_hash
     Depending on how parameters are being input into your application, if
@@ -1302,7 +1307,7 @@ VALIDATION CLASS METHODS
     temporarily alter whether a field is required or not during run-time.
     This functionality is often referred to as the *toggle* function.
 
-    This function is important when you define a field (or two or three) as
+    This method is important when you define a field (or two or three) as
     required or non and want to change that per validation. This is done by
     calling the validate() method with a list of fields to be validated and
     prefixing the target fields with a plus or minus as follows:
@@ -1319,6 +1324,19 @@ VALIDATION CLASS METHODS
     
         unless ($input->validate(@spec)){
             return $input->errors_to_string;
+        }
+
+  validate_profile
+    The validate_profile method executes a stored validation profile, it
+    requires a profile name and can be passed additional parameters which
+    get forwarded into the profile routine in the order received.
+
+        unless ($self->validation_profile('password_change')) {
+            die $self->errors_to_string;
+        }
+    
+        unless ($self->validation_profile('email_change', $dbi_handle)) {
+            die $self->errors_to_string;
         }
 
 AUTHOR

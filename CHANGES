@@ -1,5 +1,9 @@
 This file documents the revision history for the Perl library Validation::Class.
 
+3.6.0   2012-02-01
+        - Updated POD (lots of updates)
+        - Added the set_errors and get_errors methods
+
 3.5.4   2012-01-28
         - Implement a profile mechanism for quickly executing a validation sequence
 

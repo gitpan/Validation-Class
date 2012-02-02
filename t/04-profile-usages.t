@@ -1,6 +1,11 @@
-use Test::More tests => 5;
+BEGIN {
+    use FindBin;
+    use lib $FindBin::Bin. "/modules/";
+}
 
-package MyVal;
+use Test::More tests => 11;
+
+package MyValAlt;
 
 use Validation::Class;
 
@@ -70,16 +75,34 @@ profile email_change => sub {
 
 package main;
 
-my $v = MyVal->new(params => {});
-ok $v, 'initialization successful';
-ok !$v->validate_profile('email_change'),
-  'email_change profile did not validate';
-ok $v->error_count == 2, '2 errors encountered on failure';
+use MyVal;
 
-$v->params->{email}         = 'abc';
-$v->params->{email_confirm} = 'abc';
-ok !$v->validate_profile('email_change'),
+my $v1 = MyValAlt->new(params => {});
+
+ok $v1, 'initialization successful';
+ok !$v1->validate_profile('email_change'),
   'email_change profile did not validate';
-ok $v->validate_profile('email_change', {this => 'that'}),
+ok $v1->error_count == 2, '2 errors encountered on failure';
+
+$v1->params->{email}         = 'abc';
+$v1->params->{email_confirm} = 'abc';
+
+ok !$v1->validate_profile('email_change'),
+  'email_change profile did not validate';
+ok $v1->validate_profile('email_change', {this => 'that'}),
   'email_change profile validated OK';
 
+my $v2 = MyVal->new(params => {});
+
+ok !$v2->validate_profile('new_ticket'), 'new_ticket profile did not validate';
+ok $v2->error_count == 2, '2 errors encountered on failure';
+
+$v2->param(name => 'the dude');
+
+ok !$v2->validate_profile('new_ticket'), 'new_ticket profile did not validate';
+ok $v2->error_count == 1, '1 errors encountered on failure';
+
+$v2->param(description => 'the bomb dot com');
+
+ok $v2->validate_profile('new_ticket'), 'new_ticket profile validated OK';
+ok $v2->error_count == 0, 'NO errors set';

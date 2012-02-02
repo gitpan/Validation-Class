@@ -5,10 +5,10 @@ use warnings;
 
 package Validation::Class::Validator;
 {
-    $Validation::Class::Validator::VERSION = '3.5.6';
+    $Validation::Class::Validator::VERSION = '3.6.0';
 }
 
-our $VERSION = '3.5.6';    # VERSION
+our $VERSION = '3.6.0';    # VERSION
 
 use Moose::Role;
 use Array::Unique;
@@ -279,6 +279,12 @@ sub BUILD {
 sub class {
     my ($self, $class, %args) = @_;
 
+    die
+      'Relative class does not exist, please ensure you are calling the class '
+      . 'method from the parent class, i.e. the class where you called the '
+      . 'load_classes method'
+      unless defined $self->relatives->{$class};
+
     my %defaults = (
         'params'         => $self->params,
         'stashed'        => $self->stashed,
@@ -422,6 +428,13 @@ sub error_fields {
     }
 
     return $error_fields;
+}
+
+sub get_errors {
+    my ($self) = @_;
+
+    # get class-level errors as a list
+    return (@{$self->{errors}});
 }
 
 sub get_params {
@@ -585,6 +598,13 @@ sub reset_fields {
     $self->reset_errors();
 
     return $self;
+}
+
+sub set_errors {
+    my ($self, @errors) = @_;
+
+    # set class-level errors from list
+    return push @{$self->{errors}}, @errors if @errors;
 }
 
 sub set_params_hash {
@@ -1112,6 +1132,13 @@ sub validate_profile {
     my ($self, $name, @args) = @_;
 
     return 0 unless $name;
+
+    # first things first, reset the errors and values, etc,
+    # returning the validation class to its pristine state
+    $self->normalize();
+    $self->apply_filters('pre') if $self->filtering;
+    $self->reset_fields();
+    $self->reset_errors();
 
     if ("CODE" eq ref $self->profiles->{$name}) {
 

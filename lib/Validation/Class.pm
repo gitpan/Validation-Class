@@ -5,12 +5,12 @@ use warnings;
 
 package Validation::Class;
 {
-    $Validation::Class::VERSION = '3.5.6';
+    $Validation::Class::VERSION = '3.6.0';
 }
 
 use 5.008001;
 
-our $VERSION = '3.5.6';    # VERSION
+our $VERSION = '3.6.0';    # VERSION
 
 use Moose ('has');
 use Moose::Exporter;
@@ -78,7 +78,7 @@ Validation::Class - Centralized Data Validation Framework
 
 =head1 VERSION
 
-version 3.5.6
+version 3.6.0
 
 =head1 SYNOPSIS
 
@@ -90,18 +90,19 @@ version 3.5.6
         return $input->errors_to_string;
     }
     
-    unless ($input->profile('registration')) {
+    unless ($input->validation_profile('registration')) {
         return $input->errors_to_string;
     }
 
 =head1 DESCRIPTION
 
-Validation::Class is a different approach to data validation, it attempts to
-simplify and centralize data validation rules to ensure DRY (don't repeat
-yourself) code. The primary intent of this module is to provide a simplistic
-validation framework. Your validation class is your data input firewall and
-can be used anywhere and is flexible enough in an MVC environment to be used
-in both the Controller and Model. A validation class is defined as follows:
+Validation::Class (aka compartmentalization-overkill for the data validation Nazi)
+is a different approach to data validation, it attempts to simplify and centralize
+data validation rules to ensure DRY (don't repeat yourself) code. The primary
+intent of this module is to provide a simplistic validation framework. Your
+validation class is your data input firewall and can be used anywhere and is
+flexible enough in an MVC environment to be used in both the Controller and
+Model. A validation class is defined as follows:
 
     package MyApp::Validation;
     
@@ -150,9 +151,9 @@ in both the Controller and Model. A validation class is defined as follows:
 The fields defined will be used to validate the specified input parameters.
 You specify the input parameters at instantiation, parameters should take the
 form of a hashref of key/value pairs. Multi-level (nested) hashrefs are allowed
-and are inflated/deflated in accordance with the rules of L<Hash::Flatten> or
-your hash inflator configuration. The following is an example on using your
-validate class to validate input in various scenarios:
+and are inflated/deflated in accordance with the rules of L<Hash::Flatten>.
+The following is an example on using your validate class to validate input in
+various scenarios:
 
     # web app
     package MyApp;
@@ -171,6 +172,7 @@ validate class to validate input in various scenarios:
             
             # print errors to browser unless validation is successful
             return $rules->errors_to_string;
+            
         }
         
         return 'you have authenticated';
@@ -329,7 +331,7 @@ as arguments.
     
     my $val = MyApp::Validation->new(params => $params);
     
-    unless ($val->profile('app_signup')) {
+    unless ($val->validation_profile('app_signup')) {
         die $val->errors_to_string;
     }
 
@@ -361,7 +363,7 @@ and applying the filters manually via apply_filters().
 Validation::Class supports hash automatic serialization/deserialization
 which means that you can set the parameters using a hashref of nested
 hashrefs and validate against them, or set the parameters using a hashref of
-key/value pairs and validate against that. This function is provided in
+key/value pairs and validate against that. This method is provided in
 Validation::Class via L<Hash::Flatten>. The following is an example of that:
 
     my $params = {
@@ -1069,7 +1071,9 @@ The class method returns a new initialize child validation class under the
 namespace of the calling class that issued the load_classes() method call.
 Existing parameters and configuration options are passed to the child class's
 constructor. All attributes can be easily overwritten using the attribute's
-accessors on the child class.
+accessors on the child class. Also, you may prevent/override arguments from
+being copy to the new child class object by supplying the them as aruments to
+this method.
 
     package MyVal;
     use Validation::Class; __PACKAGE__->load_classes;
@@ -1083,6 +1087,9 @@ accessors on the child class.
     
     my $kid3 = $rules->class('child'); # loads MyVal::Child;
     my $kid4 = $rules->class('step_child'); # loads MyVal::StepChild;
+    
+    # WITHOUT COPYING PARAMS FROM MyVal
+    my $kid5 = $rules->class('child', params => {});
     
     1;
 
@@ -1137,8 +1144,8 @@ run-time.
 
 =head2 error
 
-The error function is used to set and/or retrieve errors encountered during
-validation. The error function with no parameters returns the error message object
+The error method is used to set and/or retrieve errors encountered during
+validation. The error method with no parameters returns the error message object
 which is an arrayref of error messages stored at class-level. 
 
     # return all errors encountered/set as an arrayref
@@ -1158,7 +1165,7 @@ which is an arrayref of error messages stored at class-level.
 
 =head2 error_count
 
-The error_count function returns the total number of error encountered from the 
+The error_count method returns the total number of error encountered from the 
 last validation call.
 
     return $self->error_count();
@@ -1178,7 +1185,7 @@ of error messages.
 
 =head2 errors_to_string
 
-The errors_to_string function stringifies the error arrayref object using the
+The errors_to_string method stringifies the error arrayref object using the
 specified delimiter or ', ' by default. 
 
     return $self->errors_to_string();
@@ -1187,6 +1194,13 @@ specified delimiter or ', ' by default.
     unless ($self->validate) {
         return $self->errors_to_string;
     }
+
+=head2 get_errors
+
+The get_errors method returns the list of class-level error set on the current
+class.
+
+    my @errors = $self->get_errors();
 
 =head2 get_params
 
@@ -1268,20 +1282,6 @@ The param method returns a single parameter by name.
         $self->validate('password_confirmation');
     }
 
-=head2 profile
-
-The profile method executes a stored validation profile, it requires a profile
-name and can be passed additional parameters which get forwarded into the
-profile routine in the order received.
-
-    unless ($self->profile('password_change')) {
-        die $self->errors_to_string;
-    }
-    
-    unless ($self->profile('email_change', $dbi_handle)) {
-        die $self->errors_to_string;
-    }
-
 =head2 queue
 
 The queue method is a convenience method used specifically to append the
@@ -1355,6 +1355,13 @@ environment filtering any parameters present. This method is executed
 automatically at instantiation and validation. 
 
     $self->sanitize();
+
+=head2 set_errors
+
+The set_errors method pushes its arguments (error messages) onto the class-level
+error stack of the current class.
+
+    my $count = $self->set_errors('Oops', 'OMG', 'WTF');
 
 =head2 set_params_hash
 
@@ -1442,7 +1449,7 @@ Another cool trick the validate() method can perform is the ability to temporari
 alter whether a field is required or not during run-time. This functionality is
 often referred to as the *toggle* function.
 
-This function is important when you define a field (or two or three) as required
+This method is important when you define a field (or two or three) as required
 or non and want to change that per validation. This is done by calling the
 validate() method with a list of fields to be validated and prefixing the
 target fields with a plus or minus as follows:
@@ -1459,6 +1466,20 @@ target fields with a plus or minus as follows:
     
     unless ($input->validate(@spec)){
         return $input->errors_to_string;
+    }
+
+=head2 validate_profile
+
+The validate_profile method executes a stored validation profile, it requires a
+profile name and can be passed additional parameters which get forwarded into the
+profile routine in the order received.
+
+    unless ($self->validation_profile('password_change')) {
+        die $self->errors_to_string;
+    }
+    
+    unless ($self->validation_profile('email_change', $dbi_handle)) {
+        die $self->errors_to_string;
     }
 
 =head1 AUTHOR
