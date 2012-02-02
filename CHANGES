@@ -1,6 +1,6 @@
 This file documents the revision history for the Perl library Validation::Class.
 
-3.6.4   2012-02-02
+3.6.5   2012-02-02
         - Parameters arrayref magic doesn't overwrite existing array element rules
 
 3.6.3   2012-02-02
