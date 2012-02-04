@@ -5,10 +5,10 @@ use warnings;
 
 package Validation::Class::Sugar;
 {
-    $Validation::Class::Sugar::VERSION = '3.6.6';
+    $Validation::Class::Sugar::VERSION = '4.01003407';
 }
 
-our $VERSION = '3.6.6';    # VERSION
+our $VERSION = '4.01003407';    # VERSION
 
 use Scalar::Util qw(blessed);
 use Carp qw(confess);
@@ -20,16 +20,18 @@ use Module::Find;
 Moose::Exporter->setup_import_methods(
     with_meta => [
         qw(
-          fld
-          field
-          mxn
-          mixin
-          flt
-          filter
           dir
           directive
+          fld
+          field
+          flt
+          filter
+          mxn
+          mixin
           pro
           profile
+
+          load
           load_classes
           load_plugins
           )
@@ -87,6 +89,14 @@ sub filter {
     $CFG->{FILTERS}->{$name} = $data;
 
     return 'filter', $name, $data;
+}
+
+sub load {
+    my ($meta, $data) = @_;
+    my $caller = caller(1);    # hackaroni toni
+
+    $caller->load_classes() if $data->{classes};
+    $caller->load_plugins(@{$data->{plugins}}) if $data->{plugins};
 }
 
 sub load_classes {

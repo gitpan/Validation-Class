@@ -2,7 +2,7 @@ NAME
     Validation::Class - Centralized Data Validation Framework
 
 VERSION
-    version 3.6.6
+    version 4.01003407
 
 SYNOPSIS
         use MyApp::Validation;
@@ -354,7 +354,7 @@ SEPARATION OF CONCERNS
         package MyVal;
         use Validation::Class;
     
-        __PACKAGE__->load_classes;
+        load { classes => 1 };
     
         package main;
     
@@ -976,7 +976,11 @@ VALIDATION CLASS METHODS
     the matching rule (if any) to allow validation to occur.
 
         package MyVal;
-        use Validation::Class; __PACKAGE__->load_classes;
+        use Validation::Class;
+    
+        load {
+            classes => 1 # load child classes e.g. MyVal::*
+        };
     
         package main;
     
@@ -1135,15 +1139,40 @@ VALIDATION CLASS METHODS
             print $params->{user}->{login};
         }
 
+  load
+    The load method provides a more structured and aesthetically pleasing
+    interface for configuring the current class.
+
+        package MyVal;
+        use Validation::Class;
+    
+        load {
+            classes => 1, # same as above
+            plugins => [
+                ...
+            ]
+        };
+    
+        1;
+
   load_classes
-    The load_classes method is used Module::Find to load child classes for
+    The load_classes method uses Module::Find to load child classes for
     convenient access through the class() method. Existing parameters and
     configuration options are passed to the child class's constructor. All
     attributes can be easily overwritten using the attribute's accessors on
     the child class.
 
         package MyVal;
-        use Validation::Class; __PACKAGE__->load_classes;
+        use Validation::Class;
+    
+        __PACKAGE__->load_classes;
+    
+        # or
+    
+        load {
+            classes => 1 # same as above
+        };
+    
         1;
 
   load_plugins
@@ -1162,6 +1191,15 @@ VALIDATION CLASS METHODS
         # loads Validation::Class::Plugin::SuperX
     
         __PACKAGE__->load_plugins('+MyApp::Validation::Plugin::SuperY');
+    
+        # or
+    
+        load {
+            plugins => [
+                'SuperX',
+                '+MyApp::Validation::Plugin::SuperY'
+            ]
+        };
     
         1;
 

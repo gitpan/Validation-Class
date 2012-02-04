@@ -5,10 +5,10 @@ use warnings;
 
 package Validation::Class::Errors;
 {
-    $Validation::Class::Errors::VERSION = '3.6.6';
+    $Validation::Class::Errors::VERSION = '4.01003407';
 }
 
-our $VERSION = '3.6.6';    # VERSION
+our $VERSION = '4.01003407';    # VERSION
 
 use Moose::Role;
 

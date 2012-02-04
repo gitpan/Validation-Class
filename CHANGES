@@ -1,5 +1,8 @@
 This file documents the revision history for the Perl library Validation::Class.
 
+4.01003407 / 2012-02-04 
+        - Udated POD, added new load() method for easy configuration, new versioning style and changes file
+
 3.6.6   2012-02-02
         - error and label directives now handle multiline strings with DWIM formatting
 

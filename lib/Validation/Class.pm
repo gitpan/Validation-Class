@@ -5,12 +5,12 @@ use warnings;
 
 package Validation::Class;
 {
-    $Validation::Class::VERSION = '3.6.6';
+    $Validation::Class::VERSION = '4.01003407';
 }
 
 use 5.008001;
 
-our $VERSION = '3.6.6';    # VERSION
+our $VERSION = '4.01003407';    # VERSION
 
 use Moose ('has');
 use Moose::Exporter;
@@ -78,7 +78,7 @@ Validation::Class - Centralized Data Validation Framework
 
 =head1 VERSION
 
-version 3.6.6
+version 4.01003407
 
 =head1 SYNOPSIS
 
@@ -437,7 +437,7 @@ classes. The following is an example of this:
     package MyVal;
     use Validation::Class;
     
-    __PACKAGE__->load_classes;
+    load { classes => 1 };
     
     package main;
     
@@ -1099,7 +1099,11 @@ prefixed with the name of the class being fetched, and adjust the matching rule
 (if any) to allow validation to occur.
 
     package MyVal;
-    use Validation::Class; __PACKAGE__->load_classes;
+    use Validation::Class;
+    
+    load {
+        classes => 1 # load child classes e.g. MyVal::*
+    };
     
     package main;
     
@@ -1266,16 +1270,42 @@ L<Hash::Flatten>.
         print $params->{user}->{login};
     }
 
+=head2 load
+
+The load method provides a more structured and aesthetically pleasing interface
+for configuring the current class. 
+
+    package MyVal;
+    use Validation::Class;
+    
+    load {
+        classes => 1, # same as above
+        plugins => [
+            ...
+        ]
+    };
+    
+    1;
+
 =head2 load_classes
 
-The load_classes method is used L<Module::Find> to load child classes for
+The load_classes method uses L<Module::Find> to load child classes for
 convenient access through the class() method. Existing parameters and
 configuration options are passed to the child class's constructor. All
 attributes can be easily overwritten using the attribute's accessors on the
 child class.
 
     package MyVal;
-    use Validation::Class; __PACKAGE__->load_classes;
+    use Validation::Class;
+    
+    __PACKAGE__->load_classes;
+    
+    # or
+    
+    load {
+        classes => 1 # same as above
+    };
+    
     1;
 
 =head2 load_plugins
@@ -1294,6 +1324,15 @@ L<Validation::Class::Plugins>.
     # loads Validation::Class::Plugin::SuperX
     
     __PACKAGE__->load_plugins('+MyApp::Validation::Plugin::SuperY');
+    
+    # or
+    
+    load {
+        plugins => [
+            'SuperX',
+            '+MyApp::Validation::Plugin::SuperY'
+        ]
+    };
     
     1;
 
