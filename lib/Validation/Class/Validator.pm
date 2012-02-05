@@ -5,10 +5,10 @@ use warnings;
 
 package Validation::Class::Validator;
 {
-    $Validation::Class::Validator::VERSION = '4.01003407';
+    $Validation::Class::Validator::VERSION = '4.01003514';
 }
 
-our $VERSION = '4.01003407';    # VERSION
+our $VERSION = '4.01003514';    # VERSION
 
 use Moose::Role;
 use Array::Unique;
@@ -294,10 +294,13 @@ sub class {
     );
 
     my $child = $self->relatives->{$class}->new(merge(\%args, \%defaults));
+    my $delimiter = $self->hash_inflator->{'HashDelimiter'};
+
+    $delimiter =~ s/([\.\+\-\:\,\\\/])/\\$1/g;
 
     foreach my $name (keys %{$child->params}) {
 
-        if ($name =~ /^$class\.(.*)/) {
+        if ($name =~ /^$class$delimiter(.*)/) {
 
             if (defined $child->fields->{$1}) {
 
