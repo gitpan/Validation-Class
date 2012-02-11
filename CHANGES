@@ -1,11 +1,17 @@
 This file documents the revision history for the Perl library Validation::Class.
 
+5.0.0_01 (2012-02-11)
+    * Updated 2 plugins tests
+
+5.0.0_00 (2012-02-11)
+    * Removed Moose and assorted dependencies, changed/chaning plugin design
+
 4.01003514 (2012-02-05)
     * Udated changes file, fixed unreported bug in the class() method
 
 4.01003407 (2012-02-04) 
     * Udated POD, added new load() method for easy configuration, new versioning
-  style and changes file
+      style and changes file
 
 3.6.60000 (2012-02-02)
     * error and label directives now handle multiline strings with DWIM formatting
@@ -16,7 +22,7 @@ This file documents the revision history for the Perl library Validation::Class.
 3.6.30000 (2012-02-02)
     * Updated POD (lots of updates)
     * Updated the class method, intelligent handling of nested parameters within
-  child classes
+      child classes
 
 3.6.00000 (2012-02-01)
     * Updated POD (lots of updates)
@@ -43,7 +49,7 @@ This file documents the revision history for the Perl library Validation::Class.
 
 3.2.10000 (2012-01-23)
     * Add a stash method/object for injecting instance specific data into
-  custom validation routine
+      custom validation routine
 
 3.1.10000 (2011-12-06)
     * Updated POD, Fixed broken MANIFEST
@@ -51,9 +57,9 @@ This file documents the revision history for the Perl library Validation::Class.
 3.1.00000 (2011-12-06)
     * Updated POD
     * Added Validation::Class::MooseRules, superior validation for your
-  Moose class
+      Moose class
     * Added Validation::Class::Simple, adds drop-in data validation for
-  scripts, etc
+      scripts, etc
 
 3.0.00000 (2011-12-04)
     * Completly refactored all code (mainly for aesthetics and readability)
@@ -88,13 +94,13 @@ This file documents the revision history for the Perl library Validation::Class.
 2.5.10000 (2011-11-08)
     * Updated POD
     * The class method now uses shortnames and classnames. Fields
-  without labels are not prefixed with 'Field' when an error message is
-  generated
+      without labels are not prefixed with 'Field' when an error message is
+      generated
 
 2.5.00000 (2011-11-05)
     * Updated/Fixed POD
     * Moved filtering and initialization routines into the sanitize method
-  which will run per validate() call
+      which will run per validate() call
 
 2.4.70000 (2011-11-03)
     * Updated POD, removed the filter directive
@@ -121,7 +127,7 @@ This file documents the revision history for the Perl library Validation::Class.
     * Added support for toggling and default directives
     * Custom validation now has an auto-generated error message
     * Added new directives, (default, depends_on, max alpha digits
-  sum and symbols as well as min alpha digits sum and symbols
+      sum and symbols as well as min alpha digits sum and symbols
 
 2.1.00000 (2011-10-27)
     * Updated POD

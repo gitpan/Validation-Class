@@ -1,15 +1,13 @@
-# ABSTRACT: Drop-in Data Validation Class
+# ABSTRACT: Simple Inline Validation Class
 
 package Validation::Class::Simple;
 {
-    $Validation::Class::Simple::VERSION = '4.01003514';
+    $Validation::Class::Simple::VERSION = '5.0.0_01';
 }
 
 use Validation::Class;
 
-our $VERSION = '4.01003514';    # VERSION
-
-sub BUILD { }
+our $VERSION = '5.0.0_01';    # VERSION
 
 
 1;
@@ -19,11 +17,11 @@ __END__
 
 =head1 NAME
 
-Validation::Class::Simple - Drop-in Data Validation Class
+Validation::Class::Simple - Simple Inline Validation Class
 
 =head1 VERSION
 
-version 4.01003514
+version 5.0.0_01
 
 =head1 DESCRIPTION
 

@@ -1,5 +1,5 @@
 ---
-abstract: 'Centralized Data Validation Framework'
+abstract: 'Low-Fat Full-Flavored Data Validation Construction Kit'
 author:
   - 'Al Newkirk <awncorp@cpan.org>'
 build_requires: {}
@@ -18,11 +18,8 @@ requires:
   Hash::Flatten: 0
   Hash::Merge: 0
   Module::Find: 0
-  Moose: 0
-  MooseX::Traits: 0
-  Scalar::Util: 0
 resources:
   bugtracker: http://rt.cpan.org/NoAuth/Bugs.html?Dist=Validation-Class
   homepage: http://ana.io/
   repository: http://github.com/alnewkirk/Validation-Class-Moose.git
-version: 4.01003514
+version: 5.0.0_01

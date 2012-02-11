@@ -1,14 +1,14 @@
 # ABSTRACT: Marries Validation::Class and Moose through Traits
 
-package Validation::Class::MooseRules;
+package Validation::Class::Moose;
 {
-    $Validation::Class::MooseRules::VERSION = '4.01003514';
+    $Validation::Class::Moose::VERSION = '5.0.0_01';
 }
 
 use Moose::Role;
 use Validation::Class::Simple;
 
-our $VERSION = '4.01003514';    # VERSION
+our $VERSION = '5.0.0_01';    # VERSION
 
 
 sub rules {
@@ -35,7 +35,7 @@ sub rules {
 
     # Validation::Class Virtual Moose Trait
     package    # Don't register with PAUSE (pause.perl.org)
-      Validation::Class::MooseRules::Trait::Rules;
+      Validation::Class::Moose::Trait::Rules;
     use Moose::Role;
     has rules => (
         is      => 'rw',
@@ -48,7 +48,7 @@ sub rules {
       Moose::Meta::Attribute::Custom::Trait::Rules;
 
     sub register_implementation {
-        my $pkg = 'Validation_Class_MooseRules_Trait_Rules';
+        my $pkg = 'Validation_Class_Moose_Trait_Rules';
         $pkg =~ s/_/::/g;
         $pkg;
     }
@@ -62,18 +62,18 @@ __END__
 
 =head1 NAME
 
-Validation::Class::MooseRules - Marries Validation::Class and Moose through Traits
+Validation::Class::Moose - Marries Validation::Class and Moose through Traits
 
 =head1 VERSION
 
-version 4.01003514
+version 5.0.0_01
 
 =head1 DESCRIPTION
 
-Validation::Class::MooseRules is a L<Moose> role that infuses the power and
+Validation::Class::Moose is a L<Moose> role that infuses the power and
 flexibility of L<Validation::Class> into your Moose classes.
 
-Validation::Class::MooseRules, by policy, is not designed for attribute type
+Validation::Class::Moose, by policy, is not designed for attribute type
 checking, the Moose type constraint system exists for that purpose and works well,
 ... instead, its purpose is suited for validating attribute values (parameters).
 
@@ -85,7 +85,7 @@ tested, please note, the API may change.
     package Identify;
     
     use  Moose;
-    with 'Validation::Class::MooseRules';
+    with 'Validation::Class::Moose';
     
     has login => (
         is     => 'rw',

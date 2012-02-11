@@ -22,9 +22,13 @@ The following is an example of including a plugin.
     package MyApp::Validation;
     
     use Validation::Class;
-        load_plugins __PACKAGE__,
+    
+    load {
+        plugins => [
             'YourPluginName',
-            '+MyApp::Validation::YourPluginName';
+            '+MyApp::Validation::YourPluginName'
+        ]
+    };
     
     # a validation rule
     field 'login'  => {
@@ -56,15 +60,14 @@ plugin for formatting telephone numbers:
 
     package Validation::Class::Plugin::TelephoneFormatting;
     
-    use Moose::Role;
-    
     # hook into the instantiation process
     # of the calling class at runtime
     sub new {
-        my ($class, $self) = @_;
+    
+        my ($plugin, $caller) = @_;
         
         # US Telephones
-        $class->filters->{telephone_usa} = sub {
+        $caller->filters->{telephone_usa} = sub {
             my $phone = shift;
                $phone =~ s/\D//g;
             
@@ -81,7 +84,9 @@ Once we create, test and deploy our plugin, we can use it in our code as follows
     
     use Validation::Class;
     
-    __PACKAGE__->load_plugins('TelephoneFormatting');
+    load {
+        plugins => ['TelephoneFormatting']
+    };
     
     # a validation rule
     field 'phone'  => {

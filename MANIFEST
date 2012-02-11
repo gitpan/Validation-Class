@@ -6,13 +6,10 @@ Makefile.PL
 README
 README.mkdn
 lib/Validation/Class.pm
-lib/Validation/Class/Errors.pm
-lib/Validation/Class/Meta/Attribute/Profile.pm
-lib/Validation/Class/MooseRules.pm
+lib/Validation/Class/Engine.pm
+lib/Validation/Class/Moose.pm
 lib/Validation/Class/Plugins.pod
 lib/Validation/Class/Simple.pm
-lib/Validation/Class/Sugar.pm
-lib/Validation/Class/Validator.pm
 t/00-load.t
 t/01-attributes.t
 t/02-package-declaration.t
@@ -58,6 +55,7 @@ t/modules/MyVal/Person.pm
 t/modules/MyVal/Plugin/Glade.pm
 t/modules/MyVal/Staff.pm
 t/modules/MyVal/Ticket.pm
+t/tmpOlYZRe.html
 t/validators/01-min_length.t
 t/validators/02-max_length.t
 t/validators/03-pattern.t
