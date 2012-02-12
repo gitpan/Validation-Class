@@ -7,12 +7,6 @@ Validation::Class::Plugins - Basic Instructions for Writing Plugins
 This documentation serves as a brief overview on writing plugins for
 Validation::Class. Here are the key points:
 
-L<Validation::Class> is written with L<Moose> and a plugin must be designed
-as a L<Moose::Role>. As a role the plugins attributes and methods are imported
-into the calling class and because of this it is important to name your
-attributes and methods cautiously as to not overwrite another plugins
-functionality.
-
 When creating B<official> Validation::Class plugins you should use the namespace
 Validation::Class::Plugin::YourPluginName. This will allow users of your plugin
 to simply pass YourPluginName to the load_plugins() method. Otherwise you will

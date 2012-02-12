@@ -3,16 +3,16 @@ use warnings;
 
 package Validation::Class::Engine;
 {
-    $Validation::Class::Engine::VERSION = '5.0.0_01';
+    $Validation::Class::Engine::VERSION = '5.0.0_02';
 }
 
 use 5.008001;
 use strict;
 use warnings;
 
-our $VERSION = '5.0.0_01';    # VERSION
+our $VERSION = '5.0.0_02';    # VERSION
 
-use Carp ('croak', 'confess');
+use Carp 'confess';
 use Array::Unique;
 use Hash::Flatten;
 use Hash::Merge 'merge';
@@ -24,14 +24,14 @@ sub has {
 
     return unless $attrs;
 
-    concroakfess('Default has to be a code reference or constant value')
+    confess('Default has to be a code reference or constant value')
       if ref $default && ref $default ne 'CODE';
 
     $attrs = [$attrs] unless ref $attrs eq 'ARRAY';
 
     for my $attr (@$attrs) {
 
-        croak(qq/Attribute "$attr" invalid/)
+        confess(qq/Attribute "$attr" invalid/)
           unless $attr =~ /^[a-zA-Z_]\w*$/;
 
         my $stmnt;
@@ -69,7 +69,8 @@ STMNT
 
         *{__PACKAGE__ . "::$attr"} = eval $stmnt;
 
-        croak(__PACKAGE__ . " attribute compiler error: \n$stmnt\n$@\n") if $@;
+        confess(__PACKAGE__ . " attribute compiler error: \n$stmnt\n$@\n")
+          if $@;
 
     }
 

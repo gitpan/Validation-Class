@@ -2,12 +2,12 @@
 
 package Validation::Class::Simple;
 {
-    $Validation::Class::Simple::VERSION = '5.0.0_01';
+    $Validation::Class::Simple::VERSION = '5.0.0_02';
 }
 
 use Validation::Class;
 
-our $VERSION = '5.0.0_01';    # VERSION
+our $VERSION = '5.0.0_02';    # VERSION
 
 
 1;
@@ -21,7 +21,7 @@ Validation::Class::Simple - Simple Inline Validation Class
 
 =head1 VERSION
 
-version 5.0.0_01
+version 5.0.0_02
 
 =head1 DESCRIPTION
 
@@ -41,29 +41,30 @@ specification is exactly the same.
 
     use Validation::Class::Simple;
     
-    my $profile = {
-            'login'  => {
-                label      => 'User Login',
-                error      => 'Login invalid.',
-                required   => 1,
-                validation => sub {
-                    my ($self, $this_field, $all_params) = @_;
-                    return $this_field->{value} eq 'admin' ? 1 : 0;
-                }
-            },
-            'password'  => {
-                label         => 'User Password',
-                error         => 'Password invalid.',
-                required      => 1,
-                validation    => sub {
-                    my ($self, $this_field, $all_params) = @_;
-                    return $this_field->{value} eq 'pass' ? 1 : 0;
-                }
-            }    
-        };
+    my $fields = {
+        'login'  => {
+            label      => 'User Login',
+            error      => 'Login invalid.',
+            required   => 1,
+            validation => sub {
+                my ($self, $this_field, $all_params) = @_;
+                return $this_field->{value} eq 'admin' ? 1 : 0;
+            }
+        },
+        'password'  => {
+            label         => 'User Password',
+            error         => 'Password invalid.',
+            required      => 1,
+            validation    => sub {
+                my ($self, $this_field, $all_params) = @_;
+                return $this_field->{value} eq 'pass' ? 1 : 0;
+            }
+        }    
+    };
     
-      my $input =
-      Validation::Class::Simple->new( fields => $profile, params => $params );
+    my $input = Validation::Class::Simple->new(    
+        fields => $fields, params => $params
+    );
     
     unless ( $input->validate ) {
         return $input->errors_to_string;

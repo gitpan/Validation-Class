@@ -21,5 +21,5 @@ requires:
 resources:
   bugtracker: http://rt.cpan.org/NoAuth/Bugs.html?Dist=Validation-Class
   homepage: http://ana.io/
-  repository: http://github.com/alnewkirk/Validation-Class-Moose.git
-version: 5.0.0_01
+  repository: http://github.com/alnewkirk/Validation-Class.git
+version: 5.0.0_02
