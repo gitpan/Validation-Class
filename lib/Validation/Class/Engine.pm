@@ -3,14 +3,14 @@ use warnings;
 
 package Validation::Class::Engine;
 {
-    $Validation::Class::Engine::VERSION = '5.0.1';
+    $Validation::Class::Engine::VERSION = '5.0.2';
 }
 
 use 5.008001;
 use strict;
 use warnings;
 
-our $VERSION = '5.0.1';    # VERSION
+our $VERSION = '5.0.2';    # VERSION
 
 use Carp 'confess';
 use Array::Unique;
