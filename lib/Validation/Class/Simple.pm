@@ -2,12 +2,12 @@
 
 package Validation::Class::Simple;
 {
-    $Validation::Class::Simple::VERSION = '5.0.2';
+    $Validation::Class::Simple::VERSION = '5.10';
 }
 
 use Validation::Class;
 
-our $VERSION = '5.0.2';    # VERSION
+our $VERSION = '5.10';    # VERSION
 
 
 1;
@@ -21,7 +21,7 @@ Validation::Class::Simple - Simple Inline Validation Class
 
 =head1 VERSION
 
-version 5.0.2
+version 5.10
 
 =head1 DESCRIPTION
 

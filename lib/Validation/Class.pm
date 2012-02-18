@@ -5,14 +5,14 @@ use warnings;
 
 package Validation::Class;
 {
-    $Validation::Class::VERSION = '5.0.2';
+    $Validation::Class::VERSION = '5.10';
 }
 
 use 5.008001;
 use strict;
 use warnings;
 
-our $VERSION = '5.0.2';    # VERSION
+our $VERSION = '5.10';    # VERSION
 
 use Module::Find;
 use Hash::Merge 'merge';
@@ -280,7 +280,7 @@ Validation::Class - Low-Fat Full-Flavored Data Validation Construction Kit
 
 =head1 VERSION
 
-version 5.0.2
+version 5.10
 
 =head1 SYNOPSIS
 
