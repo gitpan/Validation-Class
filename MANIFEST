@@ -36,6 +36,7 @@ t/22-filtering-behavior.t
 t/30-classless-behavior.t
 t/40-mooserules.t
 t/41-mooserules-inht-t0m.t
+t/42-inheritence.t
 t/97-persistent-values.t
 t/98-anomaly.t
 t/98-unknown_params.t
@@ -54,6 +55,7 @@ t/modules/MyVal.pm
 t/modules/MyVal/Person.pm
 t/modules/MyVal/Plugin/Glade.pm
 t/modules/MyVal/Staff.pm
+t/modules/MyVal/Temp.pm
 t/modules/MyVal/Ticket.pm
 t/validators/01-min_length.t
 t/validators/02-max_length.t

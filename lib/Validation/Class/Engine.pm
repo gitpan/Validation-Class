@@ -3,14 +3,14 @@ use warnings;
 
 package Validation::Class::Engine;
 {
-    $Validation::Class::Engine::VERSION = '5.15';
+    $Validation::Class::Engine::VERSION = '5.20';
 }
 
 use 5.008001;
 use strict;
 use warnings;
 
-our $VERSION = '5.15';    # VERSION
+our $VERSION = '5.20';    # VERSION
 
 use Carp 'confess';
 use Array::Unique;
@@ -631,6 +631,27 @@ sub set_errors {
 
     # set class-level errors from list
     return push @{$self->{errors}}, @errors if @errors;
+
+}
+
+sub set_method {
+
+    my ($self, $name, $code) = @_;
+
+    my $class = ref $self || $self;
+
+    my $shortname = $name;
+    $shortname =~ s/::/\_/;
+    $shortname =~ s/([a-z])([A-Z])/$1\_$2/g;
+
+    # place code on the calling class
+
+    confess "Error attempting to create method $shortname, already exists"
+      if defined &{"${class}::$shortname"};
+
+    no strict 'refs';
+
+    *{"${class}::$shortname"} = $code;
 
 }
 
