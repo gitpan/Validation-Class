@@ -5,14 +5,14 @@ use warnings;
 
 package Validation::Class;
 {
-    $Validation::Class::VERSION = '5.10';
+    $Validation::Class::VERSION = '5.15';
 }
 
 use 5.008001;
 use strict;
 use warnings;
 
-our $VERSION = '5.10';    # VERSION
+our $VERSION = '5.15';    # VERSION
 
 use Module::Find;
 use Hash::Merge 'merge';
@@ -280,7 +280,7 @@ Validation::Class - Low-Fat Full-Flavored Data Validation Construction Kit
 
 =head1 VERSION
 
-version 5.10
+version 5.15
 
 =head1 SYNOPSIS
 
@@ -1377,20 +1377,17 @@ The error method is used to set and/or retrieve errors encountered during
 validation. The error method with no parameters returns the error message object
 which is an arrayref of error messages stored at class-level. 
 
-    # return all errors encountered/set as an arrayref
-    return $self->error();
+    # set errors at the class-level
+    return $self->error('this isnt cool', 'unknown somethingorother');
     
-    # return all errors specific to the specified field (at the field-level)
-    # as an arrayref
-    return $self->error('some_field_name');
-    
-    # set an error specific to the specified field (at the field-level)
-    # using the field object (hashref not field name)
+    # set an error at the field-level, using the field ref (not field name)
     $self->error($field_object, "i am your error message");
 
-    unless ($self->validate) {
-        my $fields = $self->error();
-    }
+    # return all errors encountered/set as an arrayref
+    my $all_errors = $self->error();
+    
+    # return all error for a specific field, ... see the get_errors() method
+    my @errors = $self->get_errors('field_name');
 
 =head2 error_count
 
@@ -1411,14 +1408,16 @@ of error messages.
     unless ($self->validate) {
         my $bad_fields = $self->error_fields();
     }
+    
+    my $bad_fields = $self->error_fields('login', 'password');
 
 =head2 errors_to_string
 
 The errors_to_string method stringifies the error arrayref object using the
 specified delimiter or ', ' by default. 
 
-    return $self->errors_to_string();
     return $self->errors_to_string("<br/>\n");
+    return $self->errors_to_string("<br/>\n", sub{ uc shift });
     
     unless ($self->validate) {
         return $self->errors_to_string;
@@ -1427,9 +1426,10 @@ specified delimiter or ', ' by default.
 =head2 get_errors
 
 The get_errors method returns the list of class-level error set on the current
-class.
+class or a list of errors from the specified fields.
 
     my @errors = $self->get_errors();
+    my @lp_errors = $self->get_errors('login', 'password');
 
 =head2 get_params
 

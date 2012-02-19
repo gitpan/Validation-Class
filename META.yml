@@ -22,4 +22,4 @@ resources:
   bugtracker: http://rt.cpan.org/NoAuth/Bugs.html?Dist=Validation-Class
   homepage: http://ana.io/
   repository: http://github.com/alnewkirk/Validation-Class.git
-version: 5.10
+version: 5.15
