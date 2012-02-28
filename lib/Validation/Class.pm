@@ -5,14 +5,14 @@ use warnings;
 
 package Validation::Class;
 {
-    $Validation::Class::VERSION = '5.20';
+    $Validation::Class::VERSION = '5.22';
 }
 
 use 5.008001;
 use strict;
 use warnings;
 
-our $VERSION = '5.20';    # VERSION
+our $VERSION = '5.22';    # VERSION
 
 use Module::Find;
 use Hash::Merge 'merge';
@@ -101,15 +101,61 @@ sub filter {
 
 sub load {
 
-    my ($data) = @_;
+    my $data = pop @_;
+    my $self = pop @_;
 
-    my $self = caller(0);    # hackaroni toni
+    $self ||= caller(0);    # hackaroni toni
 
     no strict 'refs';
 
-    $self->load_classes() if $data->{classes};
+    if ($data->{classes}) {
 
-    $self->load_plugins(@{$data->{plugins}}) if $data->{plugins};
+        # load class children and create relationship map (hash)
+        foreach my $child (usesub $self) {
+
+            my $nickname = $child;
+            $nickname =~ s/^$self//;
+            $nickname =~ s/^:://;
+            $nickname =~ s/([a-z])([A-Z])/$1\_$2/g;
+
+            my $quickname = $child;
+            $quickname =~ s/^$self//;
+            $quickname =~ s/^:://;
+
+            $self->{relatives}->{lc $nickname} = $child;
+            $self->{relatives}->{$quickname} = $child;
+
+        }
+
+    }
+
+    if ($data->{plugins}) {
+
+        my @plugins = @{$data->{plugins}};
+
+        foreach my $plugin (@plugins) {
+
+            if ($plugin !~ /^\+/) {
+
+                $plugin = "Validation::Class::Plugin::$plugin";
+
+            }
+
+            $plugin =~ s/^\+//;
+
+            # require plugin
+            my $file = $plugin;
+            $file =~ s/::/\//g;
+            $file .= ".pm";
+
+            eval "require $plugin"
+              unless $INC{$file};    # unless already loaded
+
+        }
+
+        $self->{config}->{PLUGINS}->{$_} = 1 for @plugins;
+
+    }
 
     # attached base classes (configs)
     if ($data->{base}) {
@@ -135,64 +181,21 @@ sub load {
 
     }
 
+    return $self;
+
 }
 
 sub load_classes {
 
-    my ($self) = @_;
-
-    no strict 'refs';
-
-    # load class children and create relationship map (hash)
-    foreach my $child (usesub $self) {
-
-        my $nickname = $child;
-        $nickname =~ s/^$self//;
-        $nickname =~ s/^:://;
-        $nickname =~ s/([a-z])([A-Z])/$1\_$2/g;
-
-        my $quickname = $child;
-        $quickname =~ s/^$self//;
-        $quickname =~ s/^:://;
-
-        $self->{relatives}->{lc $nickname} = $child;
-        $self->{relatives}->{$quickname} = $child;
-
-    }
-
-    return 0;
+    return shift->load({classes => 1});
 
 }
 
 sub load_plugins {
 
-    my ($self, @plugins) = @_;
+    my $self = shift @_;
 
-    no strict 'refs';
-
-    foreach my $plugin (@plugins) {
-
-        if ($plugin !~ /^\+/) {
-
-            $plugin = "Validation::Class::Plugin::$plugin";
-
-        }
-
-        $plugin =~ s/^\+//;
-
-        # require plugin
-        my $file = $plugin;
-        $file =~ s/::/\//g;
-        $file .= ".pm";
-
-        eval "require $plugin"
-          unless $INC{$file};    # unless already loaded
-
-    }
-
-    $self->{config}->{PLUGINS}->{$_} = 1 for @plugins;
-
-    return 0;
+    return $self->load({plugins => [@_]});
 
 }
 
@@ -292,7 +295,7 @@ Validation::Class - Low-Fat Full-Flavored Data Validation Construction Kit
 
 =head1 VERSION
 
-version 5.20
+version 5.22
 
 =head1 SYNOPSIS
 

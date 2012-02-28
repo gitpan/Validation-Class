@@ -3,14 +3,14 @@ use warnings;
 
 package Validation::Class::Engine;
 {
-    $Validation::Class::Engine::VERSION = '5.20';
+    $Validation::Class::Engine::VERSION = '5.22';
 }
 
 use 5.008001;
 use strict;
 use warnings;
 
-our $VERSION = '5.20';    # VERSION
+our $VERSION = '5.22';    # VERSION
 
 use Carp 'confess';
 use Array::Unique;
@@ -93,37 +93,34 @@ has 'filters' => sub { shift->{config}->{FILTERS} || {} };
 
 # Hash::Flatten args
 has 'hash_inflator' => sub {
-    {
 
-        EscapeSequence => '',
-        HashDelimiter  => '.',
-        ArrayDelimiter => ':'
+    my $options = @_ > 1
+      ? pop @_
+      : {
+        hash_delimiter  => '.',
+        array_delimiter => ':',
+        escape_sequence => '',
+      };
 
-    };
+    foreach my $option (keys %{$options}) {
+
+        if ($option =~ /\_/) {
+
+            my $cc_option = $option;
+
+            $cc_option =~ s/([a-zA-Z])\_([a-zA-Z])/$1\u$2/gi;
+
+            $options->{ucfirst $cc_option} = $options->{$option};
+
+            delete $options->{$option};
+
+        }
+
+    }
+
+    return $options;
+
 };
-
-#around 'hash_inflator' => sub {
-#    my $orig    = shift;
-#    my $self    = shift;
-#    my $options = shift || {
-#        hash_delimiter  => '.',
-#        array_delimiter => ':',
-#        escape_sequence => '',
-#    };
-#
-#    foreach my $option (keys %{$options}) {
-#        if ($option =~ /\_/) {
-#            my $cc_option = $option;
-#
-#            $cc_option =~ s/([a-zA-Z])\_([a-zA-Z])/$1\u$2/gi;
-#            $options->{ucfirst $cc_option} = $options->{$option};
-#
-#            delete $options->{$option};
-#        }
-#    }
-#
-#    return $self->$orig($options);
-#};
 
 # switch: ignore unknown parameters
 has 'ignore_unknown' => '0';
