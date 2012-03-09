@@ -1,5 +1,5 @@
 ---
-abstract: 'Low-Fat Full-Flavored Data Validation Construction Kit'
+abstract: 'Low-Fat Full-Flavored Data Modeling and Validation Framework'
 author:
   - 'Al Newkirk <awncorp@cpan.org>'
 build_requires: {}
@@ -22,4 +22,4 @@ resources:
   bugtracker: http://rt.cpan.org/NoAuth/Bugs.html?Dist=Validation-Class
   homepage: http://ana.io/
   repository: http://github.com/alnewkirk/Validation-Class.git
-version: 5.22
+version: 5.50
