@@ -2,12 +2,12 @@
 
 package Validation::Class::Simple;
 {
-    $Validation::Class::Simple::VERSION = '5.51';
+    $Validation::Class::Simple::VERSION = '5.60';
 }
 
 use Validation::Class;
 
-our $VERSION = '5.51';    # VERSION
+our $VERSION = '5.60';    # VERSION
 
 
 1;
@@ -21,14 +21,13 @@ Validation::Class::Simple - Simple Inline Validation Class
 
 =head1 VERSION
 
-version 5.51
+version 5.60
 
 =head1 DESCRIPTION
 
-Validation::Class::Simple is a drop-in validation class derived from the
-L<Validation::Class> framework. This package is intended to be used in
-situations where a full-fledged validation class is not warranted,
-e.g. (scripts, etc).
+Validation::Class::Simple is simply a throw-away namespace, good for defining
+a validation class on-the-fly (in scripts, etc) in situations where a full-fledged
+validation class is not warranted, e.g. (scripts, etc).
 
 Simply define your data validation profile and execute, much in the same way
 you would use most other data validation libraries available.
@@ -62,12 +61,16 @@ specification is exactly the same.
         }    
     };
     
+    # my $params  = { ... }
+    
     my $input = Validation::Class::Simple->new(    
         fields => $fields, params => $params
     );
     
-    unless ( $input->validate ) {
+    unless ($input->validate) {
+    
         return $input->errors_to_string;
+    
     }
 
 =head1 AUTHOR
