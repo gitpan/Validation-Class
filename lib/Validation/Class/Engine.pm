@@ -2,14 +2,14 @@
 
 package Validation::Class::Engine;
 {
-    $Validation::Class::Engine::VERSION = '5.60';
+    $Validation::Class::Engine::VERSION = '5.61';
 }
 
 use 5.008001;
 use strict;
 use warnings;
 
-our $VERSION = '5.60';    # VERSION
+our $VERSION = '5.61';    # VERSION
 
 use Carp 'confess';
 use Array::Unique;
@@ -2184,7 +2184,7 @@ Validation::Class::Engine - Data Validation Engine for Validation::Class
 
 =head1 VERSION
 
-version 5.60
+version 5.61
 
 =head1 SYNOPSIS
 
@@ -2250,6 +2250,157 @@ version 5.60
 
 Validation::Class::Engine provides data validation functionality and acts as a
 role applied to Validation::Class.
+
+=head1 ATTRIBUTES
+
+=head2 directives
+
+The directives attribute returns a hashref of all defined directives.
+
+    my $directives = $self->directives();
+    ...
+
+=head2 errors
+
+The errors attribute returns an arrayref of all errors set.
+
+    my $errors = $self->errors();
+    ...
+
+=head2 fields
+
+The fields attribute returns a hashref of defined fields, filtered and merged
+with their parameter counterparts.
+
+    my $fields = $self->fields();
+    ...
+
+=head2 filtering
+
+The filtering attribute (by default set to 'pre') controls when incoming data
+is filtered. Setting this attribute to 'post' will defer filtering until after
+validation occurs which allows any errors messages to report errors based on the
+unaltered data. Alternatively, setting the filtering attribute to '' or undef
+will bypass all filtering unless explicitly defined at the field-level.
+
+    my $filtering = $self->filtering('post');
+    
+    $self->validate();
+    ...
+
+=head2 filters
+
+The filters attribute returns a hashref of pre-defined filter definitions.
+
+    my $filters = $self->filters();
+    ...
+
+=head2 hash_inflator
+
+The hash_inflator attribute determines how the hash serializer (inflation/deflation)
+behaves. The value must be a hashref of L<Hash::Flatten/OPTIONS> options. Purely
+for the sake of consistency, you can use lowercase keys (with underscores) which
+will be converted to camel-cased keys before passed to the serializer.
+
+    my $options = $self->hash_inflator({
+        hash_delimiter => '/',
+        array_delimiter => '//'
+    });
+    ...
+
+=head2 ignore_failure
+
+The ignore_failure boolean determines whether your application will live or die
+upon failing to validate a self-validating method defined using the method
+keyword. This is on (1) by default, method validation failures will set errors
+and can be determined by checking the error stack using one of the error message
+methods. If turned off, the application will die and confess on failure.
+
+    my $ignoring = $self->ignore_failure(1);
+    ...
+
+=head2 ignore_unknown
+
+The ignore_unknown boolean determines whether your application will live or die
+upon encountering unregistered field directives during validation. This is off
+(0) by default, attempts to validate unknown fields WILL cause the program to die.
+
+    my $ignoring = $self->ignore_unknown(1);
+    ...
+
+=head2 methods
+
+The methods attribute returns a hashref of self-validating method definitions.
+
+    my $methods = $self->methods(); # definitions are hashrefs
+    ...
+
+=head2 mixins
+
+The mixins attribute returns a hashref of defined validation templates.
+
+    my $mixins = $self->mixins();
+    ...
+
+=head2 params
+
+The params attribute gets/sets the parameters to be validated. The assigned value
+MUST be a hashref but can be flat or complex.
+
+    my $params = $self->params();
+    ...
+
+=head2 plugins
+
+The plugins attribute returns a hashref of loaded plugins.
+
+    my $plugins = $self->plugins();
+    ...
+
+=head2 profiles
+
+The profiles attribute returns a hashref of validation profiles.
+
+    my $profiles = $self->profiles();
+    ...
+
+=head2 queued
+
+The queued attribute returns an arrayref of field names for (auto) validation.
+It represents a list of field names stored to be used in validation later. If
+the queued attribute contains a list, you can omit arguments to the validate
+method. 
+
+    my $queued = $self->queued([qw/.../]);
+    ...
+
+=head2 relatives
+
+The relatives attribute returns a hashref of short-name/class-name pairs of
+loaded child classes.
+
+    my $relatives = $self->relatives();
+    ...
+
+=head2 report_failure
+
+The report_failure boolean determines whether your application will report
+self-validating method failures as class-level errors. This is off (0) by default,
+if turned on, an error messages will be generated and set at the class-level
+specifying the method which failed in addition to the existing messages.
+
+    my $reporting = $self->report_failure(0);
+    ...
+
+=head2 report_unknown
+
+The report_unknown boolean determines whether your application will report
+unregistered fields as class-level errors upon encountering unregistered field
+directives during validation. This is off (0) by default, attempts to validate
+unknown fields will NOT be registered as class-level variables.
+
+    my $reporting = $self->report_unknown(1);
+    ...
 
 =head1 METHODS
 
@@ -2678,7 +2829,7 @@ profile routine in the order received.
         die $self->errors_to_string;
     }
 
-=head1 DEFAULT DIRECTIVES
+=head1 DIRECTIVES
 
     package MyApp::Validation;
     use Validation::Class;
@@ -2877,8 +3028,6 @@ If you need to set a default value, see the default directive.
         ...
     };
 
-=head1 DEFAULT FILTER DIRECTIVES
-
 =head2 filters
 
 The filters directive is used to correct, alter and/or format the
@@ -2976,7 +3125,7 @@ The uppercase filter converts the field's value to uppercase.
         filter => 'uppercase',
     };
 
-=head1 DEFAULT VALIDATOR DIRECTIVES
+=head2 validators
 
     package MyApp::Validation;
     
@@ -3139,155 +3288,6 @@ declarations:
         pattern => qr/[0-9]+\,\s\.\.\./,
         ...
     };
-
-=attribute directives
-
-The directives attribute returns a hashref of all defined directives.
-
-    my $directives = $self->directives();
-    ...
-
-=attribute errors
-
-The errors attribute returns an arrayref of all errors set.
-
-    my $errors = $self->errors();
-    ...
-
-=attribute fields
-
-The fields attribute returns a hashref of defined fields, filtered and merged
-with their parameter counterparts.
-
-    my $fields = $self->fields();
-    ...
-
-=attribute filtering
-
-The filtering attribute (by default set to 'pre') controls when incoming data
-is filtered. Setting this attribute to 'post' will defer filtering until after
-validation occurs which allows any errors messages to report errors based on the
-unaltered data. Alternatively, setting the filtering attribute to '' or undef
-will bypass all filtering unless explicitly defined at the field-level.
-
-    my $filtering = $self->filtering('post');
-    
-    $self->validate();
-    ...
-
-=attribute filters
-
-The filters attribute returns a hashref of pre-defined filter definitions.
-
-    my $filters = $self->filters();
-    ...
-
-=attribute hash_inflator
-
-The hash_inflator attribute determines how the hash serializer (inflation/deflation)
-behaves. The value must be a hashref of L<Hash::Flatten/OPTIONS> options. Purely
-for the sake of consistency, you can use lowercase keys (with underscores) which
-will be converted to camel-cased keys before passed to the serializer.
-
-    my $options = $self->hash_inflator({
-        hash_delimiter => '/',
-        array_delimiter => '//'
-    });
-    ...
-
-=attribute ignore_failure
-
-The ignore_failure boolean determines whether your application will live or die
-upon failing to validate a self-validating method defined using the method
-keyword. This is on (1) by default, method validation failures will set errors
-and can be determined by checking the error stack using one of the error message
-methods. If turned off, the application will die and confess on failure.
-
-    my $ignoring = $self->ignore_failure(1);
-    ...
-
-=attribute ignore_unknown
-
-The ignore_unknown boolean determines whether your application will live or die
-upon encountering unregistered field directives during validation. This is off
-(0) by default, attempts to validate unknown fields WILL cause the program to die.
-
-    my $ignoring = $self->ignore_unknown(1);
-    ...
-
-=attribute methods
-
-The methods attribute returns a hashref of self-validating method definitions.
-
-    my $methods = $self->methods(); # definitions are hashrefs
-    ...
-
-=attribute mixins
-
-The mixins attribute returns a hashref of defined validation templates.
-
-    my $mixins = $self->mixins();
-    ...
-
-=attribute params
-
-The params attribute gets/sets the parameters to be validated. The assigned value
-MUST be a hashref but can be flat or complex.
-
-    my $params = $self->params();
-    ...
-
-=attribute plugins
-
-The plugins attribute returns a hashref of loaded plugins.
-
-    my $plugins = $self->plugins();
-    ...
-
-=attribute profiles
-
-The profiles attribute returns a hashref of validation profiles.
-
-    my $profiles = $self->profiles();
-    ...
-
-=attribute queued
-
-The queued attribute returns an arrayref of field names for (auto) validation.
-It represents a list of field names stored to be used in validation later. If
-the queued attribute contains a list, you can omit arguments to the validate
-method. 
-
-    my $queued = $self->queued([qw/.../]);
-    ...
-
-=attribute relatives
-
-The relatives attribute returns a hashref of short-name/class-name pairs of
-loaded child classes.
-
-    my $relatives = $self->relatives();
-    ...
-
-=attribute report_failure
-
-The report_failure boolean determines whether your application will report
-self-validating method failures as class-level errors. This is off (0) by default,
-if turned on, an error messages will be generated and set at the class-level
-specifying the method which failed in addition to the existing messages.
-
-    my $reporting = $self->report_failure(0);
-    ...
-
-=attribute report_unknown
-
-The report_unknown boolean determines whether your application will report
-unregistered fields as class-level errors upon encountering unregistered field
-directives during validation. This is off (0) by default, attempts to validate
-unknown fields will NOT be registered as class-level variables.
-
-    my $reporting = $self->report_unknown(1);
-    ...
 
 =head1 AUTHOR
 

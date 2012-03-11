@@ -5,14 +5,14 @@ use warnings;
 
 package Validation::Class;
 {
-    $Validation::Class::VERSION = '5.60';
+    $Validation::Class::VERSION = '5.61';
 }
 
 use 5.008001;
 use strict;
 use warnings;
 
-our $VERSION = '5.60';    # VERSION
+our $VERSION = '5.61';    # VERSION
 
 use Module::Find;
 use Carp 'confess';
@@ -639,7 +639,7 @@ Validation::Class - Low-Fat Full-Flavored Data Modeling and Validation Framework
 
 =head1 VERSION
 
-version 5.60
+version 5.61
 
 =head1 SYNOPSIS
 
@@ -765,7 +765,7 @@ packages to be used in all your classes.
     package MyApp::Directives;
     
     use Validation::Class;
-    ues Data::Validate::Email;
+    use Data::Validate::Email;
     
     directive 'is_email' => sub {
     
