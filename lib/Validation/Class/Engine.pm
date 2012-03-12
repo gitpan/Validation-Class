@@ -2,14 +2,14 @@
 
 package Validation::Class::Engine;
 {
-    $Validation::Class::Engine::VERSION = '5.61';
+    $Validation::Class::Engine::VERSION = '5.62';
 }
 
 use 5.008001;
 use strict;
 use warnings;
 
-our $VERSION = '5.61';    # VERSION
+our $VERSION = '5.62';    # VERSION
 
 use Carp 'confess';
 use Array::Unique;
@@ -2184,7 +2184,7 @@ Validation::Class::Engine - Data Validation Engine for Validation::Class
 
 =head1 VERSION
 
-version 5.61
+version 5.62
 
 =head1 SYNOPSIS
 
@@ -2418,19 +2418,23 @@ filters defined in the fields.
 
 =head2 class
 
-The class method returns a new initialize child validation class under the
-namespace of the calling class that issued the load_classes() method call.
-Existing parameters and configuration options are passed to the child class's
-constructor. All attributes can be easily overwritten using the attribute's
-accessors on the child class. Also, you may prevent/override arguments from
-being copy to the new child class object by supplying the them as arguments to
-this method.
+The class method returns a new initialize validation class related to the
+namespace of the calling class, the relative class would've been loaded via the
+"load" keyword.
+
+Existing parameters and configuration options are passed to the relative class'
+constructor (including the stash). All attributes can be easily overwritten using
+the attribute's accessors on the relative class.
+
+Also, you may prevent/override arguments from being copy to the new class object
+by supplying the them as arguments to this method.
 
 The class method is also quite handy in that it will detect parameters that are
 prefixed with the name of the class being fetched, and adjust the matching rule
 (if any) to allow validation to occur.
 
     package Class;
+    
     use Validation::Class;
     
     load {
@@ -2441,13 +2445,15 @@ prefixed with the name of the class being fetched, and adjust the matching rule
     
     my $input = Class->new(params => $params);
     
-    my $kid1 = $input->class('Child'); # loads Class::Child;
-    my $kid2 = $input->class('StepChild'); # loads Class::StepChild;
+    my $kid1 = $input->class('Child');      # loads Class::Child;
+    my $kid2 = $input->class('StepChild');  # loads Class::StepChild;
     
-    my $kid3 = $input->class('child'); # loads Class::Child;
+    my $kid3 = $input->class('child');      # loads Class::Child;
     my $kid4 = $input->class('step_child'); # loads Class::StepChild;
+    my $kid5 = $input->class('step-child'); # loads Class::Step::Child;
     
-    # INTELLIGENTLY DETECTING AND MAP PARAMS TO CHILD CLASS
+    # intelligently detecting and map params to child class
+    
     my $params = {
         'my.name'    => 'Guy Friday',
         'child.name' => 'Guy Friday Jr.'
@@ -2455,7 +2461,8 @@ prefixed with the name of the class being fetched, and adjust the matching rule
     
     $input->class('child'); # child field *name* mapped to param *child.name*
     
-    # WITHOUT COPYING PARAMS FROM Class
+    # without copying params from class
+    
     my $kid5 = $input->class('child', params => {}); # .. etc
     
     1;

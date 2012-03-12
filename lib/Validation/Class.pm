@@ -5,14 +5,14 @@ use warnings;
 
 package Validation::Class;
 {
-    $Validation::Class::VERSION = '5.61';
+    $Validation::Class::VERSION = '5.62';
 }
 
 use 5.008001;
 use strict;
 use warnings;
 
-our $VERSION = '5.61';    # VERSION
+our $VERSION = '5.62';    # VERSION
 
 use Module::Find;
 use Carp 'confess';
@@ -47,6 +47,8 @@ our @EXPORT = qw(
 
   pro
   profile
+
+  set
 );
 
 
@@ -193,6 +195,8 @@ sub filter {
 
 }
 
+
+sub set { goto &load }
 
 sub load {
 
@@ -522,7 +526,7 @@ sub new {
                                   . $self->errors_to_string
                                   if !$self->ignore_failure;
 
-                                return 0;
+                                return undef;
 
                             }
 
@@ -563,7 +567,7 @@ sub new {
 
                 }
 
-                return 0;
+                return undef;
 
             }
         ) unless $self->can($key);    # I already can
@@ -639,9 +643,85 @@ Validation::Class - Low-Fat Full-Flavored Data Modeling and Validation Framework
 
 =head1 VERSION
 
-version 5.61
+version 5.62
 
 =head1 SYNOPSIS
+
+    package MyVal::User;
+    
+    use Validation::Class;
+    
+    # rules mixin
+    
+    mxn basic       => {
+        required    => 1,
+        max_length  => 255,
+        filters     => [qw/trim strip/]
+    }; 
+    
+    # attr(s) w/rules
+    
+    fld id          => {
+        mixin       => 'basic',
+        max_length  => 11,
+        required    => 0
+    };
+    
+    fld name        => {
+        mixin       => 'basic',
+        min_length  => 2
+    };
+    
+    fld email       => {
+        mixin       => 'basic',
+        min_length  => 3
+    };
+    
+    fld login       => {
+        mixin       => 'basic',
+        min_length  => 5
+    };
+    
+    fld password    => {
+        mixin       => 'basic',
+        min_length  => 5,
+        min_symbols => 1
+    };
+    
+    has attitude => 1; # just an attr
+    
+    # self-validating method
+    
+    mth create  => {
+    
+        input   => [qw/name email login password/],
+        output  => ['+id'],
+        
+        using   => sub {
+            
+            my ($self, @args) = @_;
+            
+            # make sure to set id for output validation
+            
+        }
+    
+    }; 
+    
+    package main;
+    
+    my $user = MyVal::User->new(name => '...', email => '...');
+    
+    unless ($user->create) {
+    
+        # did you forget your login and pass?
+    
+    }
+    
+    1;
+
+Validation::Class takes a different approach towards data validation, it
+centralizes data validation rules to ensure consistency through DRY
+(dont-repeat-yourself) code.
 
     use MyApp;
     
@@ -652,12 +732,11 @@ version 5.61
     
     my $app = MyApp->new(params => $params);
     
-    my $user = $app->class('user');
+    my $user = $app->class('user'); # instantiated MyApp::User object
     
     unless ($user->validate('login', 'pass')){
     
         # do something with ... $input->errors;
-        # or print $input->errors_to_string;
         
     }
 
@@ -676,43 +755,6 @@ automatically generated to make getting and setting their values much easier.
 Methods can be defined using the method keyword which can make the routine
 self-validating, checking the defined input requirements against existing
 validation rules before executing the routine gaining consistency and security.
-
-    package MyVal::User;
-    
-    use Validation::Class;
-    
-    mxn basic    => { ... }; # rules mixin
-    
-    fld name     => { ... }; # attr w/rules
-    fld email    => { ... }; # attr w/rules
-    fld login    => { ... }; # attr w/rules
-    fld password => { ... }; # attr w/rules
-    
-    has attitude => 1; # just an attr
-    
-    mth create   => { ... }; # self-validating method
-    
-    package main;
-    
-    my $user = MyVal::User->new(name => '...', email => '...');
-    
-    if ($user->create) {
-    
-        print "Account created for " . $user->name;
-    
-    }
-    
-    else {
-    
-        # did you forget your login and pass?
-    
-    }
-    
-    1;
-
-Validation::Class takes a different approach towards data validation, it
-centralizes data validation rules to ensure consistency through DRY
-(dont-repeat-yourself) code.
 
 =head1 KEYWORDS
 
@@ -864,7 +906,7 @@ The coderef should also return the transformed value.
 
 =head2 load
 
-The load keyword, which can also be used as a method, provides options for
+The load keyword (or set), which can also be used as a method, provides options for
 further configuring the calling class. 
 
     package MyApp;
