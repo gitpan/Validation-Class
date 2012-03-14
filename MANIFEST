@@ -10,6 +10,7 @@ lib/Validation/Class/Cookbook.pod
 lib/Validation/Class/Engine.pm
 lib/Validation/Class/Moose.pm
 lib/Validation/Class/Simple.pm
+t/lib/Example.pm
 t/previous/00-load.t
 t/previous/01-attributes.t
 t/previous/02-package-declaration.t

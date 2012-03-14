@@ -5,14 +5,14 @@ use warnings;
 
 package Validation::Class;
 {
-    $Validation::Class::VERSION = '5.62';
+    $Validation::Class::VERSION = '5.63';
 }
 
 use 5.008001;
 use strict;
 use warnings;
 
-our $VERSION = '5.62';    # VERSION
+our $VERSION = '5.63';    # VERSION
 
 use Module::Find;
 use Carp 'confess';
@@ -106,7 +106,8 @@ STMNT
         no strict 'refs';
         no warnings 'redefine';
 
-        *{$self . "::$attr"} = eval $stmnt;
+        *{$self . "::$attr"} = $self->{config}->{ATTRIBUTES}->{$attr} =
+          eval $stmnt;
 
         confess($self . " attribute compiler error: \n$stmnt\n$@\n") if $@;
 
@@ -329,8 +330,26 @@ sub load {
                 eval "require $class"
                   unless $INC{$file};    # unless already loaded
 
-                # merge configs
-                $self->{config} = merge $class->{config}, $self->{config};
+                my @routines = grep { defined &{"$class\::$_"} }
+                  keys %{"$class\::"};
+
+                if (@routines) {
+
+                    # copy methods
+                    foreach my $routine (@routines) {
+
+                        eval {
+                            *{"$self\::$routine"} = \&{"$class\::$routine"};
+                        }
+                          unless $self->can($routine);
+
+                    }
+
+                    # merge configs
+                    $class->{config} ||= {};
+                    $self->{config} = merge $class->{config}, $self->{config};
+
+                }
 
             }
 
@@ -643,7 +662,7 @@ Validation::Class - Low-Fat Full-Flavored Data Modeling and Validation Framework
 
 =head1 VERSION
 
-version 5.62
+version 5.63
 
 =head1 SYNOPSIS
 
@@ -818,7 +837,7 @@ packages to be used in all your classes.
         unless ($validator->is_email($value)) {
         
             my $handle = $field->{label} || $field->{name};
-            $class->error($field, "$handle must be a valid email address");
+            $self->error($field, "$handle must be a valid email address");
             
             return 0;
         

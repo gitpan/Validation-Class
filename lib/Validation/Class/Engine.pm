@@ -2,14 +2,14 @@
 
 package Validation::Class::Engine;
 {
-    $Validation::Class::Engine::VERSION = '5.62';
+    $Validation::Class::Engine::VERSION = '5.63';
 }
 
 use 5.008001;
 use strict;
 use warnings;
 
-our $VERSION = '5.62';    # VERSION
+our $VERSION = '5.63';    # VERSION
 
 use Carp 'confess';
 use Array::Unique;
@@ -266,7 +266,7 @@ sub check_field {
     foreach (keys %{$spec}) {
 
         # if the field has a directive not listed in the directives table
-        # errror !!!
+        # error !!!
         if (!defined $directives->{$_}) {
             my $death_cert = "The $_ directive supplied by the $field "
               . "field is not supported";
@@ -2184,7 +2184,7 @@ Validation::Class::Engine - Data Validation Engine for Validation::Class
 
 =head1 VERSION
 
-version 5.62
+version 5.63
 
 =head1 SYNOPSIS
 
