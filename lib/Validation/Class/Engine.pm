@@ -2,14 +2,14 @@
 
 package Validation::Class::Engine;
 {
-    $Validation::Class::Engine::VERSION = '5.63';
+    $Validation::Class::Engine::VERSION = '5.64';
 }
 
 use 5.008001;
 use strict;
 use warnings;
 
-our $VERSION = '5.63';    # VERSION
+our $VERSION = '5.64';    # VERSION
 
 use Carp 'confess';
 use Array::Unique;
@@ -273,6 +273,7 @@ sub check_field {
 
             $self->xxx_suicide_by_unknown_field($death_cert);
         }
+
     }
 
     return 1;
@@ -2184,7 +2185,7 @@ Validation::Class::Engine - Data Validation Engine for Validation::Class
 
 =head1 VERSION
 
-version 5.63
+version 5.64
 
 =head1 SYNOPSIS
 

@@ -5,14 +5,14 @@ use warnings;
 
 package Validation::Class;
 {
-    $Validation::Class::VERSION = '5.63';
+    $Validation::Class::VERSION = '5.64';
 }
 
 use 5.008001;
 use strict;
 use warnings;
 
-our $VERSION = '5.63';    # VERSION
+our $VERSION = '5.64';    # VERSION
 
 use Module::Find;
 use Carp 'confess';
@@ -23,6 +23,8 @@ use Validation::Class::Engine;    # used-as-role, see new()
 
 our @ISA    = qw(Exporter);
 our @EXPORT = qw(
+  attribute
+
   bld
   build
 
@@ -662,7 +664,7 @@ Validation::Class - Low-Fat Full-Flavored Data Modeling and Validation Framework
 
 =head1 VERSION
 
-version 5.63
+version 5.64
 
 =head1 SYNOPSIS
 
