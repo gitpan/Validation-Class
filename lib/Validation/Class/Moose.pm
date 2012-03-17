@@ -2,13 +2,13 @@
 
 package Validation::Class::Moose;
 {
-    $Validation::Class::Moose::VERSION = '5.64';
+    $Validation::Class::Moose::VERSION = '5.68';
 }
 
 use Moose::Role;
 use Validation::Class::Simple;
 
-our $VERSION = '5.64';    # VERSION
+our $VERSION = '5.68';    # VERSION
 
 
 sub rules {
@@ -66,11 +66,11 @@ Validation::Class::Moose - Marries Validation::Class and Moose through Traits
 
 =head1 VERSION
 
-version 5.64
+version 5.68
 
 =head1 DESCRIPTION
 
-Validation::Class::Moose (SOON TO BE DEPRECIATED) is a L<Moose> role that
+Validation::Class::Moose (may be depreciated soon) is a L<Moose> role that
 infuses the power and flexibility of L<Validation::Class> into your Moose classes.
 Validation::Class::Moose, by design, is not designed for attribute type checking,
 the Moose type constraint system exists for that purpose and works well, ...
