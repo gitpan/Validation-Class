@@ -2,14 +2,14 @@
 
 package Validation::Class::Engine;
 {
-    $Validation::Class::Engine::VERSION = '5.68';
+    $Validation::Class::Engine::VERSION = '5.75';
 }
 
 use 5.008001;
 use strict;
 use warnings;
 
-our $VERSION = '5.68';    # VERSION
+our $VERSION = '5.75';    # VERSION
 
 use Carp 'confess';
 use Array::Unique;
@@ -336,6 +336,35 @@ sub clone {
 }
 
 
+sub default_value {
+
+    my ($self, $field_name) = @_;
+
+    return undef unless $field_name && exists $self->fields->{$field_name};
+
+    my $value = undef;
+
+    if (exists $self->params->{$field_name}) {
+
+        $value = $self->params->{$field_name}
+
+    }
+
+    unless (defined $value) {
+
+        if (exists $self->fields->{$field_name}->{default}) {
+
+            $value = $self->fields->{$field_name}->{default};
+
+        }
+
+    }
+
+    return $value;
+
+}
+
+
 sub error {
 
     my ($self, @args) = @_;
@@ -440,6 +469,16 @@ sub errors_to_string {
 }
 
 
+sub get_classes {
+
+    my ($self, @classes) = @_;
+
+    # get classes as a list
+    return (map { $self->class($_) || undef } @classes);
+
+}
+
+
 sub get_errors {
 
     my ($self, @fields) = @_;
@@ -489,6 +528,8 @@ sub normalize {
     }
 
     # reset fields
+    # NOTICE: (called twice in this routine, not sure why, must
+    # investigate further although it doesn't currently break anything)
     $self->reset_fields;
 
     # validate mixin directives
@@ -519,6 +560,11 @@ sub normalize {
                 $field->{$string} =~ s/[\n\s\t\r]+$//g;
                 $field->{$string} =~ s/[\n\s\t\r]+/ /g;
             }
+        }
+
+        # respect readonly fields
+        if (defined $field->{readonly}) {
+            delete $self->params->{$name} if exists $self->params->{$name};
         }
 
     }
@@ -1425,6 +1471,14 @@ sub template {
 
             },
 
+            readonly => {
+
+                mixin => 0,
+                field => 1,
+                multi => 0
+
+            },
+
             required => {
 
                 mixin => 1,
@@ -1820,10 +1874,8 @@ sub validate {
 
                 my $field = $self->fields->{$name};
 
-                $field->{name} = $name;
-                $field->{value} =
-                  exists $self->params->{$name} ? $param : $field->{default}
-                  || '';
+                $field->{name}  = $name;
+                $field->{value} = $self->default_value($name);
 
                 # create arguments to be passed to the validation directive
                 my @args = ($self, $field, $self->params);
@@ -1880,11 +1932,8 @@ sub validate {
 
                 my $field = $self->fields->{$field_name};
 
-                $field->{name} = $field_name;
-                $field->{value} =
-                  exists $self->params->{$field_name}
-                  ? $self->params->{$field_name}
-                  : $field->{default} || '';
+                $field->{name}  = $field_name;
+                $field->{value} = $self->default_value($field_name);
 
                 my @args = ($self, $field, $self->params);
 
@@ -1945,11 +1994,8 @@ sub validate {
 
                 my $field = $self->fields->{$field_name};
 
-                $field->{name} = $field_name;
-                $field->{value} =
-                  exists $self->params->{$field_name}
-                  ? $self->params->{$field_name}
-                  : $field->{default} || '';
+                $field->{name}  = $field_name;
+                $field->{value} = $self->default_value($field_name);
 
                 my @args = ($self, $field, $self->params);
 
@@ -2185,7 +2231,7 @@ Validation::Class::Engine - Data Validation Engine for Validation::Class
 
 =head1 VERSION
 
-version 5.68
+version 5.75
 
 =head1 SYNOPSIS
 
@@ -2517,6 +2563,13 @@ run-time.
     
     1;
 
+=head2 default_value
+
+The default_value method returns the absolute value (hardcoded, default or
+parameter specified) for a given field.
+
+    my $value = $self->default_value('field_name');
+
 =head2 error
 
 The error method is used to set and/or retrieve errors encountered during
@@ -2567,6 +2620,23 @@ specified delimiter or ', ' by default.
     
     unless ($self->validate) {
         return $self->errors_to_string;
+    }
+
+=head2 get_classes
+
+The get_classes method returns the list of instantiated child class objects based
+on the list of class names specified.
+
+    my ($user, $pref) = $self->get_classes('user', 'preference');
+    
+    if ($user->validate) {
+        
+        if ($pref->validate) {
+            
+            ...
+            
+        }
+        
     }
 
 =head2 get_errors
@@ -2622,7 +2692,7 @@ L<Hash::Flatten>.
 
 The normalize method executes a set of routines that reset the parameter
 environment filtering any parameters present. This method is executed
-automatically at instantiation and validation. 
+automatically at instantiation and again just before each validation event. 
 
     $self->normalize();
 
@@ -2713,10 +2783,12 @@ The set_method method conveniently creates a method on the calling class, this
 method is primarily intended to be used during instantiation of a plugin during
 instantiation of the validation class.
 
+    my $sub = $self->set_method(__PACKAGE__ => sub { ... });
+    
+    my $sub = $self->set_method(do_something => sub { ... });
+
 Additionally, method names are flattened, e.g. ThisPackage will be converted to
 this_package for convenience and consistency.
-
-    my $sub = $self->set_method(__PACKAGE__ => sub { ... });
 
 =head2 set_params_hash
 
@@ -2976,57 +3048,23 @@ The name directive is used *internally* and cannot be changed.
         ...
     };
 
-=head2 required
+=head2 readonly
 
-The required directive is an important directive but can be misunderstood.
-The required directive is used to ensure the submitted parameter exists and
-has a value. If the parameter is never submitted, the directive is effectively
-skipped. This directive can be thought of as the "must-have-a-value-if-exists"
-directive.
+The readonly directive is used to symbolize a field whose parameter value should
+not be honored and if encountered, deleted. Unlike the read-only attribute
+options in other object systems, setting this will not cause you program to die
+and in-fact, an experience programmer can selectively bypass this constraint.
 
-    # the required directive
-    field 'foobar'  => {
-        required => 1,
-        ...
-    };
-    
-    # fail
-    my $rules = MyApp::Validation->new(params => {  });
-    $rules->validate('foobar');
-    
-    # fail
-    my $rules = MyApp::Validation->new(params => { foobar => '' });
-    $rules->validate('foobar');
-    
-    # pass
-    my $rules = MyApp::Validation->new(params => {  foobar => 'Nice' });
-    $rules->validate('foobar');
-
-See the toggle functionality within the validate() method. This method allows
-you to temporarily alter whether a field is required or not.
-
-=head2 validation
-
-The validation directive is a coderef used add additional custom validation to
-the field. The coderef must return true (to pass) or false (to fail). Custom
-error messages can be set from within the coderef so make sure they are set
-based on appropriate logic as the registration of error message are not
-contingent on the success or failure of the routine. 
-
-    # the validation directive
-    field 'login'  => {
-        validation => sub {
-            my ($self, $this_field, $all_params) = @_;
-            return 0 unless $this_field->{value};
-            return $this_field->{value} eq 'admin' ? 1 : 0;
-        },
+    # the readonly directive
+    field 'thename'  => {
+        readonly => 1,
         ...
     };
 
 =head2 value
 
 The value directive is used internally to store the field's matching parameter's
-value. This value can be set in the definition but SHOULD NOT be used as a
+value. This value can be set in the definition but SHOULD NOT BE used as a
 default value unless you're sure no parameter will overwrite it during run-time.
 If you need to set a default value, see the default directive.
 
@@ -3294,6 +3332,61 @@ declarations:
     field 'complex'  => {
         # regex pattern
         pattern => qr/[0-9]+\,\s\.\.\./,
+        ...
+    };
+
+=head2 required
+
+The required directive is an important directive but can be misunderstood.
+The required directive is used to ensure the submitted parameter exists and
+has a value. If the parameter is never submitted, the directive is effectively
+skipped. This directive can be thought of as the "must-have-a-value-if-exists"
+directive.
+
+    # the required directive
+    field 'foobar'  => {
+        required => 1,
+        ...
+    };
+    
+    # pass
+    my $rules = MyApp::Validation->new(params => {   });
+    $rules->validate(); #validate everything
+    
+    # fail
+    my $rules = MyApp::Validation->new(params => { foobar => '' });
+    $rules->validate(); #validate everything
+    
+    # fail
+    my $rules = MyApp::Validation->new(params => {  });
+    $rules->validate('foobar');
+    
+    # fail
+    my $rules = MyApp::Validation->new(params => { foobar => '' });
+    $rules->validate('foobar');
+    
+    # pass
+    my $rules = MyApp::Validation->new(params => {  foobar => 'Nice' });
+    $rules->validate('foobar');
+
+See the toggle functionality within the validate() method. This method allows
+you to temporarily alter whether a field is required or not.
+
+=head2 validation
+
+The validation directive is a coderef used add additional custom validation to
+the field. The coderef must return true (to pass) or false (to fail). Custom
+error messages can be set from within the coderef so make sure they are set
+based on appropriate logic as the registration of error message are not
+contingent on the success or failure of the routine. 
+
+    # the validation directive
+    field 'login'  => {
+        validation => sub {
+            my ($self, $this_field, $all_params) = @_;
+            return 0 unless $this_field->{value};
+            return $this_field->{value} eq 'admin' ? 1 : 0;
+        },
         ...
     };
 
