@@ -5,14 +5,14 @@ use warnings;
 
 package Validation::Class;
 {
-    $Validation::Class::VERSION = '5.80';
+    $Validation::Class::VERSION = '5.81';
 }
 
 use 5.008001;
 use strict;
 use warnings;
 
-our $VERSION = '5.80';    # VERSION
+our $VERSION = '5.81';    # VERSION
 
 use Module::Find;
 use Carp 'confess';
@@ -107,6 +107,8 @@ STMNT
 
         no strict 'refs';
         no warnings 'redefine';
+
+        $self->{config}->{ATTRIBUTES} ||= {};
 
         *{$self . "::$attr"} = $self->{config}->{ATTRIBUTES}->{$attr} =
           eval $stmnt;
@@ -669,7 +671,7 @@ Validation::Class - Low-Fat Full-Flavored Data Modeling and Validation Framework
 
 =head1 VERSION
 
-version 5.80
+version 5.81
 
 =head1 SYNOPSIS
 
