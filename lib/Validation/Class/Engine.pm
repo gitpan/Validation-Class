@@ -2,14 +2,14 @@
 
 package Validation::Class::Engine;
 {
-    $Validation::Class::Engine::VERSION = '5.75';
+    $Validation::Class::Engine::VERSION = '5.80';
 }
 
 use 5.008001;
 use strict;
 use warnings;
 
-our $VERSION = '5.75';    # VERSION
+our $VERSION = '5.80';    # VERSION
 
 use Carp 'confess';
 use Array::Unique;
@@ -330,6 +330,18 @@ sub clone {
     # build a new field from an existing one during runtime
     $self->fields->{$new_field_name} = $directives || {};
     $self->use_mixin_field($field_name, $new_field_name);
+
+    return $self;
+
+}
+
+
+sub copy_errors {
+
+    my ($self, $target) = @_;
+
+    # copy errors from one class to another, both must be VC classes
+    $target->set_errors($self->get_errors) if $self->error_count;
 
     return $self;
 
@@ -792,6 +804,10 @@ sub stash {
 sub template {
 
     {
+
+        ATTRIBUTES => {},
+
+        BUILDERS => {},
 
         DIRECTIVES => {
 
@@ -1582,6 +1598,8 @@ sub template {
 
         },
 
+        METHODS => {},
+
         MIXINS => {},
 
         PLUGINS => {},
@@ -2231,7 +2249,7 @@ Validation::Class::Engine - Data Validation Engine for Validation::Class
 
 =head1 VERSION
 
-version 5.75
+version 5.80
 
 =head1 SYNOPSIS
 
@@ -2562,6 +2580,21 @@ run-time.
     $input->validate(qw/phone phone2 phone3 phone4/);
     
     1;
+
+=head2 copy_errors
+
+The copy_errors method is used to copy error messages from one class to another.
+Both classes must be Validation::Class based and/or at-least implement the
+get_errors and set_errors methods.
+
+    $input = Class->new;
+    $other = $input->class('other');
+    
+    unless ($other->validate) {
+        
+        $other->copy_errors($input);
+        
+    }
 
 =head2 default_value
 

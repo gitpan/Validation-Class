@@ -5,14 +5,14 @@ use warnings;
 
 package Validation::Class;
 {
-    $Validation::Class::VERSION = '5.75';
+    $Validation::Class::VERSION = '5.80';
 }
 
 use 5.008001;
 use strict;
 use warnings;
 
-our $VERSION = '5.75';    # VERSION
+our $VERSION = '5.80';    # VERSION
 
 use Module::Find;
 use Carp 'confess';
@@ -130,6 +130,8 @@ sub build {
 
     no strict 'refs';
 
+    $self->{config}->{BUILDERS} ||= [];
+
     push @{$self->{config}->{BUILDERS}}, $code;
 
     return $code;
@@ -236,6 +238,8 @@ sub load {
     $self ||= caller(0);    # hackaroni toni
 
     no strict 'refs';
+
+    $self->{config}->{BUILDERS} ||= [];    # prevents merge from referencing
 
     if ($data->{class}) {
 
@@ -665,7 +669,7 @@ Validation::Class - Low-Fat Full-Flavored Data Modeling and Validation Framework
 
 =head1 VERSION
 
-version 5.75
+version 5.80
 
 =head1 SYNOPSIS
 
