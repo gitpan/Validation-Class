@@ -2,13 +2,13 @@
 
 package Validation::Class::Moose;
 {
-    $Validation::Class::Moose::VERSION = '5.81';
+    $Validation::Class::Moose::VERSION = '5.82';
 }
 
 use Moose::Role;
 use Validation::Class::Simple;
 
-our $VERSION = '5.81';    # VERSION
+our $VERSION = '5.82';    # VERSION
 
 
 sub rules {
@@ -66,7 +66,7 @@ Validation::Class::Moose - Marries Validation::Class and Moose through Traits
 
 =head1 VERSION
 
-version 5.81
+version 5.82
 
 =head1 DESCRIPTION
 
