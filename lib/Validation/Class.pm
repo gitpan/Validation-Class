@@ -5,14 +5,14 @@ use warnings;
 
 package Validation::Class;
 {
-    $Validation::Class::VERSION = '5.82';
+    $Validation::Class::VERSION = '5.83';
 }
 
 use 5.008001;
 use strict;
 use warnings;
 
-our $VERSION = '5.82';    # VERSION
+our $VERSION = '5.83';    # VERSION
 
 use Module::Find;
 use Carp 'confess';
@@ -153,6 +153,8 @@ sub directive {
 
     no strict 'refs';
 
+    $self->{config}->{DIRECTIVES} ||= {};
+
     $self->{config}->{DIRECTIVES}->{$name} = {
         mixin     => 1,
         field     => 1,
@@ -175,6 +177,8 @@ sub field {
     return 0 unless ($name && $data);
 
     no strict 'refs';
+
+    $self->{config}->{FIELDS} ||= {};
 
     confess "Error creating accessor $name, attribute collision"
       if exists $self->{config}->{FIELDS}->{$name};
@@ -222,6 +226,8 @@ sub filter {
     return 0 unless ($name && $data);
 
     no strict 'refs';
+
+    $self->{config}->{FILTERS} ||= {};
 
     $self->{config}->{FILTERS}->{$name} = $data;
 
@@ -445,6 +451,8 @@ sub method {
 
     no strict 'refs';
 
+    $self->{config}->{METHODS} ||= {};
+
     confess "Error creating method $name, attribute collision"
       if exists $self->{$name};
 
@@ -562,6 +570,8 @@ sub mixin {
 
     no strict 'refs';
 
+    $self->{config}->{MIXINS} ||= {};
+
     $self->{config}->{MIXINS}->{$name} = $data;
 
     return $name, $data;
@@ -653,6 +663,8 @@ sub profile {
 
     no strict 'refs';
 
+    $self->{config}->{PROFILES} ||= {};
+
     $self->{config}->{PROFILES}->{$name} = $data;
 
     return $name, $data;
@@ -671,7 +683,7 @@ Validation::Class - Low-Fat Full-Flavored Data Modeling and Validation Framework
 
 =head1 VERSION
 
-version 5.82
+version 5.83
 
 =head1 SYNOPSIS
 
