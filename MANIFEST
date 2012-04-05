@@ -5,9 +5,13 @@ META.yml
 Makefile.PL
 README
 README.mkdn
+eg/exporter.pl
+eg/lib/MyApp/Class.pm
+eg/lib/MyApp/Example.pm
 lib/Validation/Class.pm
 lib/Validation/Class/Cookbook.pod
 lib/Validation/Class/Engine.pm
+lib/Validation/Class/Exporter.pm
 lib/Validation/Class/Moose.pm
 lib/Validation/Class/Simple.pm
 t/past/00-load.t

@@ -5,14 +5,14 @@ use warnings;
 
 package Validation::Class;
 {
-    $Validation::Class::VERSION = '5.83';
+    $Validation::Class::VERSION = '5.85';
 }
 
 use 5.008001;
 use strict;
 use warnings;
 
-our $VERSION = '5.83';    # VERSION
+our $VERSION = '5.85';    # VERSION
 
 use Module::Find;
 use Carp 'confess';
@@ -398,9 +398,7 @@ sub load {
                     # copy methods
                     foreach my $routine (@routines) {
 
-                        eval {
-                            *{"$self\::$routine"} = \&{"$class\::$routine"};
-                        }
+                        eval { *{"$self\::$routine"} = *{"$class\::$routine"} }
                           unless $self->can($routine);
 
                     }
@@ -445,6 +443,7 @@ sub mth { goto &method }
 sub method {
 
     my ($name, $data) = @_;
+
     my $self = caller(0);
 
     return 0 unless ($name && $data);
@@ -564,6 +563,7 @@ sub mxn { goto &mixin }
 sub mixin {
 
     my ($name, $data) = @_;
+
     my $self = caller(0);
 
     return 0 unless ($name && $data);
@@ -600,7 +600,7 @@ sub new {
 
     foreach my $routine (@routines) {
 
-        eval { *{"$invocant\::$routine"} = \&{"$engine\::$routine"} };
+        eval { *{"$invocant\::$routine"} = *{"$engine\::$routine"} };
 
     }
 
@@ -657,6 +657,7 @@ sub pro { goto &profile }
 sub profile {
 
     my ($name, $data) = @_;
+
     my $self = caller(0);
 
     return 0 unless ($name && "CODE" eq ref $data);
@@ -683,7 +684,7 @@ Validation::Class - Low-Fat Full-Flavored Data Modeling and Validation Framework
 
 =head1 VERSION
 
-version 5.83
+version 5.85
 
 =head1 SYNOPSIS
 
