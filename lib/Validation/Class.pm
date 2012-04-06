@@ -5,14 +5,14 @@ use warnings;
 
 package Validation::Class;
 {
-    $Validation::Class::VERSION = '5.85';
+    $Validation::Class::VERSION = '5.90';
 }
 
 use 5.008001;
 use strict;
 use warnings;
 
-our $VERSION = '5.85';    # VERSION
+our $VERSION = '5.90';    # VERSION
 
 use Module::Find;
 use Carp 'confess';
@@ -684,7 +684,7 @@ Validation::Class - Low-Fat Full-Flavored Data Modeling and Validation Framework
 
 =head1 VERSION
 
-version 5.85
+version 5.90
 
 =head1 SYNOPSIS
 
