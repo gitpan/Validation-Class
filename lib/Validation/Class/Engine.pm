@@ -2,14 +2,14 @@
 
 package Validation::Class::Engine;
 {
-  $Validation::Class::Engine::VERSION = '5.96';
+  $Validation::Class::Engine::VERSION = '5.98';
 }
 
 use 5.008001;
 use strict;
 use warnings;
 
-our $VERSION = '5.96'; # VERSION
+our $VERSION = '5.98'; # VERSION
 
 use Carp 'confess';
 use Array::Unique;
@@ -532,10 +532,18 @@ sub get_errors {
 
     my ($self, @fields) = @_;
     
-    # get class-level errors as a list
     return @fields ?
-        (map { @{$self->fields->{$_}->{errors}} } @fields) :
-        (@{$self->{errors}});
+    (map { @{$self->fields->{$_}->{errors}} } @fields) : (@{$self->{errors}});
+
+}
+
+
+sub get_fields {
+
+    my ($self, @fields) = @_;
+    
+    # get fields as a list
+    return @fields ? (map { $self->fields->{$_} } @fields) : undef;
 
 }
 
@@ -1859,7 +1867,7 @@ sub validate {
     my %original_parameters = %{$self->params};
 
     # create alias map manually if requested
-    # sorta DEPRECIATED
+    # VERY DEPRECIATED BUT IT REMAINS
     if ( "HASH" eq ref $fields[0] ) {
         
         my $alias_map = $fields[0]; @fields = (); # blank
@@ -2144,7 +2152,9 @@ sub validate {
     my $valid = @{ $self->errors } ? 0 : 1;
     
     # restore sanity
-    $self->params({%original_parameters});
+    $self->params({%original_parameters}); # (todo: remove this)
+    
+    $self->params($self->get_params_hash); # should address explosions
     
     # run post-validation filtering
     $self->apply_filters('post') if $self->filtering && $valid;
@@ -2314,7 +2324,7 @@ Validation::Class::Engine - Data Validation Engine for Validation::Class
 
 =head1 VERSION
 
-version 5.96
+version 5.98
 
 =head1 SYNOPSIS
 
@@ -2744,6 +2754,14 @@ class or a list of errors from the specified fields.
 
     my @errors = $self->get_errors();
     my @lp_errors = $self->get_errors('login', 'password');
+
+=head2 get_fields
+
+The get_fields method returns the list of references to the specified fields.
+Returns undef if no arguments are passed. This method is likely to be used more
+internally than externally.
+
+    my ($login, $password) = ($self->get_fields('login', 'password'));
 
 =head2 get_params
 
