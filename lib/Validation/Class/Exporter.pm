@@ -2,7 +2,7 @@
 
 package Validation::Class::Exporter;
 {
-    $Validation::Class::Exporter::VERSION = '5.95';
+  $Validation::Class::Exporter::VERSION = '5.96';
 }
 
 use 5.008001;
@@ -10,55 +10,55 @@ use 5.008001;
 use strict;
 use warnings;
 
-our $VERSION = '5.95';    # VERSION
+our $VERSION = '5.96'; # VERSION
+
 
 
 sub apply_spec {
-
+    
     my ($this, %args) = @_;
-
+    
     no strict 'refs';
     no warnings 'once';
-
+    
     my $parent = caller(0);
+    
+    my @keywords = @{ $args{keywords} } if $args{keywords};
 
-    my @keywords = @{$args{keywords}} if $args{keywords};
-
-    my @routines = @{$args{routines}} if $args{routines};
-
-    my $settings = {@{$args{settings}}} if $args{settings};
-
+    my @routines = @{ $args{routines} } if $args{routines};
+    
+    my $settings = { @{ $args{settings} } } if $args{settings};
+    
     *{"$parent\::import"} = sub {
-
+       
         my $child = caller(0);
-
+        
         *{"$child\::$_"} = *{"$parent\::$_"} for @keywords;
-
+        
         *{"$child\::$_"} = *{"$parent\::$_"} for @routines;
-
-        my $isa = "$child\::ISA";
-
+        
+        my $isa  = "$child\::ISA";
+        
         push @$isa, 'Validation::Class';
-
+        
         *{"$child\::$_"} = *{"Validation\::Class\::$_"}
-          for @Validation::Class::EXPORT;
-
+            for @Validation::Class::EXPORT;
+        
         strict->import;
         warnings->import;
-
+        
         $child->load($settings) if $settings;
-
+        
         return $child;
-
+        
     };
-
+    
     return $this;
-
+    
 }
 
 1;
 __END__
-
 =pod
 
 =head1 NAME
@@ -67,7 +67,7 @@ Validation::Class::Exporter - Simple Exporter for Validation::Class Classes
 
 =head1 VERSION
 
-version 5.95
+version 5.96
 
 =head1 SYNOPSIS
 

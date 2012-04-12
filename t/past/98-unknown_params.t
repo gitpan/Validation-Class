@@ -8,7 +8,6 @@ package main;
 my $r = MyVal->new(
     fields => {
         status => {
-
             # ...
         }
     },
@@ -20,4 +19,4 @@ my $r = MyVal->new(
 );
 
 # resolve the anomyly
-ok $r->validate('_foo'), 'valid by default';
+ok  $r->validate('_foo'), 'valid by default';

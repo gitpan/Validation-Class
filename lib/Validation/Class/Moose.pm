@@ -2,62 +2,58 @@
 
 package Validation::Class::Moose;
 {
-    $Validation::Class::Moose::VERSION = '5.95';
+  $Validation::Class::Moose::VERSION = '5.96';
 }
 
 use Moose::Role;
 use Validation::Class::Simple;
 
-our $VERSION = '5.95';    # VERSION
+our $VERSION = '5.96'; # VERSION 
+
 
 
 sub rules {
-
+    
     my $self = shift;
-    my $data = {fields => {}, params => {}};
-
+    my $data = { fields => {}, params => {} };
+    
     foreach my $attribute ($self->meta->get_all_attributes) {
-
+        
         $data->{params}->{$attribute->name} = $attribute->get_value($self);
         $data->{fields}->{$attribute->name} = $attribute->rules;
         $data->{fields}->{$attribute->name}->{required} = 1
-          if $attribute->{required};    # required attr condition
-
+            if $attribute->{required}; # required attr condition
+        
     }
-
-    Validation::Class::Simple->new(%{$data});
-
+    
+    Validation::Class::Simple->new(%{ $data });
+    
 }
 
 # register virtual trait - escape the pause
 
-{
-
-    # Validation::Class Virtual Moose Trait
-    package    # Don't register with PAUSE (pause.perl.org)
-      Validation::Class::Moose::Trait::Rules;
-    use Moose::Role;
-    has rules => (
-        is      => 'rw',
-        isa     => 'HashRef',
-        default => sub { {} }
-    );
-
-    # Validation::Class Virtual Trait
-    package    # Don't register with PAUSE (pause.perl.org)
-      Moose::Meta::Attribute::Custom::Trait::Rules;
-
-    sub register_implementation {
-        my $pkg = 'Validation_Class_Moose_Trait_Rules';
-        $pkg =~ s/_/::/g;
-        $pkg;
+    {
+        
+        # Validation::Class Virtual Moose Trait
+        package # Don't register with PAUSE (pause.perl.org)
+            Validation::Class::Moose::Trait::Rules
+        ;   use Moose::Role;
+            has rules => (is => 'rw', isa => 'HashRef',
+                default => sub {{}});
+        
+        # Validation::Class Virtual Trait
+        package # Don't register with PAUSE (pause.perl.org)
+            Moose::Meta::Attribute::Custom::Trait::Rules
+        ;   sub register_implementation { 
+                my $pkg = 'Validation_Class_Moose_Trait_Rules';
+                   $pkg =~ s/_/::/g;
+                   $pkg
+            }
+        
     }
-
-}
-
+    
 1;
 __END__
-
 =pod
 
 =head1 NAME
@@ -66,7 +62,7 @@ Validation::Class::Moose - Marries Validation::Class and Moose through Traits
 
 =head1 VERSION
 
-version 5.95
+version 5.96
 
 =head1 DESCRIPTION
 

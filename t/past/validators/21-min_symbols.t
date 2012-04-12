@@ -8,20 +8,20 @@ package main;
 my $r = MyVal->new(
     fields => {
         one => {
-            label       => 'Object',
+            label => 'Object',
             min_symbols => 2
         }
     }
 );
 
 $r->params->{one} = '@@#';
-ok $r->validate('one'), 'validation ok';
+ok  $r->validate('one'), 'validation ok';
 
 $r->params->{one} = '@@';
-ok $r->validate('one'), 'validation ok';
+ok  $r->validate('one'), 'validation ok';
 
 $r->params->{one} = '!';
-ok !$r->validate('one'), 'validation failed';
+ok  ! $r->validate('one'), 'validation failed';
 
 $r->params->{one} = '$$D';
-ok $r->validate('one'), 'validation ok';
+ok  $r->validate('one'), 'validation ok';

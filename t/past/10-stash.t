@@ -11,7 +11,7 @@ my $v = MyVal->new(
         foobar => {
             validation => sub {
                 shift->stash->{foo};
-              }
+            }
         }
     }
 );

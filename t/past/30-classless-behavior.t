@@ -25,8 +25,8 @@ my $b_profile = {
 
 my $a_rules = Validation::Class::Simple->new(
     ignore_unknown => 1,
-    fields         => $a_profile,
-    params         => {}
+    fields => $a_profile,
+    params => {}
 );
 
 # diag 'run $a_profile instance';
@@ -45,31 +45,27 @@ ok $a_rules->validate, 'validation passed ok';
 
 my $b_rules = Validation::Class::Simple->new(
     ignore_unknown => 1,
-    fields         => $b_profile,
-    params         => {}
+    fields => $b_profile,
+    params => {}
 );
 
 # diag 'run $b_profile instance';
 
 ok $b_rules, 'validation class init ok';
 ok $b_rules->validate(), 'validation passes (explicit ignore set) as expected';
-ok !$b_rules->validate('login'),
-  'validation fails (field set explicitly) as expected';
-ok $b_rules->errors_to_string eq 'login not right',
-  'error message as expected';
+ok !$b_rules->validate('login'), 'validation fails (field set explicitly) as expected';
+ok $b_rules->errors_to_string eq 'login not right', 'error message as expected';
 
 $b_rules->params->{login} = ' someone SPECIAL     ';
 
 ok $b_rules->apply_filters, 'applied filters';
-ok $b_rules->params->{login} =~ /^ someone SPECIAL     $/,
-  'filtering as expected';
+ok $b_rules->params->{login} =~ /^ someone SPECIAL     $/, 'filtering as expected';
 ok !$b_rules->validate, 'validation failed ok';
 
 $b_rules->params->{login} = 'someoneSPECIAL';
 
 ok $b_rules->validate, 'validation passed ok';
-ok $b_rules->params->{login} =~ /^someonespecial$/,
-  'filtering as expected post validation';
+ok $b_rules->params->{login} =~ /^someonespecial$/, 'filtering as expected post validation';
 
 # diag 're-run $a_profile instance';
 

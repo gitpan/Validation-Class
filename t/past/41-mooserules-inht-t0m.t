@@ -18,7 +18,7 @@ has foo => (
     rules    => {
         label      => 'Foo',
         validation => sub {
-            my ($self, $this_field, $all_params) = @_;
+            my ( $self, $this_field, $all_params ) = @_;
             return $this_field->{value} eq 'foo' ? 1 : 0;
           }
     }
@@ -38,7 +38,7 @@ has bar => (
     rules    => {
         label      => 'Bar',
         validation => sub {
-            my ($self, $this_field, $all_params) = @_;
+            my ( $self, $this_field, $all_params ) = @_;
             return $this_field->{value} eq 'bar' ? 1 : 0;
           }
     }
@@ -46,14 +46,14 @@ has bar => (
 
 package main;
 
-my $i = Bar->new(foo => 1, bar => 2);
+my $i = Bar->new( foo => 1, bar => 2 );
 my $rules = $i->rules;
 ok !$rules->validate, 'Should not validate, values bad';
 
-$i = Bar->new(foo => 'foo', bar => 2);
+$i = Bar->new( foo => 'foo', bar => 2 );
 $rules = $i->rules;
 ok !$rules->validate, 'Should not validate, values bad';
 
-$i = Bar->new(foo => 'foo', bar => 'bar');
+$i = Bar->new( foo => 'foo', bar => 'bar' );
 $rules = $i->rules;
 ok $rules->validate, 'Should validate';

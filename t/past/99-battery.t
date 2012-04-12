@@ -9,7 +9,7 @@ mixin 'basic' => {
     required   => 1,
     min_length => 1,
     max_length => 255,
-    filters    => ['lowercase', 'alphanumeric']
+    filters    => [ 'lowercase', 'alphanumeric' ]
 };
 
 mixin 'validation' => {};
@@ -19,9 +19,9 @@ field 'login' => {
     label      => 'user login',
     error      => 'login invalid',
     validation => sub {
-        my ($self, $this, $fields) = @_;
-        return $this->{value} eq 'admin' ? 1 : 0;
-      }
+	my ( $self, $this, $fields ) = @_;
+	return $this->{value} eq 'admin' ? 1 : 0;
+    }
 };
 
 field 'password' => {
@@ -29,12 +29,12 @@ field 'password' => {
     label      => 'user password',
     error      => 'password invalid',
     validation => sub {
-        my ($self, $this, $fields) = @_;
-        return $this->{value} eq 'pass' ? 1 : 0;
-      }
+	my ( $self, $this, $fields ) = @_;
+	return $this->{value} eq 'pass' ? 1 : 0;
+    }
 };
 
-field 'something' => {mixin => ['basic', 'validation']};
+field 'something' => { mixin => [ 'basic', 'validation' ] };
 
 package main;
 
@@ -71,8 +71,8 @@ $v->fields->{'auth:login'} = {
     label      => 'user login',
     error      => 'login invalid',
     validation => sub {
-        my ($self, $this, $fields) = @_;
-        return $this->{value} eq 'admin' ? 1 : 0;
+	my ( $self, $this, $fields ) = @_;
+	return $this->{value} eq 'admin' ? 1 : 0;
       }
 };
 
@@ -81,8 +81,8 @@ $v->fields->{'auth:password'} = {
     label      => 'user password',
     error      => 'password invalid',
     validation => sub {
-        my ($self, $this, $fields) = @_;
-        return $this->{value} eq 'pass' ? 1 : 0;
+	my ( $self, $this, $fields ) = @_;
+	return $this->{value} eq 'pass' ? 1 : 0;
       }
 };
 
@@ -91,8 +91,8 @@ $v->fields->{'user:name'} = {
     label      => 'user name',
     error      => 'invalid name',
     validation => sub {
-        my ($self, $this, $fields) = @_;
-        return 1;
+	my ( $self, $this, $fields ) = @_;
+	return 1;
       }
 };
 
@@ -101,8 +101,8 @@ $v->fields->{'user:phone'} = {
     label      => 'user phone',
     error      => 'phone invalid',
     validation => sub {
-        my ($self, $this, $fields) = @_;
-        return 0;
+	my ( $self, $this, $fields ) = @_;
+	return 0;
       }
 };
 
@@ -111,31 +111,31 @@ $v->fields->{'user:email'} = {
     label      => 'user email',
     error      => 'email invalid',
     validation => sub {
-        my ($self, $this, $fields) = @_;
-        return 1;
+	my ( $self, $this, $fields ) = @_;
+	return 1;
       }
 };
 
 package main;
 
 my $params = {
-    login    => 'admin1%^&%&^%^%&',
-    password => 'pass@@@#$#%$^',
-    name     => 'al newkirk',
-    phone    => '2155551212',
-    email    => 'awncorp2cpan.org'
+    login        => 'admin1%^&%&^%^%&',
+    password     => 'pass@@@#$#%$^',
+    name         => 'al newkirk',
+    phone        => '2155551212',
+    email        => 'awncorp2cpan.org'
 };
 
-$v = MyVal->new(params => $params);
+$v = MyVal->new( params => $params );
 
 # params set at new function
-ok scalar(keys %{$v->params}), 'params have been set at instantiation';
+ok scalar( keys %{ $v->params } ), 'params have been set at instantiation';
 
 # error class exists
 ok !$v->error_count, 'error count reporting';
 
 # validate login only
-ok !$v->validate({login => 'auth:login'}), 'login field failed as expected';
+ok !$v->validate( { login => 'auth:login' } ), 'login field failed as expected';
 ok $v->error_count == 1, 'error count accurate';
 ok $v->errors_to_string eq 'login invalid',
   'error messages and error class to_string method works';
@@ -147,12 +147,13 @@ ok $v->params->{password} eq 'pass',   'password formatting worked';
 # process common password confirmation
 $v->fields->{'password_cfm'} = {
     mixin_field => 'password',
-    default     => 'pass',
+    default	=> 'pass',
     validation  => sub {
-        my ($self, $this, $params) = @_;
-        return $this->{value} eq $params->{password} ? 1 : 0;
-      }
+	my ( $self, $this, $params ) = @_;
+	return $this->{value} eq $params->{password} ? 1 : 0;
+    }
 };
 
 ok $v->validate('password'), 'password field validates';
-ok $v->validate('password', 'password_cfm'), 'password confirmation validates';
+ok $v->validate( 'password', 'password_cfm' ),
+  'password confirmation validates';

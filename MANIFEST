@@ -14,7 +14,6 @@ lib/Validation/Class/Engine.pm
 lib/Validation/Class/Exporter.pm
 lib/Validation/Class/Moose.pm
 lib/Validation/Class/Simple.pm
-lib/Validation/Class/Test.pm
 t/features.t
 t/features/config.feat
 t/features/load.feat
@@ -84,4 +83,3 @@ t/past/validators/21-min_alpha.t
 t/past/validators/21-min_digit.t
 t/past/validators/21-min_sum.t
 t/past/validators/21-min_symbols.t
-testing.out

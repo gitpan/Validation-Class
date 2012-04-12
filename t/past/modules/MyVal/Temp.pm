@@ -2,7 +2,11 @@ package MyVal::Temp;
 
 use Validation::Class;
 
-load {base => ['MyVal::Person']};
+load {
+    base => [
+        'MyVal::Person'
+    ]
+};
 
 field login => {
     mixin => 'TMP',

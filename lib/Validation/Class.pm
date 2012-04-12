@@ -5,59 +5,59 @@ use warnings;
 
 package Validation::Class;
 {
-    $Validation::Class::VERSION = '5.95';
+  $Validation::Class::VERSION = '5.96';
 }
 
 use 5.008001;
 use strict;
 use warnings;
 
-our $VERSION = '5.95';    # VERSION
+our $VERSION = '5.96'; # VERSION
 
 use Module::Find;
 use Carp 'confess';
 use Hash::Merge 'merge';
 use Exporter ();
 
-use Validation::Class::Engine;    # used-as-role, see new()
+use Validation::Class::Engine; # used-as-role, see new()
 
 our @ISA    = qw(Exporter);
 our @EXPORT = qw(
-  attribute
+    attribute
 
-  bld
-  build
-
-  dir
-  directive
-  fld
-  field
-  flt
-  filter
-  has
-
-  load
-  load_classes
-  load_plugins
-
-  mth
-  method
-  mxn
-  mixin
-
-  new
-
-  pro
-  profile
-
-  set
+    bld
+    build
+    
+    dir
+    directive
+    fld
+    field
+    flt
+    filter
+    has
+    
+    load
+    load_classes
+    load_plugins
+    
+    mth
+    method
+    mxn
+    mixin
+    
+    new
+    
+    pro
+    profile
+    
+    set
 );
 
 
+
 sub has { goto &attribute }
-
 sub attribute {
-
+    
     my ($attrs, $default) = @_;
 
     my $self = caller(0);
@@ -71,9 +71,8 @@ sub attribute {
 
     for my $attr (@$attrs) {
 
-        confess
-          "Error creating accessor \"$attr\", name has invalid characters"
-          unless $attr =~ /^[a-zA-Z_]\w*$/;
+        confess "Error creating accessor \"$attr\", name has invalid characters"
+            unless $attr =~ /^[a-zA-Z_]\w*$/;
 
         my $stmnt;
 
@@ -86,7 +85,7 @@ STMNT
         $stmnt .= <<"STMNT" unless (defined $default);
                 return \$_[0]->{'$attr'};
 STMNT
-
+        
         $stmnt .= <<"STMNT" if ref $default eq 'CODE';
                 return \$_[0]->{'$attr'} if exists \$_[0]->{'$attr'};
                 return \$_[0]->{'$attr'} = \$default->(\$_[0]);
@@ -96,7 +95,7 @@ STMNT
                 return \$_[0]->{'$attr'} if exists \$_[0]->{'$attr'};
                 return \$_[0]->{'$attr'} = \$default;
 STMNT
-
+        
         $stmnt .= <<"STMNT";
             }
             
@@ -104,476 +103,460 @@ STMNT
             \$_[0];
         }
 STMNT
-
+        
         no strict 'refs';
         no warnings 'redefine';
-
+        
         $self->{config}->{ATTRIBUTES} ||= {};
-
-        *{$self . "::$attr"} = $self->{config}->{ATTRIBUTES}->{$attr} =
-          eval $stmnt;
+        
+        *{$self."::$attr"} = $self->{config}->{ATTRIBUTES}->{$attr} = eval $stmnt;
 
         confess($self . " attribute compiler error: \n$stmnt\n$@\n") if $@;
 
     }
-
+    
 }
 
 
 sub bld { goto &build }
-
 sub build {
-
+    
     my ($code) = @_;
-
+    
     my $self = caller(0);
-
+    
     return 0 unless ("CODE" eq ref $code);
-
+    
     no strict 'refs';
-
+    
     $self->{config}->{BUILDERS} ||= [];
-
+    
     push @{$self->{config}->{BUILDERS}}, $code;
-
+    
     return $code;
-
+    
 }
 
 
 sub dir { goto &directive }
-
 sub directive {
-
+    
     my ($name, $data) = @_;
-
+    
     my $self = caller(0);
-
+    
     return 0 unless ($name && $data);
-
+    
     no strict 'refs';
-
+    
     $self->{config}->{DIRECTIVES} ||= {};
-
+    
     $self->{config}->{DIRECTIVES}->{$name} = {
         mixin     => 1,
         field     => 1,
         validator => $data
     };
-
+    
     return $name, $data;
-
+    
 }
 
 
 sub fld { goto &field }
-
 sub field {
-
+    
     my ($name, $data) = @_;
-
+    
     my $self = caller(0);
-
+    
     return 0 unless ($name && $data);
-
+    
     no strict 'refs';
-
+    
     $self->{config}->{FIELDS} ||= {};
-
+    
     confess "Error creating accessor $name, attribute collision"
-      if exists $self->{config}->{FIELDS}->{$name};
-
+        if exists $self->{config}->{FIELDS}->{$name};
+        
     confess "Error creating accessor $name, reserve word collision"
-      if $self->can($name)
-          and grep { $name eq $_ } @EXPORT;
-
+        if $self->can($name) and grep { $name eq $_ } @EXPORT;
+        
     confess "Error creating accessor $name, method collision"
-      if $self->can($name);
-
+        if $self->can($name);
+    
     # create accessor
-
+    
     $self->{config}->{FIELDS}->{$name} = $data;
     $self->{config}->{FIELDS}->{$name}->{errors} = [];
-
+    
     *{"${self}::$name"} = sub {
-
+        
         my ($self, $data) = @_;
-
+        
         $self->params->{$name} = $data
-
-          if defined $data
-              && not defined $self->fields->{$name}->{readonly}
-
+            
+            if defined $data
+            && not defined $self->fields->{$name}->{readonly}
+        
         ;
-
+        
         return $self->default_value($name);
-
+        
     };
-
+    
     return $name, $data;
-
+    
 }
 
 
 sub flt { goto &filter }
-
 sub filter {
-
+    
     my ($name, $data) = @_;
-
+    
     my $self = caller(0);
-
+    
     return 0 unless ($name && $data);
-
+    
     no strict 'refs';
-
+    
     $self->{config}->{FILTERS} ||= {};
-
+    
     $self->{config}->{FILTERS}->{$name} = $data;
-
+    
     return $name, $data;
-
+    
 }
 
 
 sub set { goto &load }
-
 sub load {
-
+    
     my $data = pop @_;
     my $self = pop @_;
-
-    $self ||= caller(0);    # hackaroni toni
-
+    
+    $self ||= caller(0); # hackaroni toni
+    
     no strict 'refs';
-
-    $self->{config}->{BUILDERS} ||= [];    # prevents merge from referencing
+    
+    $self->{config}->{BUILDERS} ||= []; # prevents merge from referencing
 
     if ($data->{class}) {
-
+        
         my $classes = [];
-
-        push @$classes,
-          "ARRAY" eq ref $data->{class} ? @{$data->{class}} : $data->{class};
-
+        
+        push @$classes, "ARRAY" eq ref $data->{class} ?
+            @{$data->{class}} : $data->{class};
+        
         foreach my $class (@$classes) {
-
+            
             my $child = $class;
-
+            
             # require plugin
             my $file = $class;
-            $file =~ s/::/\//g;
-            $file .= ".pm";
-
+               $file =~ s/::/\//g;
+               $file .= ".pm";
+            
             eval "require $class"
-              unless $INC{$file};    # unless already loaded
-
+                unless $INC{$file}; # unless already loaded
+            
             # load class child and create relationship map (hash)
-
-            my $nickname = $child;
-            $nickname =~ s/^$self//;
-            $nickname =~ s/^:://;
-            $nickname =~ s/([a-z])([A-Z])/$1\_$2/g;
-            $nickname =~ s/::/-/g;
-
+        
+            my $nickname  = $child;
+               $nickname  =~ s/^$self//;
+               $nickname  =~ s/^:://;
+               $nickname  =~ s/([a-z])([A-Z])/$1\_$2/g;
+               $nickname  =~ s/::/-/g;
+               
             my $quickname = $child;
-            $quickname =~ s/^$self//;
-            $quickname =~ s/^:://;
-
+               $quickname =~ s/^$self//;
+               $quickname =~ s/^:://;
+               
             $self->{relatives}->{lc $nickname} = $child;
-            $self->{relatives}->{$quickname} = $child;
-
+            $self->{relatives}->{$quickname}   = $child;
+            
         }
-
+        
     }
-
+    
     if ($data->{classes}) {
-
+        
         my $parents = [];
-
+        
         if ($data->{classes} == 1) {
-
+            
             push @$parents, $self;
-
+            
         }
-
-        push @$parents,
-          "ARRAY" eq ref $data->{classes}
-          ? @{$data->{classes}}
-          : $data->{classes};
-
+        
+        push @$parents, "ARRAY" eq ref $data->{classes} ?
+            @{$data->{classes}} : $data->{classes};
+        
         foreach my $parent (@$parents) {
-
+            
             # load class children and create relationship map (hash)
             foreach my $child (useall $parent) {
-
-                my $nickname = $child;
-                $nickname =~ s/^$self//;
-                $nickname =~ s/^:://;
-                $nickname =~ s/([a-z])([A-Z])/$1\_$2/g;
-                $nickname =~ s/::/-/g;
-
+            
+                my $nickname  = $child;
+                   $nickname  =~ s/^$self//;
+                   $nickname  =~ s/^:://;
+                   $nickname  =~ s/([a-z])([A-Z])/$1\_$2/g;
+                   $nickname  =~ s/::/-/g;
+                   
                 my $quickname = $child;
-                $quickname =~ s/^$self//;
-                $quickname =~ s/^:://;
-
+                   $quickname =~ s/^$self//;
+                   $quickname =~ s/^:://;
+                   
                 $self->{relatives}->{lc $nickname} = $child;
-                $self->{relatives}->{$quickname} = $child;
-
+                $self->{relatives}->{$quickname}   = $child;
+            
             }
-
+            
         }
-
+        
     }
-
+    
     if ($data->{plugins}) {
-
-        my @plugins = @{$data->{plugins}};
-
+        
+        my @plugins = @{ $data->{plugins} };
+        
         foreach my $plugin (@plugins) {
-
+    
             if ($plugin !~ /^\+/) {
-
+        
                 $plugin = "Validation::Class::Plugin::$plugin";
-
+        
             }
-
+            
             $plugin =~ s/^\+//;
-
+            
             # require plugin
             my $file = $plugin;
-            $file =~ s/::/\//g;
-            $file .= ".pm";
-
+               $file =~ s/::/\//g;
+               $file .= ".pm";
+            
             eval "require $plugin"
-              unless $INC{$file};    # unless already loaded
-
+                unless $INC{$file}; # unless already loaded
+        
         }
-
+        
         $self->{config}->{PLUGINS}->{$_} = 1 for @plugins;
-
+        
     }
-
+    
     # attach roles
     if ($data->{base} || $data->{role} || $data->{roles}) {
-
+        
         if ($data->{roles}) {
-
+            
             $data->{roles} = [$data->{roles}]
-              unless "ARRAY" eq ref $data->{roles};
-
+                unless "ARRAY" eq ref $data->{roles};
+            
         }
-
+        
         else {
-
+            
             $data->{roles} = [];
-
+            
         }
-
+        
         push @{$data->{roles}},
-          ("ARRAY" eq ref $data->{role} ? @{$data->{role}} : $data->{role})
-          if defined $data->{role};
-
+            ("ARRAY" eq ref $data->{role} ? @{$data->{role}} : $data->{role})
+                if defined $data->{role};
+        
         push @{$data->{roles}},
-          ("ARRAY" eq ref $data->{base} ? @{$data->{base}} : $data->{base})
-          if defined $data->{base};
-
+            ("ARRAY" eq ref $data->{base} ? @{$data->{base}} : $data->{base})
+                if defined $data->{base};
+        
         if (@{$data->{roles}}) {
-
+            
             foreach my $class (@{$data->{roles}}) {
-
+                
                 # require plugin
                 my $file = $class;
-                $file =~ s/::/\//g;
-                $file .= ".pm";
-
+                   $file =~ s/::/\//g;
+                   $file .= ".pm";
+                
                 eval "require $class"
-                  unless $INC{$file};    # unless already loaded
-
+                    unless $INC{$file}; # unless already loaded
+                
                 my @routines = grep { defined &{"$class\::$_"} }
-                  keys %{"$class\::"};
-
+                    keys %{"$class\::"};
+                
                 if (@routines) {
-
+                    
                     # copy methods
                     foreach my $routine (@routines) {
-
+                        
                         eval { *{"$self\::$routine"} = *{"$class\::$routine"} }
-                          unless $self->can($routine);
-
+                            unless $self->can($routine);
+                        
                     }
-
+                    
                     # merge configs
                     $class->{config} ||= {};
                     $self->{config} = merge $class->{config}, $self->{config};
-
+                    
                 }
-
+                
             }
-
+            
         }
-
+        
     }
-
+    
     return $self;
-
+    
 }
 
 # TO BE DEPRECIATED
 sub load_classes {
-
+    
     my $self = shift @_;
-
-    return $self->load({classes => 1});
-
+    
+    return $self->load({ classes => 1 });
+    
 }
 
 # TO BE DEPRECIATED
 sub load_plugins {
-
+    
     my $self = shift @_;
-
-    return $self->load({plugins => [@_]});
-
+    
+    return $self->load({ plugins => [@_] });
+    
 }
 
 
 sub mth { goto &method }
-
 sub method {
 
     my ($name, $data) = @_;
 
     my $self = caller(0);
-
+    
     return 0 unless ($name && $data);
-
+    
     no strict 'refs';
-
+    
     $self->{config}->{METHODS} ||= {};
-
+    
     confess "Error creating method $name, attribute collision"
-      if exists $self->{$name};
-
+        if exists $self->{$name};
+        
     confess "Error creating method $name, reserve word collision"
-      if $self->can($name)
-          and grep { $name eq $_ } @EXPORT;
-
+        if $self->can($name) and grep { $name eq $_ } @EXPORT;
+    
     confess "Error creating method $name, method collision"
-      if $self->can($name);
-
+        if $self->can($name);
+    
     # create method
-
+    
     return unless $data->{input} && $data->{using};
-
+    
     $self->{config}->{METHODS}->{$name} = $data;
-
+    
     *{"${self}::$name"} = sub {
-
-        my $self = shift;
-        my @args = @_;
-
+        
+        my $self  = shift;
+        my @args  = @_;
+        
         my $validator;
-
+        
         my $input  = $data->{'input'};
         my $using  = $data->{'using'};
         my $output = $data->{'output'};
-
+        
         if ($input) {
-
-            $validator = "ARRAY" eq ref $input
-              ?
-
-              # validate fields
-              sub { $self->validate(@{$input}) }
-              :
-
-              # validate profile
-              sub { $self->validate_profile($input, @args) };
-
+        
+            $validator = "ARRAY" eq ref $input ?
+                
+                # validate fields
+                sub { $self->validate(@{$input}) } :
+                
+                # validate profile
+                sub { $self->validate_profile($input, @args) } ;
+        
         }
-
+        
         if ($using) {
-
+            
             if ("CODE" eq ref $using) {
-
+                
                 my $error = "Method $name failed to validate";
-
+                    
                 # run input validation
                 if ("CODE" eq ref $validator) {
-
+                    
                     unless ($validator->(@args)) {
-
+                    
                         unshift @{$self->{errors}}, $error
-                          if $self->report_failure;
-
-                        confess $error. " input, " . $self->errors_to_string
-                          if !$self->ignore_failure;
-
+                            if $self->report_failure;
+                        
+                        confess $error. " input, ". $self->errors_to_string
+                            if ! $self->ignore_failure;
+                        
                         return undef;
-
+                        
                     }
-
+                    
                 }
-
+                
                 # execute routine
                 my $return = $data->{using}->($self, @args);
-
+                
                 # run output validation
                 if ($output) {
-
-                    $validator = "ARRAY" eq ref $output
-                      ?
-
-                      # validate fields
-                      sub { $self->validate(@{$output}) }
-                      :
-
-                      # validate profile
-                      sub { $self->validate_profile($output, @args) };
-
-                    confess $error. " output, " . $self->errors_to_string
-                      unless $validator->(@args);
-
+                    
+                    $validator = "ARRAY" eq ref $output ?
+                        
+                        # validate fields
+                        sub { $self->validate(@{$output}) } :
+                        
+                        # validate profile
+                        sub { $self->validate_profile($output, @args) } ;
+                    
+                    confess $error. " output, ". $self->errors_to_string
+                        unless $validator->(@args);
+                    
                 }
-
+                
                 return $return;
-
+                
             }
-
+            
             else {
-
+                
                 confess "Error executing $name, no associated coderef";
-
+                
             }
-
+            
         }
-
+        
         return undef;
-
+        
     };
-
+    
     return $name, $data;
 
 }
 
 
 sub mxn { goto &mixin }
-
 sub mixin {
 
     my ($name, $data) = @_;
 
     my $self = caller(0);
-
+    
     return 0 unless ($name && $data);
-
+    
     no strict 'refs';
-
+    
     $self->{config}->{MIXINS} ||= {};
-
+    
     $self->{config}->{MIXINS}->{$name} = $data;
-
+    
     return $name, $data;
 
 }
@@ -582,78 +565,77 @@ sub mixin {
 sub new {
 
     my $invocant = shift;
-
-    my $engine = 'Validation/Class/Engine.pm';    # class role, manually
-
+    
+    my $engine = 'Validation/Class/Engine.pm'; # class role, manually
+    
     $engine =~ s/\//::/g;
     $engine =~ s/\.pm$//;
-
+    
     no strict 'refs';
-
+    
     my @routines = grep {
-
+        
         defined &{"$engine\::$_"} && $_ ne 'has'
-
+    
     } keys %{"$engine\::"};
-
+    
     # apply engine as a role
-
+    
     foreach my $routine (@routines) {
-
+        
         eval { *{"$invocant\::$routine"} = *{"$engine\::$routine"} };
-
+        
     }
-
+    
     # create config
-
+    
     $invocant->{config} = merge $engine->template, $invocant->{config};
-
+    
     # start instantiation
-
-    my $self = bless {%{$invocant}}, ref $invocant || $invocant;
-
+    
+    my $self = bless { %{ $invocant } }, ref $invocant || $invocant;
+    
     # process parameters
-
+    
     my %params = @_ ? @_ > 1 ? @_ : "HASH" eq ref $_[0] ? %{$_[0]} : () : ();
-
-    while (my ($attr, $value) = each(%params)) {
-
+    
+    while (my($attr, $value) = each (%params)) {
+        
         $self->$attr($value);
-
+        
     }
-
+    
     # process plugins
-
+    
     foreach my $plugin (keys %{$self->plugins}) {
-
+        
         $plugin->new($self) if $plugin->can('new');
-
+    
     }
-
+    
     # process builders
-
+    
     my $builders = $self->{config}->{BUILDERS};
-
+    
     if ("ARRAY" eq ref $builders) {
-
+        
         $_->($self) for @{$builders};
-
+        
     }
-
+    
     # initialize object
-
+    
     $self->normalize;
     $self->apply_filters('pre') if $self->filtering;
-
+    
     # end instantiation
-
+    
     return $self;
 
 }
 
 
 sub pro { goto &profile }
-
 sub profile {
 
     my ($name, $data) = @_;
@@ -661,21 +643,21 @@ sub profile {
     my $self = caller(0);
 
     return 0 unless ($name && "CODE" eq ref $data);
-
+    
     no strict 'refs';
 
     $self->{config}->{PROFILES} ||= {};
-
+    
     $self->{config}->{PROFILES}->{$name} = $data;
-
+    
     return $name, $data;
 
 }
 
 
+
 1;
 __END__
-
 =pod
 
 =head1 NAME
@@ -684,7 +666,7 @@ Validation::Class - Low-Fat Full-Flavored Data Modeling and Validation Framework
 
 =head1 VERSION
 
-version 5.95
+version 5.96
 
 =head1 SYNOPSIS
 

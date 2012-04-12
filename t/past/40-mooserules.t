@@ -10,7 +10,7 @@ else {
 # begin
 package Identify;
 
-use Moose;
+use  Moose;
 with 'Validation::Class::MooseRules';
 
 has login => (
@@ -22,9 +22,9 @@ has login => (
         error      => 'Login invalid.',
         required   => 1,
         validation => sub {
-            my ($self, $this_field, $all_params) = @_;
+            my ( $self, $this_field, $all_params ) = @_;
             return $this_field->{value} eq 'admin' ? 1 : 0;
-          }
+        }
     }
 );
 
@@ -37,26 +37,24 @@ has password => (
         error      => 'Password invalid.',
         required   => 1,
         validation => sub {
-            my ($self, $this_field, $all_params) = @_;
+            my ( $self, $this_field, $all_params ) = @_;
             return $this_field->{value} eq 'pass' ? 1 : 0;
-          }
+        }
     }
 );
 
 package main;
 
-my $id = Identify->new(login => 'admin', password => 'xxxx');
+my $id    = Identify->new(login => 'admin', password => 'xxxx');
 my $rules = $id->rules;
 
 ok "Identify" eq ref $id, '$id instantiated';
-ok $id->login,    'login was set';
+ok $id->login, 'login was set';
 ok $id->password, 'password was set';
-ok "Validation::Class::Simple" eq ref $rules,
-  '$rules was set with V::C::Simple object';
+ok "Validation::Class::Simple" eq ref $rules, '$rules was set with V::C::Simple object';
 ok $rules->fields->{login}, 'login attribute rules are set on the V::C::S obj';
-ok $rules->fields->{password},
-  'password attribute rules are set on the V::C::S obj';
-ok !$rules->validate, 'validation failed as expected';
+ok $rules->fields->{password}, 'password attribute rules are set on the V::C::S obj';
+ok ! $rules->validate, 'validation failed as expected';
 ok $rules->errors_to_string, 'Password invalid.';
-$rules->params->{password} = 'pass';
+   $rules->params->{password} = 'pass';
 ok $rules->validate, 'validation successful';

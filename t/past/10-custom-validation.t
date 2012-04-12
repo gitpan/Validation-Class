@@ -9,17 +9,16 @@ package main;
 my $v = MyVal->new(
     fields => {
         foobar => {
-            error      => 'foobar error',
+            error => 'foobar error',
             validation => sub {
-                shift->{_ran_}++;
-                return 1;
-              }
+                shift->{_ran_}++; return 1;
+            }
         },
         barfoo => {
-            required   => 1,
+            required => 1,
             validation => sub {
                 return 0;
-              }
+            }
         }
     },
     params => {
@@ -31,5 +30,5 @@ my $v = MyVal->new(
 ok $v, 'class initialized';
 ok $v->validate('foobar'), 'valid';
 ok $v->{_ran_} == 1, 'validation ran once as intended';
-ok !$v->validate('barfoo'), 'not valid';
+ok ! $v->validate('barfoo'), 'not valid';
 ok $v->errors_to_string, 'error message';

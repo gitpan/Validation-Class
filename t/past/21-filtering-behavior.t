@@ -7,23 +7,23 @@ use Validation::Class;
 package main;
 
 my $dpre = MyVal->new(
-    fields => {foobar => {filters => 'alphanumeric'}},
-    params => {foobar => '1@%23abc45@%#@#%6d666ef..'}
+    fields => { foobar => { filters => 'alphanumeric' } },
+    params => { foobar => '1@%23abc45@%#@#%6d666ef..' }
 );
 
 ok $dpre->params->{foobar} =~ /^123abc456d666ef$/, 'default pre-filtering ok';
 
 my $pre = MyVal->new(
-    fields    => {foobar => {filters => 'alphanumeric'}},
-    params    => {foobar => '1@%23abc45@%#@#%6d666ef..'},
+    fields    => { foobar => { filters => 'alphanumeric' } },
+    params    => { foobar => '1@%23abc45@%#@#%6d666ef..' },
     filtering => 'pre'
 );
 
 ok $pre->params->{foobar} =~ /^123abc456d666ef$/, 'explicit pre-filtering ok';
 
 my $post = MyVal->new(
-    fields    => {foobar => {filters => 'alphanumeric'}},
-    params    => {foobar => '1@%23abc45@%#@#%6d666ef..'},
+    fields    => { foobar => { filters => 'alphanumeric' } },
+    params    => { foobar => '1@%23abc45@%#@#%6d666ef..' },
     filtering => 'post'
 );
 
@@ -35,8 +35,8 @@ ok $post->params->{foobar} =~ /^123abc456d666ef$/,
   'explicit post-filtering after validate ok';
 
 my $nope = MyVal->new(
-    fields    => {foobar => {filters => 'alphanumeric'}},
-    params    => {foobar => '1@%23abc45@%#@#%6d666ef..'},
+    fields    => { foobar => { filters => 'alphanumeric' } },
+    params    => { foobar => '1@%23abc45@%#@#%6d666ef..' },
     filtering => ''
 );
 
@@ -48,8 +48,8 @@ ok $nope->params->{foobar} =~ /^1@%23abc45@%#@#%6d666ef\.\.$/,
   'explicit no-filtering after validate ok';
 
 $nope = MyVal->new(
-    fields    => {foobar => {filters => 'alphanumeric'}},
-    params    => {foobar => '1@%23abc45@%#@#%6d666ef..'},
+    fields    => { foobar => { filters => 'alphanumeric' } },
+    params    => { foobar => '1@%23abc45@%#@#%6d666ef..' },
     filtering => 'manual'
 );
 
@@ -62,12 +62,11 @@ ok $nope->params->{foobar} =~ /^1@%23abc45@%#@#%6d666ef\.\.$/,
   'explicit no-filtering after validate ok';
 
 ok $nope->apply_filters('manual'), 'applying filters manually';
-ok $nope->params->{foobar} =~ /^123abc456d666ef$/,
-  'filtering applied manually';
+ok $nope->params->{foobar} =~ /^123abc456d666ef$/, 'filtering applied manually';
 
 $nope = MyVal->new(
-    fields    => {foobar => {filters => 'alphanumeric'}},
-    params    => {foobar => '1@%23abc45@%#@#%6d666ef..'},
+    fields    => { foobar => { filters => 'alphanumeric' } },
+    params    => { foobar => '1@%23abc45@%#@#%6d666ef..' },
     filtering => 'pre'
 );
 
