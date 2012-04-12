@@ -1,0 +1,647 @@
+t/features.t ............................. 
+ok 1 - Specification OK: /home/alnewkirk/Repos/alnewkirk/Validation-Class/t/features/load.feat
+ok 2 - Testing Feature: Instantiation
+ok 3 - In order to test the consuming class' environment, As a package using Validation::Class, I want to create new object and check fields
+ok 4 - Starting Scenario: Checking Attributes
+ok 5 - use MyApp::TestLoad;
+ok 6 - Given a new object from class MyApp::TestLoad
+ok 7 - Then the object should have an 'directives' attribute
+ok 8 - Then the object should have an 'errors' attribute
+ok 9 - Then the object should have an 'fields' attribute
+ok 10 - Then the object should have an 'filtering' attribute
+ok 11 - Then the object should have an 'filters' attribute
+ok 12 - Then the object should have an 'hash_inflator' attribute
+ok 13 - Then the object should have an 'ignore_failure' attribute
+ok 14 - Then the object should have an 'ignore_unknown' attribute
+ok 15 - Then the object should have an 'methods' attribute
+ok 16 - Then the object should have an 'mixins' attribute
+ok 17 - Then the object should have an 'params' attribute
+ok 18 - Then the object should have an 'plugins' attribute
+ok 19 - Then the object should have an 'profiles' attribute
+ok 20 - Then the object should have an 'queued' attribute
+ok 21 - Then the object should have an 'relatives' attribute
+ok 22 - Then the object should have an 'report_failure' attribute
+ok 23 - Then the object should have an 'report_unknown' attribute
+ok 24 - Then the object should have an 'stashed' attribute
+ok 25 - Starting Scenario: Checking Methods
+ok 26 - use MyApp::TestLoad;
+ok 27 - Given a class name of MyApp::TestLoad
+ok 28 - Then the class should have a 'has' method
+ok 29 - Then the class should have a 'attribute' method
+ok 30 - Then the class should have a 'bld' method
+ok 31 - Then the class should have a 'build' method
+ok 32 - Then the class should have a 'dir' method
+ok 33 - Then the class should have a 'directive' method
+ok 34 - Then the class should have a 'fld' method
+ok 35 - Then the class should have a 'field' method
+ok 36 - Then the class should have a 'flt' method
+ok 37 - Then the class should have a 'filter' method
+ok 38 - Then the class should have a 'set' method
+ok 39 - Then the class should have a 'load' method
+ok 40 - Then the class should have a 'load_classes' method
+ok 41 - Then the class should have a 'load_plugins' method
+ok 42 - Then the class should have a 'mth' method
+ok 43 - Then the class should have a 'method' method
+ok 44 - Then the class should have a 'mxn' method
+ok 45 - Then the class should have a 'mixin' method
+ok 46 - Then the class should have a 'new' method
+ok 47 - Then the class should have a 'pro' method
+ok 48 - Specification OK: /home/alnewkirk/Repos/alnewkirk/Validation-Class/t/features/params.feat
+ok 49 - Testing Feature: Parameter Handling
+ok 50 - In order to test getting and setting parameters, As a package using Validation::Class, I want to create new object and check parameters
+ok 51 - Starting Scenario: Validating Parameter Values
+ok 52 - use MyApp::TestLoad;
+ok 53 - Given a new object from class MyApp::TestLoad
+ok 54 - When I pass the param method the key 'name' and value 'Kathy'
+ok 55 - When I pass the param method the key 'name' and value 'Joe'
+ok 56 - When I pass the param method the key 'name' and value 'John'
+ok 57 - When I pass the param method the key 'name' and value 'O'
+ok 58 - When I pass the param method the key 'name' and value '1'
+ok 59 - When I pass the param method the key 'name' and value 'Ricky'
+ok 60 - When I pass the param method the key 'name' and value '              '
+ok 61 - When I pass the param method the key 'name' and value '~'
+ok 62 - When I pass the param method the key 'name' and value '--'
+ok 63 - Then the parameter hash-element 'name' will be 'Kathy'
+ok 64 - Then the parameter hash-element 'name' will be 'Joe'
+ok 65 - Then the parameter hash-element 'name' will be 'John'
+ok 66 - Then the parameter hash-element 'name' will be 'O'
+ok 67 - Then the parameter hash-element 'name' will be '1'
+ok 68 - Then the parameter hash-element 'name' will be 'Ricky'
+ok 69 - Then the parameter hash-element 'name' will be '              '
+ok 70 - Then the parameter hash-element 'name' will be '~'
+ok 71 - Then the parameter hash-element 'name' will be '--'
+ok 72 - And validating the field 'name' with a value of 'Kathy' will 'pass'
+ok 73 - And validating the field 'name' with a value of 'Joe' will 'fail'
+ok 74 - And validating the field 'name' with a value of 'John' will 'fail'
+ok 75 - And validating the field 'name' with a value of 'O' will 'fail'
+ok 76 - And validating the field 'name' with a value of '1' will 'fail'
+ok 77 - And validating the field 'name' with a value of 'Ricky' will 'pass'
+ok 78 - And validating the field 'name' with a value of '              ' will 'fail'
+ok 79 - And validating the field 'name' with a value of '~' will 'fail'
+ok 80 - And validating the field 'name' with a value of '--' will 'fail'
+1..80
+ok
+t/past/00-load.t ......................... 
+1..1
+ok 1 - use Validation::Class;
+ok
+t/past/01-attributes.t ................... 
+1..8
+ok 1 - fields attr ok
+ok 2 - filters attr ok
+ok 3 - params attr ok
+ok 4 - mixins attr ok
+ok 5 - types attr ok
+ok 6 - ignore unknown attr ok
+ok 7 - report unknown attr ok
+ok 8 - no errors yet
+ok
+t/past/02-package-declaration.t .......... 
+1..4
+ok 1 - class initialized
+ok 2 - field01 inheritence ok
+ok 3 - field02 inheritence ok
+ok 4 - no errors yet
+ok
+t/past/03-mixin-usages.t ................. 
+1..9
+ok 1 - initialization successful
+ok 2 - email max_length mixin overridden
+ok 3 - email_confirm required ok
+ok 4 - email_confirm min_length ok
+ok 5 - email_confirm max_length ok
+ok 6 - email_confirm label ok
+ok 7 - email_confirm error ok
+ok 8 - trim, strip and uppercase filters all applied
+ok 9 - trim, strip and uppercase filters all applied
+ok
+t/past/04-parameters.t ................... 
+1..3
+ok 1 - validation-class initialized
+ok 2 - validation works and found id error
+ok 3 - id error found with correct value
+ok
+t/past/04-profile-usages.t ............... 
+1..12
+ok 1 - initialization successful
+ok 2 - email_change profile did not validate
+ok 3 - 2 errors encountered on failure
+ok 4 - email_change profile did not validate
+ok 5 - email_change profile validated OK
+ok 6 - new_ticket profile did not validate
+ok 7 - 2 errors encountered on failure
+ok 8 - new_ticket profile did not validate
+ok 9 - 1 errors encountered on failure
+ok 10 - new_ticket profile validated OK
+ok 11 - NO errors set
+ok 12 - new_ticket profile validated OK
+ok
+t/past/10-custom-validation.t ............ 
+1..5
+ok 1 - class initialized
+ok 2 - valid
+ok 3 - validation ran once as intended
+ok 4 - not valid
+ok 5 - error message
+ok
+t/past/10-stash.t ........................ 
+1..7
+ok 1 - class initialized
+ok 2 - stash key foo set
+ok 3 - stash value bar set
+ok 4 - stash key baz set
+ok 5 - stash value xyz set
+ok 6 - stash hash access and keys validated
+ok 7 - stash accessible from custom val-routine
+ok
+t/past/10-validation.t ................... 
+1..27
+ok 1 - class initialized
+ok 2 - foobar field exists
+ok 3 - foobar param exists
+ok 4 - error found as expected
+ok 5 - alternate use of validation found error also
+ok 6 - error count is correct
+ok 7 - error message specified captured
+ok 8 - foobar rule validates
+ok 9 - alternate use of validation validates
+ok 10 - error count is zero
+ok 11 - no error messages found
+ok 12 - error found as expected
+ok 13 - alternate use of validation found error also
+ok 14 - error count is correct
+ok 15 - error message specified captured
+ok 16 - foobar rule validates
+ok 17 - alternate use of validation validates
+ok 18 - error count is zero
+ok 19 - no error messages found
+ok 20 - foobar rule validates
+ok 21 - alternate use of validation validates
+ok 22 - error count is zero
+ok 23 - no error messages found
+ok 24 - foobar rule doesnt validate
+ok 25 - alternate use of validation doesnt validate
+ok 26 - error count is correct
+ok 27 - pattern error message found
+ok
+t/past/11-array-param-validation.t ....... 
+1..12
+ok 1 - validation does not pass
+ok 2 - 1 errors set, 1 wrong element of the param array value
+ok 3 - error message identifies the problem param array element
+ok 4 - validation does not pass
+ok 5 - 1 errors set, 1 wrong element of the param array value
+ok 6 - error message identifies the problem param array element
+ok 7 - validation does not pass
+ok 8 - 1 errors set, 1 wrong element of the param array value
+ok 9 - error message identifies the problem param array element
+ok 10 - validation does not pass
+ok 11 - 1 errors set, 1 wrong element of the param array value
+ok 12 - error message identifies the problem param in not an array element
+ok
+t/past/11-group-validation.t ............. 
+1..42
+ok 1 - class initialized
+ok 2 - login field exists
+ok 3 - login param exists
+ok 4 - error found as expected
+ok 5 - alternate use of validation found error also
+ok 6 - error count is correct
+ok 7 - error message specified captured
+ok 8 - user.login rule validates
+ok 9 - alternate use of validation validates
+ok 10 - error count is zero
+ok 11 - no error messages found
+ok 12 - error found as expected
+ok 13 - alternate use of validation found error also
+ok 14 - error count is correct
+ok 15 - error message specified captured
+ok 16 - user.login rule validates
+ok 17 - alternate use of validation validates
+ok 18 - error count is zero
+ok 19 - no error messages found
+ok 20 - get_params_hash has user hash with login key
+ok 21 - get_params_hash has user hash with password key
+ok 22 - class initialized
+ok 23 - login field exists
+ok 24 - login param exists
+ok 25 - error found as expected
+ok 26 - alternate use of validation found error also
+ok 27 - error count is correct
+ok 28 - error message specified captured
+ok 29 - user.login rule validates
+ok 30 - alternate use of validation validates
+ok 31 - error count is zero
+ok 32 - no error messages found
+ok 33 - error found as expected
+ok 34 - alternate use of validation found error also
+ok 35 - error count is correct
+ok 36 - error message specified captured
+ok 37 - user.login rule validates
+ok 38 - alternate use of validation validates
+ok 39 - error count is zero
+ok 40 - no error messages found
+ok 41 - get_params_hash has user hash with login key
+ok 42 - get_params_hash has user hash with password key
+ok
+t/past/12-queued-rules.t ................. 
+1..26
+ok 1 - initialization successful
+ok 2 - queue cleared, no errors
+ok 3 - queued name and email
+ok 4 - validation failed
+ok 5 - expected number of errors
+ok 6 - validation failed
+ok 7 - expected number of errors
+ok 8 - set parameter ok
+ok 9 - set parameter ok
+ok 10 - validation succesful
+ok 11 - no errors
+ok 12 - validation succesful
+ok 13 - no errors
+ok 14 - reset ok
+ok 15 - validate all (not queued) failed
+ok 16 - error - email_confirm not set
+ok 17 - queued id w/requirement
+ok 18 - queued name w/requirement
+ok 19 - queued email
+ok 20 - 3 fields queued
+ok 21 - error: both fields required, no input
+ok 22 - 2 errors encoutered
+ok 23 - rid the queue of 3 fields, 2 set
+ok 24 - local variable (id) set correctly
+ok 25 - local variable (name) set correctly
+ok 26 - no fields queued
+ok
+t/past/13-independence.t ................. 
+1..18
+ok 1 - use MyVal::Person;
+ok 2 - use MyVal::Ticket;
+ok 3 - foo has name
+ok 4 - foo has email
+ok 5 - foo doesnt have description
+ok 6 - foo doesnt have priority
+ok 7 - bar doesnt have name
+ok 8 - bar doesnt have email
+ok 9 - bar has description
+ok 10 - bar has priority
+ok 11 - foo has name
+ok 12 - foo has email
+ok 13 - foo doesnt have description
+ok 14 - foo doesnt have priority
+ok 15 - bar doesnt have name
+ok 16 - bar doesnt have email
+ok 17 - bar has description
+ok 18 - bar has priority
+ok
+t/past/13-multiline-labels-and-errors.t .. 
+1..5
+ok 1 - initialization successful
+ok 2 - label does not have new-lines, carriage-returns and tabs
+ok 3 - label does not have consecutive spaces
+ok 4 - error does not have new-lines, carriage-returns and tabs
+ok 5 - error does not have consecutive spaces
+ok
+t/past/14-relatives.t .................... 
+1..11
+ok 1 - use MyVal;
+ok 2 - person class loaded successfully
+ok 3 - ticket class loaded successfully
+ok 4 - person class has name
+ok 5 - person class has email
+ok 6 - person class doesnt have description
+ok 7 - person class doesnt have priority
+ok 8 - ticket class doesnt have name
+ok 9 - ticket class doesnt have email
+ok 10 - ticket class has description
+ok 11 - ticket class has priority
+ok
+t/past/15-toggling.t ..................... 
+1..7
+ok 1 - initialization successful
+ok 2 - country validation passed, not required
+ok 3 - country validation failed, requirement toggled
+ok 4 - country validation passed, not required
+ok 5 - name validation failed, required
+ok 6 - name validation passed, requirement toggled
+ok 7 - name validation failed, required
+ok
+t/past/16-cascading.t .................... 
+1..3
+ok 1 - initialization successful
+ok 2 - validation failed
+ok 3 - validation ok cascading not avaiable yet
+ok
+t/past/17-pattern-matching.t ............. 
+1..3
+ok 1 - initialization successful
+ok 2 - validation passed
+ok 3 - validation ok
+ok
+t/past/18-cloning.t ...................... 
+1..15
+ok 1 - initialization successful
+ok 2 - email1 cloned of email, has req
+ok 3 - email1 cloned of email, has min
+ok 4 - email1 cloned of email, has max
+ok 5 - email1 cloned of email, no label
+ok 6 - email2 cloned of email, has req
+ok 7 - email2 cloned of email, has min
+ok 8 - email2 cloned of email, has max
+ok 9 - email2 cloned of email, no label
+ok 10 - email3 cloned of email, has no req
+ok 11 - email3 cloned of email, has min
+ok 12 - email3 cloned of email, has max
+ok 13 - email3 cloned of email, has label
+ok 14 - validation passed
+ok 15 - validation ok
+ok
+t/past/20-new-setup.t .................... 
+1..6
+ok 1 - initialization successful
+ok 2 - glade plugin applied to base
+ok 3 - glade plugin applied to person
+ok 4 - initialization successful
+ok 5 - glade plugin not applied to base
+ok 6 - glade plugin applied to person
+ok
+t/past/20-plugins.t ...................... 
+1..7
+ok 1 - initialization successful
+ok 2 - glade plugin applied squash method to base
+ok 3 - glade plugin applied to base
+ok 4 - glade plugin applied to person
+ok 5 - initialization successful
+ok 6 - glade plugin not applied to base
+ok 7 - glade plugin applied to person
+ok
+t/past/21-filtering-behavior.t ........... 
+1..12
+ok 1 - default pre-filtering ok
+ok 2 - explicit pre-filtering ok
+ok 3 - explicit post-filtering ok
+ok 4 - explicit post-filtering after validate ok
+ok 5 - explicit no-filtering ok
+ok 6 - explicit no-filtering after validate ok
+ok 7 - explicit no pre/post filtering ok
+ok 8 - explicit no-filtering after validate ok
+ok 9 - applying filters manually
+ok 10 - filtering applied manually
+ok 11 - changing filtering behavior: pre
+ok 12 - pre-filtering allowed validation
+ok
+t/past/22-filtering-behavior.t ........... 
+1..9
+ok 1 - validation class init ok
+ok 2 - name as expected
+ok 3 - login as expected
+ok 4 - password as expected
+ok 5 - validation failed ok
+ok 6 - name as expected
+ok 7 - login as expected
+ok 8 - password as expected
+ok 9 - dist as expected
+ok
+t/past/30-classless-behavior.t ........... 
+1..31
+ok 1 - use Validation::Class::Simple;
+ok 2 - validation class init ok
+ok 3 - validation passes (explicit ignore set) as expected
+ok 4 - validation fails (field set explicitly) as expected
+ok 5 - error message as expected
+ok 6 - applied filters
+ok 7 - filtering as expected
+ok 8 - validation passed ok
+ok 9 - validation class init ok
+ok 10 - validation passes (explicit ignore set) as expected
+ok 11 - validation fails (field set explicitly) as expected
+ok 12 - error message as expected
+ok 13 - applied filters
+ok 14 - filtering as expected
+ok 15 - validation failed ok
+ok 16 - validation passed ok
+ok 17 - filtering as expected post validation
+ok 18 - validation class init ok
+ok 19 - validation passes (explicit ignore set) as expected
+ok 20 - validation fails (field set explicitly) as expected
+ok 21 - error message as expected
+ok 22 - applied filters
+ok 23 - filtering as expected
+ok 24 - validation passed ok
+ok 25 - validation class init ok
+ok 26 - validation passes (explicit ignore set) as expected
+ok 27 - validation fails (field set explicitly) as expected
+ok 28 - error message as expected
+ok 29 - applied filters
+ok 30 - filtering as expected
+ok 31 - validation passed ok
+ok
+t/past/40-mooserules.t ................... skipped: No Moose
+t/past/41-mooserules-inht-t0m.t .......... skipped: No Moose
+t/past/42-inheritence.t .................. 
+ok 1 - new temp obj
+ok 2 - temp obj has name
+ok 3 - temp obj has email
+ok 4 - temp obj has login
+ok 5 - temp obj has password
+ok 6 - temp obj has TMP mixin
+1..6
+ok
+t/past/97-persistent-values.t ............ 
+1..6
+ok 1 - 1st validation object ok
+ok 2 - 1st validation object -this- field value correct
+ok 3 - 2nd validation object ok
+ok 4 - 2nd validation object -this- field value correct
+ok 5 - 2nd validation object -this- param correct
+ok 6 - 2nd validation object -this- field value correct
+ok
+t/past/98-anomaly.t ...................... 
+1..2
+ok 1 - validation ok
+ok 2 - anomaly fixed, unknown param no longer converted to field
+ok
+t/past/98-unknown_params.t ............... 
+1..1
+ok 1 - valid by default
+ok
+t/past/99-battery.t ...................... 
+1..18
+ok 1 - instance created
+ok 2 - login field received mixin
+ok 3 - password field received mixin
+ok 4 - params attr ok
+ok 5 - fields attr ok
+ok 6 - mixins attr ok
+ok 7 - filters attr ok
+ok 8 - types attr ok
+ok 9 - something field generated from multiple mixins
+ok 10 - params have been set at instantiation
+ok 11 - error count reporting
+ok 12 - login field failed as expected
+ok 13 - error count accurate
+ok 14 - error messages and error class to_string method works
+ok 15 - login formatting worked
+ok 16 - password formatting worked
+ok 17 - password field validates
+ok 18 - password confirmation validates
+ok
+t/past/filters/01-trim.t ................. 
+1..1
+ok 1 - trim filter working as expected
+ok
+t/past/filters/02-alpha.t ................ 
+1..1
+ok 1 - alpha filter working as expected
+ok
+t/past/filters/03-decimal.t .............. 
+1..1
+ok 1 - currency filter working as expected
+ok
+t/past/filters/04-strip.t ................ 
+1..1
+ok 1 - strip filter working as expected
+ok
+t/past/filters/05-numeric.t .............. 
+1..1
+ok 1 - numeric filter working as expected
+ok
+t/past/filters/06-uppercase.t ............ 
+1..1
+ok 1 - uppercase filter working as expected
+ok
+t/past/filters/07-lowercase.t ............ 
+1..1
+ok 1 - lowercase filter working as expected
+ok
+t/past/filters/08-titlecase.t ............ 
+1..1
+ok 1 - titlecase filter working as expected
+ok
+t/past/filters/09-capitalize.t ........... 
+1..1
+ok 1 - capitalize filter working as expected
+ok
+t/past/filters/10-alphanumeric.t ......... 
+1..1
+ok 1 - alphanumeric filter working as expected
+ok
+t/past/validators/01-min_length.t ........ 
+1..3
+ok 1 - foobar validates
+ok 2 - foobar doesnt validate
+ok 3 - displays proper error message
+ok
+t/past/validators/02-max_length.t ........ 
+1..3
+ok 1 - foobar validates
+ok 2 - foobar doesnt validate
+ok 3 - displays proper error message
+ok
+t/past/validators/03-pattern.t ........... 
+1..5
+ok 1 - telephone validates
+ok 2 - telephone doesnt validate
+ok 3 - displays proper error message
+ok 4 - url doesnt validate
+ok 5 - url validates
+ok
+t/past/validators/04-between.t ........... 
+1..3
+ok 1 - foobar validates
+ok 2 - foobar doesnt validate
+ok 3 - displays proper error message
+ok
+t/past/validators/05-length.t ............ 
+1..5
+ok 1 - foobar validates
+ok 2 - foobar doesnt validate
+ok 3 - displays proper error message
+ok 4 - foobar doesnt validate
+ok 5 - displays proper error message
+ok
+t/past/validators/06-matches.t ........... 
+1..7
+ok 1 - password validates
+ok 2 - foobar doesnt validate
+ok 3 - displays proper error message
+ok 4 - foobar doesnt validate
+ok 5 - displays proper error message
+ok 6 - foobar doesnt validate
+ok 7 - displays proper error message
+ok
+t/past/validators/07-options.t ........... 
+1..5
+ok 1 - status is valid
+ok 2 - status case doesnt match
+ok 3 - displays proper error message
+ok 4 - status case doesnt match alt
+ok 5 - alternate status value validates
+ok
+t/past/validators/08-depends_on.t ........ 
+1..5
+ok 1 - one not required, pass
+ok 2 - two is required
+ok 3 - error count ok
+ok 4 - validation ok
+ok 5 - error count ok
+ok
+t/past/validators/20-max_alpha.t ......... 
+1..4
+ok 1 - validation ok
+ok 2 - validation ok
+ok 3 - validation failed
+ok 4 - validation ok
+ok
+t/past/validators/20-max_digit.t ......... 
+1..4
+ok 1 - validation ok
+ok 2 - validation ok
+ok 3 - validation failed
+ok 4 - validation ok
+ok
+t/past/validators/20-max_sum.t ........... 
+1..4
+ok 1 - validation ok
+ok 2 - validation ok
+ok 3 - validation failed
+ok 4 - validation ok
+ok
+t/past/validators/20-max_symbols.t ....... 
+1..4
+ok 1 - validation ok
+ok 2 - validation ok
+ok 3 - validation failed
+ok 4 - validation ok
+ok
+t/past/validators/21-min_alpha.t ......... 
+1..4
+ok 1 - validation ok
+ok 2 - validation ok
+ok 3 - validation failed
+ok 4 - validation ok
+ok
+t/past/validators/21-min_digit.t ......... 
+1..4
+ok 1 - validation ok
+ok 2 - validation ok
+ok 3 - validation failed
+ok 4 - validation ok
+ok
+t/past/validators/21-min_sum.t ........... 
+1..4
+ok 1 - validation ok
+ok 2 - validation ok
+ok 3 - validation failed
+ok 4 - validation ok
+ok
+t/past/validators/21-min_symbols.t ....... 
+1..4
+ok 1 - validation ok
+ok 2 - validation ok
+ok 3 - validation failed
+ok 4 - validation ok
+ok
+All tests successful.
+Files=58, Tests=474,  4 wallclock secs ( 0.25 usr  0.04 sys +  3.54 cusr  0.37 csys =  4.20 CPU)
+Result: PASS

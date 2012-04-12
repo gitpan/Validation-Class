@@ -5,14 +5,14 @@ use warnings;
 
 package Validation::Class;
 {
-    $Validation::Class::VERSION = '5.90';
+    $Validation::Class::VERSION = '5.95';
 }
 
 use 5.008001;
 use strict;
 use warnings;
 
-our $VERSION = '5.90';    # VERSION
+our $VERSION = '5.95';    # VERSION
 
 use Module::Find;
 use Carp 'confess';
@@ -684,7 +684,7 @@ Validation::Class - Low-Fat Full-Flavored Data Modeling and Validation Framework
 
 =head1 VERSION
 
-version 5.90
+version 5.95
 
 =head1 SYNOPSIS
 
@@ -888,6 +888,11 @@ coderef which will be used to validate the associated field. The coderef is
 passed four ordered parameters, the value of directive, the value of the
 field (parameter value), the field object (hashref), and the instantiated class
 object. The validator MUST return true or false.
+
+Additionally, if you only desire to extend the list of acceptable directives,
+you can create a no-op by simply returning true, e.g.:
+
+    directive 'new_addition' => sub {1};
 
 =head2 field
 

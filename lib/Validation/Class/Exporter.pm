@@ -2,7 +2,7 @@
 
 package Validation::Class::Exporter;
 {
-    $Validation::Class::Exporter::VERSION = '5.90';
+    $Validation::Class::Exporter::VERSION = '5.95';
 }
 
 use 5.008001;
@@ -10,7 +10,7 @@ use 5.008001;
 use strict;
 use warnings;
 
-our $VERSION = '5.90';    # VERSION
+our $VERSION = '5.95';    # VERSION
 
 
 sub apply_spec {
@@ -40,6 +40,9 @@ sub apply_spec {
 
         push @$isa, 'Validation::Class';
 
+        *{"$child\::$_"} = *{"Validation\::Class\::$_"}
+          for @Validation::Class::EXPORT;
+
         strict->import;
         warnings->import;
 
@@ -64,7 +67,7 @@ Validation::Class::Exporter - Simple Exporter for Validation::Class Classes
 
 =head1 VERSION
 
-version 5.90
+version 5.95
 
 =head1 SYNOPSIS
 
@@ -106,7 +109,7 @@ version 5.90
     
     package main;
     
-    my $eg = MyApp::Example->new; # let go!!!
+    my $eg = MyApp::Example->new; # lets go!!!
 
 =head1 DESCRIPTION
 
