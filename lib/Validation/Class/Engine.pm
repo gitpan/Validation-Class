@@ -2,19 +2,20 @@
 
 package Validation::Class::Engine;
 {
-  $Validation::Class::Engine::VERSION = '5.98';
+  $Validation::Class::Engine::VERSION = '6.00';
 }
 
 use 5.008001;
 use strict;
 use warnings;
 
-our $VERSION = '5.98'; # VERSION
+our $VERSION = '6.00'; # VERSION
 
 use Carp 'confess';
 use Array::Unique;
 use Hash::Flatten;
 use Hash::Merge 'merge';
+
 
 
 
@@ -385,15 +386,17 @@ sub copy_errors {
 
 sub default_value {
     
-    my ($self, $field_name) = @_;
+    my ($self, $field_name, $parameters) = @_;
     
     return undef unless $field_name && exists $self->fields->{$field_name};
     
+    $parameters ||= $self->params;
+    
     my $value = undef;
     
-    if (exists $self->params->{$field_name}) {
+    if (exists $parameters->{$field_name}) {
         
-        $value = $self->params->{$field_name}
+        $value = $parameters->{$field_name}
         
     }
     
@@ -1823,7 +1826,6 @@ sub validate {
     # first things first, reset the errors and values, etc,
     # returning the validation class to its pristine state
     $self->normalize();
-    $self->apply_filters('pre') if $self->filtering;
     $self->reset_fields();
     $self->reset_errors();
     
@@ -1863,14 +1865,13 @@ sub validate {
         
     }
     
-    # save unaltered state-of-parameters
-    my %original_parameters = %{$self->params};
-
     # create alias map manually if requested
-    # VERY DEPRECIATED BUT IT REMAINS
+    # very depreciated but it remains for back-compat !!!
+    my $alias_map ;
+    
     if ( "HASH" eq ref $fields[0] ) {
         
-        my $alias_map = $fields[0]; @fields = (); # blank
+        $alias_map = $fields[0]; @fields = (); # blank
         
         while (my($name, $alias) = each(%{$alias_map})) {
             
@@ -1947,6 +1948,9 @@ sub validate {
             @fields = grep { $_ ne $name } @fields if @fields; # ... 
             
         }
+        
+        # run pre-filtering if filtering is enabled
+        $self->apply_filters('pre') if $self->filtering;
         
         # validate all parameters against all defined fields because no fields
         # were explicitly requested to be validated
@@ -2133,7 +2137,7 @@ sub validate {
             
             my $error = "No parameters were submitted and no fields are "
                       . "registered. Fields and parameters are required "
-                      . "for proper validation.";
+                      . "for validation.";
             
             if ($self->ignore_unknown) {
                 if ($self->report_unknown) {
@@ -2151,10 +2155,18 @@ sub validate {
     
     my $valid = @{ $self->errors } ? 0 : 1;
     
-    # restore sanity
-    $self->params({%original_parameters}); # (todo: remove this)
-    
-    $self->params($self->get_params_hash); # should address explosions
+    # restore parameters from depreciated alias map functionality
+    # very depreciated but it remains for back-compat !!!
+    if ( defined $alias_map ) {
+        
+        # reversal
+        while (my($name, $alias) = each(%{$alias_map})) {
+            
+            $self->params->{$name} = delete $self->params->{$alias};
+            
+        }
+        
+    }
     
     # run post-validation filtering
     $self->apply_filters('post') if $self->filtering && $valid;
@@ -2324,7 +2336,7 @@ Validation::Class::Engine - Data Validation Engine for Validation::Class
 
 =head1 VERSION
 
-version 5.98
+version 6.00
 
 =head1 SYNOPSIS
 
@@ -2674,9 +2686,17 @@ get_errors and set_errors methods.
 =head2 default_value
 
 The default_value method returns the absolute value (hardcoded, default or
-parameter specified) for a given field.
+parameter specified) for a given field from a hashref of parameters. This method
+executes specific logic which return the value a field is allowed to have. By 
+default, this method returns undefined.
 
     my $value = $self->default_value('field_name');
+    
+    # given the following, the $suggested_value will be returned unless the
+    # field contains rules preventing it from accepting such a value
+    my $value = $self->default_value('field_name', {
+        'field_name' => $suggested_value
+    });
 
 =head2 error
 
@@ -3221,7 +3241,7 @@ directive:
 The alpha filter removes all non-Alphabetic characters from the field's value.
 
     field 'foobar'  => {
-        filter => 'alpha',
+        filters => 'alpha',
     };
 
 =head3 alphanumeric
@@ -3230,7 +3250,7 @@ The alpha filter removes all non-Alphabetic and non-Numeric characters from the
 field's value.
 
     field 'foobar'  => {
-        filter => 'alphanumeric',
+        filters => 'alphanumeric',
     };
 
 =head3 capitalize
@@ -3239,7 +3259,7 @@ The capitalize filter attempts to capitalize the first word in each sentence,
 where sentences are separated by a period and space, within the field's value.
 
     field 'foobar'  => {
-        filter => 'capitalize',
+        filters => 'capitalize',
     };
 
 =head3 decimal
@@ -3248,7 +3268,15 @@ The decimal filter removes all non-decimal-based characters from the field's
 value. Allows only: decimal, comma, and numbers.
 
     field 'foobar'  => {
-        filter => 'decimal',
+        filters => 'decimal',
+    };
+
+=head3 lowercase
+
+The lowercase filter converts the field's value to lowercase.
+
+    field 'foobar'  => {
+        filters => 'lowercase',
     };
 
 =head3 numeric
@@ -3257,7 +3285,7 @@ The numeric filter removes all non-numeric characters from the field's
 value.
 
     field 'foobar'  => {
-        filter => 'numeric',
+        filters => 'numeric',
     };
 
 =head3 strip
@@ -3267,7 +3295,7 @@ whitespaces from the field's value and additionally removes multiple whitespaces
 from between the values characters.
 
     field 'foobar'  => {
-        filter => 'strip',
+        filters => 'strip',
     };
 
 =head3 titlecase
@@ -3276,7 +3304,7 @@ The titlecase filter converts the field's value to titlecase by capitalizing the
 first letter of each word.
 
     field 'foobar'  => {
-        filter => 'titlecase',
+        filters => 'titlecase',
     };
 
 =head3 trim
@@ -3284,7 +3312,7 @@ first letter of each word.
 The trim filter removes leading and trailing whitespace from the field's value.
 
     field 'foobar'  => {
-        filter => 'trim',
+        filters => 'trim',
     };
 
 =head3 uppercase
@@ -3292,7 +3320,7 @@ The trim filter removes leading and trailing whitespace from the field's value.
 The uppercase filter converts the field's value to uppercase.
 
     field 'foobar'  => {
-        filter => 'uppercase',
+        filters => 'uppercase',
     };
 
 =head2 validators

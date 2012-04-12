@@ -5,14 +5,14 @@ use warnings;
 
 package Validation::Class;
 {
-  $Validation::Class::VERSION = '5.98';
+  $Validation::Class::VERSION = '6.00';
 }
 
 use 5.008001;
 use strict;
 use warnings;
 
-our $VERSION = '5.98'; # VERSION
+our $VERSION = '6.00'; # VERSION
 
 use Module::Find;
 use Carp 'confess';
@@ -193,14 +193,16 @@ sub field {
         
         my ($self, $data) = @_;
         
-        $self->params->{$name} = $data
+        my $parameters = $self->get_params_hash;
+        
+        $parameters->{$name} = $data
             
             if defined $data
             && not defined $self->fields->{$name}->{readonly}
         
         ;
         
-        return $self->default_value($name);
+        return $self->default_value($name, $parameters);
         
     };
     
@@ -666,7 +668,7 @@ Validation::Class - Low-Fat Full-Flavored Data Modeling and Validation Framework
 
 =head1 VERSION
 
-version 5.98
+version 6.00
 
 =head1 SYNOPSIS
 
