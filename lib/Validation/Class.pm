@@ -5,14 +5,14 @@ use warnings;
 
 package Validation::Class;
 {
-  $Validation::Class::VERSION = '6.00';
+  $Validation::Class::VERSION = '6.05';
 }
 
 use 5.008001;
 use strict;
 use warnings;
 
-our $VERSION = '6.00'; # VERSION
+our $VERSION = '6.05'; # VERSION
 
 use Module::Find;
 use Carp 'confess';
@@ -193,16 +193,26 @@ sub field {
         
         my ($self, $data) = @_;
         
+        # this method-of-operation can be computationally expensive due to the
+        # fact that each call serializes/de-serializes the params hash ...
+        # ... research a better approach
+        
+        my $fields     = $self->fields;
         my $parameters = $self->get_params_hash;
         
-        $parameters->{$name} = $data
+        my $result = undef;
+        
+        if (defined $data && not defined $fields->{$name}->{readonly}) {
             
-            if defined $data
-            && not defined $self->fields->{$name}->{readonly}
+            $parameters->{$name} = $data;
+            
+        }
         
-        ;
+        $result = $self->default_value($name, $parameters);
+            
+        $self->set_params_hash($parameters);
         
-        return $self->default_value($name, $parameters);
+        return $result;
         
     };
     
@@ -668,7 +678,7 @@ Validation::Class - Low-Fat Full-Flavored Data Modeling and Validation Framework
 
 =head1 VERSION
 
-version 6.00
+version 6.05
 
 =head1 SYNOPSIS
 

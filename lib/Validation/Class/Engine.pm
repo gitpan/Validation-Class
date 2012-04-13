@@ -2,14 +2,14 @@
 
 package Validation::Class::Engine;
 {
-  $Validation::Class::Engine::VERSION = '6.00';
+  $Validation::Class::Engine::VERSION = '6.05';
 }
 
 use 5.008001;
 use strict;
 use warnings;
 
-our $VERSION = '6.00'; # VERSION
+our $VERSION = '6.05'; # VERSION
 
 use Carp 'confess';
 use Array::Unique;
@@ -2336,7 +2336,7 @@ Validation::Class::Engine - Data Validation Engine for Validation::Class
 
 =head1 VERSION
 
-version 6.00
+version 6.05
 
 =head1 SYNOPSIS
 
