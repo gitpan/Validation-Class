@@ -55,9 +55,15 @@ ok defined $v->fields->{password}->{required}
 # check attributes
 ok $v->params,  'params attr ok';
 ok $v->fields,  'fields attr ok';
-ok $v->mixins,  'mixins attr ok';
-ok $v->filters, 'filters attr ok';
-ok $v->types,   'types attr ok';
+
+# ok $v->mixins,  'mixins attr ok'; - DEPRECIATED
+ok $v->proto->mixins,  'mixins attr ok';
+
+# ok $v->filters, 'filters attr ok'; - DEPRECIATED
+ok $v->proto->filters, 'filters attr ok';
+
+# ok $v->types,   'types attr ok'; - DEPRECIATED
+ok $v->proto->types,   'types attr ok';
 
 # process field with multiple mixins
 ok defined $v->fields->{something}->{required}
@@ -126,7 +132,7 @@ my $params = {
     email        => 'awncorp2cpan.org'
 };
 
-$v = MyVal->new( params => $params );
+$v = MyVal->new( params => $params, fields => $v->fields );
 
 # params set at new function
 ok scalar( keys %{ $v->params } ), 'params have been set at instantiation';
@@ -153,6 +159,8 @@ $v->fields->{'password_cfm'} = {
 	return $this->{value} eq $params->{password} ? 1 : 0;
     }
 };
+
+$v = MyVal->new( params => $v->params, fields => $v->fields );
 
 ok $v->validate('password'), 'password field validates';
 ok $v->validate( 'password', 'password_cfm' ),

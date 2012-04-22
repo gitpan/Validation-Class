@@ -2,8 +2,14 @@ package MyApp::Test;
 
 use Validation::Class;
 
+set {
+    
+    classes => [__PACKAGE__]
+    
+};
+
 # rules mixin
- 
+
 mxn basic       => {
     required    => 1,
     max_length  => 255,

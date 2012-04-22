@@ -2,7 +2,7 @@
 
 package Validation::Class::Exporter;
 {
-  $Validation::Class::Exporter::VERSION = '6.05';
+  $Validation::Class::Exporter::VERSION = '7.00_01';
 }
 
 use 5.008001;
@@ -10,7 +10,7 @@ use 5.008001;
 use strict;
 use warnings;
 
-our $VERSION = '6.05'; # VERSION
+our $VERSION = '7.00_01'; # VERSION
 
 
 
@@ -20,6 +20,7 @@ sub apply_spec {
     
     no strict 'refs';
     no warnings 'once';
+    no warnings 'redefine';
     
     my $parent = caller(0);
     
@@ -37,9 +38,10 @@ sub apply_spec {
         
         *{"$child\::$_"} = *{"$parent\::$_"} for @routines;
         
-        my $isa  = "$child\::ISA";
+        my $ISA  = "$child\::ISA";
         
-        push @$isa, 'Validation::Class';
+        push @$ISA, 'Validation::Class'
+            unless grep { $_ eq 'Validation::Class' } @$ISA;
         
         *{"$child\::$_"} = *{"Validation\::Class\::$_"}
             for @Validation::Class::EXPORT;
@@ -67,7 +69,7 @@ Validation::Class::Exporter - Simple Exporter for Validation::Class Classes
 
 =head1 VERSION
 
-version 6.05
+version 7.00_01
 
 =head1 SYNOPSIS
 
@@ -78,7 +80,7 @@ version 6.05
     
     Validation::Class::Exporter->apply_spec(
         routines => ['thing'], # export routines as is
-        settings => [ base => __PACKAGE__ ] # passed to Validation::Class::load()
+        settings => [ ... ] # passed to the "load" method, see Validation::Class
     );
     
     has foo => 0;
@@ -109,7 +111,7 @@ version 6.05
     
     package main;
     
-    my $eg = MyApp::Example->new; # lets go!!!
+    my $eg = MyApp::Example->new; # we have lift-off!!!
 
 =head1 DESCRIPTION
 
@@ -154,11 +156,11 @@ etc.
 
 =head1 AUTHOR
 
-Al Newkirk <awncorp@cpan.org>
+Al Newkirk <anewkirk@ana.io>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2011 by awncorp.
+This software is copyright (c) 2011 by Al Newkirk.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.

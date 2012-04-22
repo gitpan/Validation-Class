@@ -9,8 +9,12 @@ package MyVal;
 
 use Validation::Class;
 
-__PACKAGE__->load_classes;
-__PACKAGE__->load_plugins('+MyVal::Plugin::Glade');
+set {
+    
+    classes => [__PACKAGE__],
+    plugins => ['+MyVal::Plugin::Glade']
+    
+};
 
 package ValMy;
 
@@ -20,7 +24,11 @@ package ValMy::Alt;
 
 use Validation::Class;
 
-__PACKAGE__->load_plugins('+MyVal::Plugin::Glade');
+set {
+    
+    plugins => ['+MyVal::Plugin::Glade']
+    
+};
 
 package main;
 
