@@ -2,13 +2,13 @@
 
 package Validation::Class::Backwards;
 {
-  $Validation::Class::Backwards::VERSION = '7.00_01';
+  $Validation::Class::Backwards::VERSION = '7.00_02';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.00_01'; # VERSION
+our $VERSION = '7.00_02'; # VERSION
 
 use Carp 'confess';
 
@@ -40,10 +40,10 @@ sub error { warning();
             $error = $field->{error} if defined $field->{error};
             
             # add error to field-level errors
-            $field->{errors}->add_error($error);
+            $field->{errors}->add($error);
             
             # add error to class-level errors
-            $self->errors->add_error($error);
+            $self->errors->add($error);
             
         }
         else {
@@ -59,12 +59,12 @@ sub error { warning();
     if ( @args == 1 ) {
 
         # add error to class-level errors    
-        $self->errors->add_error($args[0]);
+        $self->errors->add($args[0]);
     
     }
     
     # return all class-level error messages
-    return $self->errors->all_errors;
+    return $self->errors->all;
     
 }
 
@@ -78,7 +78,7 @@ Validation::Class::Backwards - Backwards-Compatibility Layer for Validation::Cla
 
 =head1 VERSION
 
-version 7.00_01
+version 7.00_02
 
 =head1 SYNOPSIS
 
@@ -129,13 +129,13 @@ RECOMMENDED:
     # see Validation::Class::Errors
     
     # set errors at the class-level
-    return $self->errors->add_errors(...);
+    return $self->errors->add(...);
     
     # set an error at the field-level
-    $self->fields->{$field_name}->{errors}->add_errors(...);
+    $self->fields->{$field_name}->{errors}->add(...);
 
     # return all errors encountered
-    my $list = $self->errors->error_list;
+    my $list = $self->errors->list;
 
 =head1 AUTHOR
 

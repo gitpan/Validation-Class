@@ -2,16 +2,13 @@
 
 package Validation::Class::Errors;
 {
-  $Validation::Class::Errors::VERSION = '7.00_01';
+  $Validation::Class::Errors::VERSION = '7.00_02';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.00_01'; # VERSION
-
-use Carp 'confess';
-use Validation::Class::Base 'has';
+our $VERSION = '7.00_02'; # VERSION
 
 
 
@@ -23,17 +20,14 @@ sub new {
     
     my $self = bless [], $class;
     
-    $self->add_error($_) for @arguments;
+    $self->add($_) for @arguments;
     
     return $self;
     
 }
 
 
-sub add_error { goto &add_errors }
-
-
-sub add_errors {
+sub add {
     
     my ($self, @error_messages) = @_;
     
@@ -48,32 +42,32 @@ sub add_errors {
 }
 
 
-sub all_errors {
+sub all {
     
     return (@{$_[0]});
     
 }
 
 
-sub clear_errors {
+sub clear {
     
     my ($self) = @_;
     
-    delete $self->[$_] for (0..($self->count_errors - 1)) ;
+    delete $self->[($_ - 1)] for (1..$self->count) ;
     
     return $self;
     
 }
 
 
-sub count_errors {
+sub count {
     
     return scalar(@{$_[0]});
     
 }
 
 
-sub each_error {
+sub each {
     
     my ($self, $transformer) = @_;
     
@@ -88,69 +82,42 @@ sub each_error {
 }
 
 
-sub error_list {
+sub list {
     
     return [@{$_[0]}];
     
 }
 
 
-sub find_errors {
+sub find {
     
     my ($self, $pattern) = @_;
     
     return undef unless "REGEXP" eq uc ref $pattern;
     
-    return ( grep { $_ =~ $pattern } $self->all_errors );
+    return ( grep { $_ =~ $pattern } $self->all );
     
 }
 
 
-sub first_error {
+sub first {
     
     my ($self, $pattern) = @_;
     
-    return $self->error_list->[0] unless "REGEXP" eq uc ref $pattern;
+    return $self->list->[0] unless "REGEXP" eq uc ref $pattern;
     
-    return ( $self->find_errors($pattern) )[ 0 ];
-    
-}
-
-
-sub get_error {
-    
-    my ($self) = @_;
-    
-    return $self->first_error;
+    return ( $self->find($pattern) )[ 0 ];
     
 }
 
 
-sub get_errors {
-    
-    my ($self) = @_;
-    
-    return $self->all_errors;
-    
-}
-
-
-sub has_errors {
-    
-    my ($self) = @_;
-    
-    return $self->count_errors ? 1 : 0;
-    
-}
-
-
-sub join_errors {
+sub join {
     
     my ($self, $delimiter) = @_;
     
     $delimiter = ', ' unless defined $delimiter;
     
-    return join $delimiter, $self->all_errors;
+    return join $delimiter, $self->all;
     
 }
 
@@ -161,9 +128,9 @@ sub to_string {
     
     $delimiter = ', ' unless defined $delimiter; # default delimiter is a comma-space
     
-    $self->each_error($transformer) if $transformer;
+    $self->each($transformer) if $transformer;
     
-    return $self->join_errors($delimiter);
+    return $self->join($delimiter);
 
 }
 
@@ -177,7 +144,7 @@ Validation::Class::Errors - Error Handling Object for Fields and Classes
 
 =head1 VERSION
 
-version 7.00_01
+version 7.00_02
 
 =head1 SYNOPSIS
 
@@ -214,60 +181,44 @@ derived classes on both the class and field levels respectively.
 
     my $self = Validation::Class::Errors->new;
 
-=head2 add_error
+=head2 add
 
-    $self = $self->add_error("houston, we have a problem", "this isn't cool");
+    $self = $self->add("houston, we have a problem", "this isn't cool");
 
-=head2 add_errors
+=head2 all
 
-    $self = $self->add_errors("houston, we have a problem", "this isn't cool");
+    my @list = $self->all;
 
-=head2 all_errors
+=head2 clear
 
-    my @list = $self->all_errors;
+    $self = $self->clear; 
 
-=head2 clear_errors
+=head2 count
 
-    $self = $self->clear_errors; 
+    my $count = $self->count; 
 
-=head2 count_errors
+=head2 each
 
-    my $count = $self->count_errors; 
+    my $list = $self->each(sub{ ucfirst lc shift });
 
-=head2 each_error
+=head2 list
 
-    my $list = $self->each_error(sub{ ucfirst lc shift });
+    my $list = $self->list;
 
-=head2 error_list
+=head2 find
 
-    my $list = $self->error_list;
+    my @matches = $self->find(qr/password/);
 
-=head2 find_errors
+=head2 first
 
-    my @matches = $self->find_errors(qr/password/);
+    my $item = $self->first;
+    my $item = $self->first(qr/password/);
 
-=head2 first_error
+=head2 join
 
-    my $item = $self->first_error;
-    my $item = $self->first_error(qr/password/);
-
-=head2 get_error
-
-    my $item = $self->get_error; # first error
-
-=head2 get_errors
-
-    my @list = $self->get_errors; # all errors
-
-=head2 has_errors
-
-    my $true = $self->has_errors; 
-
-=head2 join_errors
-
-    my $string = $self->join_errors; # returns "an error, another error"
+    my $string = $self->join; # returns "an error, another error"
     
-    my $string = $self->join_errors($delimiter); 
+    my $string = $self->join($delimiter); 
 
 =head2 to_string
 
