@@ -1,14 +1,14 @@
-# ABSTRACT: Simple Object System, Data Validation and Modeling Framework
+# ABSTRACT: Self-Validating Object System and Data Validation Framework
 
 package Validation::Class;
 {
-  $Validation::Class::VERSION = '7.01';
+  $Validation::Class::VERSION = '7.03';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.01'; # VERSION
+our $VERSION = '7.03'; # VERSION
 
 use Module::Find;
 use Carp 'confess';
@@ -279,7 +279,7 @@ sub field {
         
         confess "Error creating accessor $name on $proto->{package}, ".
             "attribute collision" if exists $proto->{config}->{FIELDS}->{$name};
-            
+        
         confess "Error creating accessor $name on $proto->{package}, ".
             "method collision" if $proto->{package}->can($name);
         
@@ -289,33 +289,49 @@ sub field {
         
         no strict 'refs';
         
-        *{"$proto->{package}\::$name"} = sub {
+        my $accessor = $name;
+        
+        $accessor =~ s/[^a-zA-Z0-9_]/_/g;
+        
+        my $accessor_routine = sub {
             
             my ($self, $data) = @_;
             
-            # this method-of-operation can be computationally expensive due to
-            # the fact that each call serializes/de-serializes the params hash 
-            # ... research a better approach
-            
             my $proto      = $self->proto;
             my $fields     = $proto->fields;
-            my $parameters = $proto->get_params_hash;
+            my $parameters = $proto->unflatten_params;
             
             my $result = undef;
             
             if (defined $data && not defined $fields->{$name}->{readonly}) {
                 
-                $parameters->{$name} = $data;
+                $parameters->{$name} = $data ;
+                
+                # OMG - this is sooo gross !!!
+                # are you really telling me that this is the best you can do
+                
+                # this method-of-operation is like soo computationally expensive
+                # due to the fact that each accessor call serializes/de-serializes
+                # the params hash
+                
+                # fix your work loser
+                
+                # --me
+                
+                $proto->{params} =
+                    Validation::Class::Params->new($parameters);
                 
             }
             
             $result = $proto->field_default_value($name, $parameters);
                 
-            $proto->set_params_hash($parameters);
+            $proto->flatten_params($parameters);
             
             return $result;
             
         };
+        
+        *{"$proto->{package}\::$accessor"} = $accessor_routine;
         
     };
     
@@ -734,11 +750,11 @@ __END__
 
 =head1 NAME
 
-Validation::Class - Simple Object System, Data Validation and Modeling Framework
+Validation::Class - Self-Validating Object System and Data Validation Framework
 
 =head1 VERSION
 
-version 7.01
+version 7.03
 
 =head1 SYNOPSIS
 
@@ -952,7 +968,7 @@ you can create a no-op by simply returning true, e.g.:
 =head2 field
 
 The field keyword (or fld) creates an attribute with validation rules for reuse
-in code. The field keyword may also correspond with the parameter name expected to
+in code. The field name should correspond with the parameter name expected to
 be passed to your validation class.
 
     package MyApp::User;
@@ -966,11 +982,42 @@ be passed to your validation class.
         ...
     };
 
-The field keyword takes two arguments, the field name and a hashref of key/values
-pairs known as directives.
+The field keyword takes two arguments, the field name and a hashref of
+key/values pairs known as directives.
 
-Protip: Fields are used to validate constant and array data, not hashrefs and
-objects. Don't try to use fields like attributes (use the has keyword instead).
+The field keyword also creates accessors which provide easy access to the
+field's corresponding parameter value(s). Accessors will be created using the
+field's name as a label having any special characters replaced with an
+underscore.
+
+    field 'login' => {
+        required   => 1,
+        min_length => 1,
+        max_length => 255,
+        ...
+    };
+    
+    field 'preference.send_reminders' => {
+        required   => 1,
+        max_length => 1,
+        ...
+    };
+    
+    field 'preference.send_reminders.text:0' => {
+        ...
+    };
+    
+    my $value = $self->login;
+    
+    $self->login($new_value); # arrayrefs and hashrefs will be flattened
+    
+    $self->preference_send_reminders($value);
+    
+    $self->preference_send_reminders_text_0($value);
+
+Protip: Field directives are used to validate scalar and array data. Don't use
+fields to store and validate blessed objects. Please see the *has* keyword
+instead.
 
 =head2 filter
 

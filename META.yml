@@ -1,5 +1,5 @@
 ---
-abstract: 'Simple Object System, Data Validation and Modeling Framework'
+abstract: 'Self-Validating Object System and Data Validation Framework'
 author:
   - 'Al Newkirk <anewkirk@ana.io>'
 build_requires: {}
@@ -22,4 +22,4 @@ resources:
   bugtracker: http://rt.cpan.org/NoAuth/Bugs.html?Dist=Validation-Class
   homepage: http://ana.io/
   repository: http://github.com/alnewkirk/Validation-Class.git
-version: 7.01
+version: 7.03

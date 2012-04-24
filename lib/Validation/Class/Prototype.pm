@@ -2,13 +2,13 @@
 
 package Validation::Class::Prototype;
 {
-  $Validation::Class::Prototype::VERSION = '7.01';
+  $Validation::Class::Prototype::VERSION = '7.03';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.01'; # VERSION
+our $VERSION = '7.03'; # VERSION
 
 use base 'Validation::Class::Backwards'; # I'm pro-life
 
@@ -1479,6 +1479,22 @@ sub field_default_value {
 }
 
 
+sub flatten_params {
+
+    my ($self, $params) = @_;
+    
+    $params = $self->unflatten_params($params);
+    
+    my $serializer = Hash::Flatten->new($self->hash_inflator);
+    
+    $self->{params} =
+        Validation::Class::Params->new($serializer->flatten($params));
+    
+    return $self->params->hash;
+
+}
+
+
 sub get_errors {
 
     my ($self, @criteria) = @_;
@@ -1542,23 +1558,6 @@ sub get_params {
     
     # get param values as a list
     return @params ? (map { $self->params->{$_} } @params) : (undef);
-    
-}
-
-
-sub get_params_hash {
-    
-    my ($self, $params) = @_;
-    
-    $self->params->add($params) if $params;
-    
-    $params = $self->params->hash;
-    
-    my $serializer = Hash::Flatten->new($self->hash_inflator);
-    
-    $params = $serializer->unflatten($params);
-    
-    return $params;
     
 }
 
@@ -1724,7 +1723,7 @@ sub normalize {
     
     if (grep { ref($_) } values %{$self->params}) {
         
-        $self->set_params_hash($self->params);
+        $self->flatten_params($self->params);
         
     }
     
@@ -2029,9 +2028,9 @@ sub set_errors {
 
     my ($self, @errors) = @_;
     
-    $self->errors->add(@errors)  if @errors;
+    $self->errors->add(@errors) if @errors;
     
-    return @errors;
+    return $self->errors->count;
 
 }
 
@@ -2064,18 +2063,13 @@ sub set_method {
 }
 
 
-sub set_params_hash {
+sub set_params {
 
-    my ($self, $params) = @_;
+    my ($self, @params) = @_;
     
-    $params = $self->get_params_hash($params);
+    $self->params->add(@params)  if @params;
     
-    my $serializer = Hash::Flatten->new($self->hash_inflator);
-    
-    $self->{params} =
-        Validation::Class::Params->new($serializer->flatten($params));
-    
-    return $self->params->hash;
+    return $self->params->count;
 
 }
 
@@ -2129,6 +2123,23 @@ sub throw_error {
     $error_message =~ s/\s+/ /g;
     
     confess $error_message ;
+    
+}
+
+
+sub unflatten_params {
+    
+    my ($self, $params) = @_;
+    
+    $self->params->add($params) if $params;
+    
+    $params = $self->params->hash;
+    
+    my $serializer = Hash::Flatten->new($self->hash_inflator);
+    
+    $params = $serializer->unflatten($params);
+    
+    return $params;
     
 }
 
@@ -2242,8 +2253,9 @@ sub validate {
     
         my $params = $self->params->hash;
         
-        my ($ad, $hd) = @{$self->hash_inflator}{'ArrayDelimiter', 'HashDelimiter'};
-        # ^^ pun here
+        my ($ad, $hd) = @{$self->hash_inflator}
+            # ^^ pun here
+            {'ArrayDelimiter', 'HashDelimiter'};
         
         my %seen = ();
         
@@ -2589,7 +2601,7 @@ Validation::Class::Prototype - Data Validation Engine for Validation::Class Clas
 
 =head1 VERSION
 
-version 7.01
+version 7.03
 
 =head1 SYNOPSIS
 
@@ -2994,6 +3006,24 @@ default, this method returns undefined.
         'field_name' => $suggested_value
     });
 
+=head2 flatten_params
+
+Depending on how parameters are being input into your application, if your
+input parameters are already complex hash structures, The flatten_params method
+will set and return the serialized version of your hashref based on the the
+default or custom configuration of the hash serializer L<Hash::Flatten>.
+
+    my $params = {
+        
+        user => {
+            login => 'member',
+            password => 'abc123456'
+        }
+        
+    };
+    
+    my $serialized_params = $self->flatten_params($params);
+
 =head2 get_errors
 
 The get_errors method returns a list of combined class-and-field-level errors.
@@ -3046,35 +3076,6 @@ This method will return undefined unless a list of parameter names are passed.
         
     }
 
-=head2 get_params_hash
-
-If your fields and parameters are designed with complex hash-like structures,
-the get_params_hash method returns the deserialized hashref of registered
-parameters based on the the default or custom configuration of the hash
-serializer L<Hash::Flatten>. Please note, this functionality is called
-automatically during normalization which occurs at instantiation and
-validation, so chances are good that you'll likely not need to call this method.
-
-    my $params = {
-        'user.login' => 'member',
-        'user.password' => 'abc123456'
-    };
-    
-    $params = $self->get_params_hash;
-        
-    print $params->{user}->{login};
-    
-    $self->params->add(
-        'user.login' => 'member',
-        'user.password' => 'abc123456'
-    );
-    
-    if ($self->validate) {
-    
-        print $params->{user}->{login};
-        
-    }
-
 =head2 normalize
 
 The normalize method executes a set of routines that reset the parameter
@@ -3087,7 +3088,7 @@ automatically at instantiation and again just before each validation event.
 
 The param method gets/sets a single parameter by name.
 
-    $self->param('name');
+    my $value = $self->param('name');
     
     $self->param('name', '...');
 
@@ -3127,7 +3128,7 @@ instantiation.
 =head2 set_errors
 
 The set_errors method pushes its arguments (error messages) onto the class-level
-error stack of the current class.
+error stack and returns a count of class-level errors.
 
     my $count = $self->set_errors(..., ...);
 
@@ -3142,23 +3143,11 @@ instantiation of the validation class.
 Additionally, method names are flattened, e.g. ThisFunction will be converted to
 this_function for convenience and consistency.
 
-=head2 set_params_hash
+=head2 set_params
 
-Depending on how parameters are being input into your application, if your
-input parameters are already complex hash structures, The set_params_hash method
-will set and return the serialized version of your hashref based on the the
-default or custom configuration of the hash serializer L<Hash::Flatten>.
+The set_params method records new parameters and returns the new parameter count.
 
-    my $params = {
-        
-        user => {
-            login => 'member',
-            password => 'abc123456'
-        }
-        
-    };
-    
-    my $serialized_params = $self->set_params_hash($params);
+    my $count = $self->set_params(..., ...);
 
 =head2 stash
 
@@ -3190,6 +3179,35 @@ into context/instance specific operations.
     $self->stash( database => $dbix_object );
     
     ...
+
+=head2 unflatten_params
+
+If your fields and parameters are designed with complex hash-like structures,
+the unflatten_params method returns the deserialized hashref of registered
+parameters based on the the default or custom configuration of the hash
+serializer L<Hash::Flatten>. Please note, this functionality is called
+automatically during normalization which occurs at instantiation and
+validation, so chances are good that you'll likely not need to call this method.
+
+    my $params = {
+        'user.login' => 'member',
+        'user.password' => 'abc123456'
+    };
+    
+    $params = $self->unflatten_params;
+        
+    print $params->{user}->{login};
+    
+    $self->params->add(
+        'user.login' => 'member',
+        'user.password' => 'abc123456'
+    );
+    
+    if ($self->validate) {
+    
+        print $params->{user}->{login};
+        
+    }
 
 =head2 validate
 
