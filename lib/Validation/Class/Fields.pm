@@ -2,13 +2,13 @@
 
 package Validation::Class::Fields;
 {
-  $Validation::Class::Fields::VERSION = '7.04';
+  $Validation::Class::Fields::VERSION = '7.10_01';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.04'; # VERSION
+our $VERSION = '7.10_01'; # VERSION
 
 use Carp 'confess';
 
@@ -39,7 +39,11 @@ sub add {
     
 }
 
-sub clear {} #noop
+sub clear {
+    
+    #noop - fields can't be deleted this way
+    
+}
 
 1;
 __END__
@@ -51,7 +55,7 @@ Validation::Class::Fields - Container Class for Validation::Class::Field Objects
 
 =head1 VERSION
 
-version 7.04
+version 7.10_01
 
 =head1 SYNOPSIS
 

@@ -1,0 +1,14 @@
+
+What should I do about parameter handling?
+
+    Issues:
+        * user may set parameters as flattened parameters or unflattened parameters
+        * accessor maps to parameter by name whose name wont match if params have been flattened
+        * general confusion and the now obvious lacking-need for treating params and fields as seperate
+    
+    Solutions:
+        * use fields directly (as parameters)
+        * use the value directive (or create a new one) to store the submitted data
+        * keep parameters interface but have it access the fields "submitted data" directive
+        * dont accept params() argument to new()
+        * make flatten_params() and unflatten_params() the only means for serialization

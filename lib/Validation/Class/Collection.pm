@@ -2,13 +2,13 @@
 
 package Validation::Class::Collection;
 {
-  $Validation::Class::Collection::VERSION = '7.04';
+  $Validation::Class::Collection::VERSION = '7.10_01';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.04'; # VERSION
+our $VERSION = '7.10_01'; # VERSION
 
 use Carp 'confess';
 
@@ -72,9 +72,11 @@ sub each {
     
     my ($self, $transformer) = @_;
     
-    $transformer ||= sub {@_} ;
+    $transformer ||= sub {@_};
     
-    while (my @kv = each(%{$self})) {
+    my %hash = %{$self};
+    
+    while (my @kv = each(%hash)) {
         
         $transformer->(@kv);
         
@@ -101,6 +103,15 @@ sub find {
 }
 
 
+sub has {
+    
+    my ($self, $name) = @_;
+    
+    return defined $self->{$name} ? 1 : 0;
+    
+}
+
+
 sub hash {
     
     return {%{$_[0]}};
@@ -122,6 +133,15 @@ sub list {
 }
 
 
+sub remove {
+    
+    my ($self, $name) = @_;
+    
+    return delete $self->{$name} if $name;
+    
+}
+
+
 sub values {
     
     goto &list;
@@ -138,7 +158,7 @@ Validation::Class::Collection - Generic Container Class for Various Collections
 
 =head1 VERSION
 
-version 7.04
+version 7.10_01
 
 =head1 SYNOPSIS
 
@@ -188,6 +208,12 @@ This class is primarily used as a base class for collection management classes.
 
     my $matches = $self->find(qr/update_/); # hashref
 
+=head2 has
+
+    if ($self->has($name)) {
+        ...
+    }
+
 =head2 hash
 
     my $hash = $self->hash; 
@@ -199,6 +225,10 @@ This class is primarily used as a base class for collection management classes.
 =head2 list
 
     my @objects = $self->list;
+
+=head2 remove
+
+    $object = $self->remove($name);
 
 =head2 values
 
