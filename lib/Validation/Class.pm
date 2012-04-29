@@ -2,13 +2,13 @@
 
 package Validation::Class;
 {
-  $Validation::Class::VERSION = '7.10_01';
+  $Validation::Class::VERSION = '7.11';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.10_01'; # VERSION
+our $VERSION = '7.11'; # VERSION
 
 use Module::Find;
 use Carp 'confess';
@@ -743,7 +743,7 @@ Validation::Class - Self-Validating Object System and Data Validation Framework
 
 =head1 VERSION
 
-version 7.10_01
+version 7.11
 
 =head1 SYNOPSIS
 
