@@ -2,13 +2,13 @@
 
 package Validation::Class::Prototype;
 {
-    $Validation::Class::Prototype::VERSION = '7.12';
+    $Validation::Class::Prototype::VERSION = '7.13';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.12';    # VERSION
+our $VERSION = '7.13';    # VERSION
 
 use base 'Validation::Class::Backwards';    # I'm pro-life
 
@@ -2740,7 +2740,7 @@ Validation::Class::Prototype - Prototype and Data Validation Engine for Validati
 
 =head1 VERSION
 
-version 7.12
+version 7.13
 
 =head1 SYNOPSIS
 
