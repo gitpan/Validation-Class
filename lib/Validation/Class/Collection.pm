@@ -2,154 +2,153 @@
 
 package Validation::Class::Collection;
 {
-  $Validation::Class::Collection::VERSION = '7.11';
+    $Validation::Class::Collection::VERSION = '7.12';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.11'; # VERSION
+our $VERSION = '7.12';    # VERSION
 
 use Carp 'confess';
 
 
-
 sub new {
-    
+
     my $class = shift;
-    
+
     my %arguments = @_ % 2 ? %{$_[0]} : @_;
-    
+
     my $self = bless {}, $class;
-    
-    while (my($name, $value) = each(%arguments)) {
-        
+
+    while (my ($name, $value) = each(%arguments)) {
+
         $self->add($name => $value);
-        
+
     }
-    
+
     return $self;
-    
+
 }
 
 
 sub add {
-    
+
     my $self = shift;
-    
+
     my %arguments = @_ % 2 ? %{$_[0]} : @_;
-    
-    while (my($key, $object) = each %arguments) {
-    
+
+    while (my ($key, $object) = each %arguments) {
+
         $self->{$key} = $object;
-    
+
     }
-    
+
     return $self;
-    
+
 }
 
 
 sub clear {
-    
+
     my ($self) = @_;
-    
-    delete $self->{$_} for keys %{$self} ;
-    
+
+    delete $self->{$_} for keys %{$self};
+
     return $self;
-    
+
 }
 
 
 sub count {
-    
+
     return scalar(keys %{$_[0]});
-    
+
 }
 
 
 sub each {
-    
+
     my ($self, $transformer) = @_;
-    
+
     $transformer ||= sub {@_};
-    
+
     my %hash = %{$self};
-    
+
     while (my @kv = each(%hash)) {
-        
+
         $transformer->(@kv);
-        
+
     }
-    
+
     return $self;
-    
+
 }
 
 
 sub find {
-    
+
     my ($self, $pattern) = @_;
-    
+
     return undef unless "REGEXP" eq uc ref $pattern;
-    
+
     my %matches = ();
-    
-    $matches{$_} = $self->{$_}
-        for grep { $_ =~ $pattern } keys %{$self};
-    
-    return { %matches };
-    
+
+    $matches{$_} = $self->{$_} for grep { $_ =~ $pattern } keys %{$self};
+
+    return {%matches};
+
 }
 
 
 sub has {
-    
+
     my ($self, $name) = @_;
-    
+
     return defined $self->{$name} ? 1 : 0;
-    
+
 }
 
 
 sub hash {
-    
+
     return {%{$_[0]}};
-    
+
 }
 
 
 sub keys {
-    
+
     return (keys %{$_[0]});
-    
+
 }
 
 
 sub list {
-    
+
     return (values %{$_[0]});
-    
+
 }
 
 
 sub remove {
-    
+
     my ($self, $name) = @_;
-    
+
     return delete $self->{$name} if $name;
-    
+
 }
 
 
 sub values {
-    
+
     goto &list;
-    
+
 }
 
 1;
 __END__
+
 =pod
 
 =head1 NAME
@@ -158,7 +157,7 @@ Validation::Class::Collection - Generic Container Class for Various Collections
 
 =head1 VERSION
 
-version 7.11
+version 7.12
 
 =head1 SYNOPSIS
 

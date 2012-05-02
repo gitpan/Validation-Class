@@ -2,13 +2,13 @@
 
 package Validation::Class::Fields;
 {
-  $Validation::Class::Fields::VERSION = '7.11';
+    $Validation::Class::Fields::VERSION = '7.12';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.11'; # VERSION
+our $VERSION = '7.12';    # VERSION
 
 use Carp 'confess';
 
@@ -18,35 +18,36 @@ use Validation::Class::Field;
 
 
 sub add {
-    
+
     my $self = shift;
-    
+
     my %arguments = @_ % 2 ? %{$_[0]} : @_;
-    
-    while (my($key, $object) = each %arguments) {
-    
+
+    while (my ($key, $object) = each %arguments) {
+
         $object->{name} = $key
-            unless defined $object->{name};
-        
+          unless defined $object->{name};
+
         $object = Validation::Class::Field->new($object)
-            unless "Validation::Class::Field" eq ref $object;
-        
+          unless "Validation::Class::Field" eq ref $object;
+
         $self->{$key} = $object;
-    
+
     }
-    
+
     return $self;
-    
+
 }
 
 sub clear {
-    
+
     #noop - fields can't be deleted this way
-    
+
 }
 
 1;
 __END__
+
 =pod
 
 =head1 NAME
@@ -55,7 +56,7 @@ Validation::Class::Fields - Container Class for Validation::Class::Field Objects
 
 =head1 VERSION
 
-version 7.11
+version 7.12
 
 =head1 SYNOPSIS
 

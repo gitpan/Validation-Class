@@ -2,140 +2,144 @@
 
 package Validation::Class::Errors;
 {
-  $Validation::Class::Errors::VERSION = '7.11';
+    $Validation::Class::Errors::VERSION = '7.12';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.11'; # VERSION
-
+our $VERSION = '7.12';    # VERSION
 
 
 sub new {
-    
+
     my $class = shift;
-    
-    my @arguments = @_ ? @_ > 1 ? @_ : "ARRAY" eq ref $_[0] ? @{$_[0]} : () : ();
-    
+
+    my @arguments =
+      @_ ? @_ > 1 ? @_ : "ARRAY" eq ref $_[0] ? @{$_[0]} : () : ();
+
     my $self = bless [], $class;
-    
+
     $self->add($_) for @arguments;
-    
+
     return $self;
-    
+
 }
 
 
 sub add {
-    
+
     my ($self, @error_messages) = @_;
-    
+
     return undef unless @error_messages;
-    
+
     my %seen = map { $_ => 1 } @{$self};
-    
+
     push @{$self}, grep { !$seen{$_} } @error_messages;
-    
+
     return $self;
-    
+
 }
 
 
 sub all {
-    
+
     return (@{$_[0]});
-    
+
 }
 
 
 sub clear {
-    
+
     my ($self) = @_;
-    
-    delete $self->[($_ - 1)] for (1..$self->count) ;
-    
+
+    delete $self->[($_ - 1)] for (1 .. $self->count);
+
     return $self;
-    
+
 }
 
 
 sub count {
-    
+
     return scalar(@{$_[0]});
-    
+
 }
 
 
 sub each {
-    
+
     my ($self, $transformer) = @_;
-    
-    $transformer ||= sub {@_} ;
-    
-    return [ map {
-        
-        $_ = $transformer->($_)
-        
-    } @{$self} ]
-    
+
+    $transformer ||= sub {@_};
+
+    return [
+        map {
+
+            $_ = $transformer->($_)
+
+          } @{$self}
+      ]
+
 }
 
 
 sub list {
-    
+
     return [@{$_[0]}];
-    
+
 }
 
 
 sub find {
-    
+
     my ($self, $pattern) = @_;
-    
+
     return undef unless "REGEXP" eq uc ref $pattern;
-    
-    return ( grep { $_ =~ $pattern } $self->all );
-    
+
+    return (grep { $_ =~ $pattern } $self->all);
+
 }
 
 
 sub first {
-    
+
     my ($self, $pattern) = @_;
-    
+
     return $self->list->[0] unless "REGEXP" eq uc ref $pattern;
-    
-    return ( $self->find($pattern) )[ 0 ];
-    
+
+    return ($self->find($pattern))[0];
+
 }
 
 
 sub join {
-    
+
     my ($self, $delimiter) = @_;
-    
+
     $delimiter = ', ' unless defined $delimiter;
-    
+
     return join $delimiter, $self->all;
-    
+
 }
 
 
 sub to_string {
-    
+
     my ($self, $delimiter, $transformer) = @_;
-    
-    $delimiter = ', ' unless defined $delimiter; # default delimiter is a comma-space
-    
+
+    $delimiter = ', '
+      unless defined $delimiter;    # default delimiter is a comma-space
+
     $self->each($transformer) if $transformer;
-    
+
     return $self->join($delimiter);
 
 }
 
 1;
 __END__
+
 =pod
 
 =head1 NAME
@@ -144,7 +148,7 @@ Validation::Class::Errors - Error Handling Object for Fields and Classes
 
 =head1 VERSION
 
-version 7.11
+version 7.12
 
 =head1 SYNOPSIS
 

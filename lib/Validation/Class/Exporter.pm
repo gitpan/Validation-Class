@@ -2,7 +2,7 @@
 
 package Validation::Class::Exporter;
 {
-  $Validation::Class::Exporter::VERSION = '7.11';
+    $Validation::Class::Exporter::VERSION = '7.12';
 }
 
 use 5.008001;
@@ -10,57 +10,57 @@ use 5.008001;
 use strict;
 use warnings;
 
-our $VERSION = '7.11'; # VERSION
-
+our $VERSION = '7.12';    # VERSION
 
 
 sub apply_spec {
-    
+
     my ($this, %args) = @_;
-    
+
     no strict 'refs';
     no warnings 'once';
     no warnings 'redefine';
-    
-    my $parent = caller(0);
-    
-    my @keywords = @{ $args{keywords} } if $args{keywords};
 
-    my @routines = @{ $args{routines} } if $args{routines};
-    
-    my $settings = { @{ $args{settings} } } if $args{settings};
-    
+    my $parent = caller(0);
+
+    my @keywords = @{$args{keywords}} if $args{keywords};
+
+    my @routines = @{$args{routines}} if $args{routines};
+
+    my $settings = {@{$args{settings}}} if $args{settings};
+
     *{"$parent\::import"} = sub {
-       
+
         my $child = caller(0);
-        
+
         *{"$child\::$_"} = *{"$parent\::$_"} for @keywords;
-        
+
         *{"$child\::$_"} = *{"$parent\::$_"} for @routines;
-        
-        my $ISA  = "$child\::ISA";
-        
+
+        my $ISA = "$child\::ISA";
+
         push @$ISA, 'Validation::Class'
-            unless grep { $_ eq 'Validation::Class' } @$ISA;
-        
+          unless grep { $_ eq 'Validation::Class' } @$ISA;
+
         *{"$child\::$_"} = *{"Validation\::Class\::$_"}
-            for @Validation::Class::EXPORT;
-        
+          for @Validation::Class::EXPORT;
+
         strict->import;
         warnings->import;
-        
+
         $child->load($settings) if $settings;
-        
+
         return $child;
-        
+
     };
-    
+
     return $this;
-    
+
 }
 
 1;
 __END__
+
 =pod
 
 =head1 NAME
@@ -69,7 +69,7 @@ Validation::Class::Exporter - Simple Exporter for Validation::Class Classes
 
 =head1 VERSION
 
-version 7.11
+version 7.12
 
 =head1 SYNOPSIS
 

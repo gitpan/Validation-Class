@@ -2,13 +2,13 @@
 
 package Validation::Class;
 {
-  $Validation::Class::VERSION = '7.11';
+    $Validation::Class::VERSION = '7.12';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.11'; # VERSION
+our $VERSION = '7.12';    # VERSION
 
 use Module::Find;
 use Carp 'confess';
@@ -22,613 +22,640 @@ use Validation::Class::Prototype;
 use Validation::Class::Errors;
 
 {
-    
-    my  %CLASSES = ();
-    
+
+    my %CLASSES = ();
+
     sub return_class_proto {
-        
+
         my $TARGET_CLASS = shift || caller(2);
-        
+
         return $CLASSES{$TARGET_CLASS} ||= do {
-            
+
             no strict 'refs';
-            
+
             my $proto_class = 'Validation::Class::Prototype';
-            
+
             my $proto = {
                 package => $TARGET_CLASS,
                 config  => {}
             };
-            
+
             # injected into every derived class
-            
+
             *{"$TARGET_CLASS\::new"}       = sub { goto \&new };
             *{"$TARGET_CLASS\::proto"}     = sub { goto \&prototype };
             *{"$TARGET_CLASS\::prototype"} = sub { goto \&prototype };
-            
+
             # inject prototype class aliases unless exist
-            
+
             my @aliases = $proto_class->proxy_methods;
-            
+
             foreach my $alias (@aliases) {
-                
+
                 # slight-of-hand
                 *{"$TARGET_CLASS\::$alias"} = sub {
-                    
+
                     my $self = shift @_;
-                    
+
                     my $proto = return_class_proto(ref $self); # isnt recursive
-                    
+
                     $proto->$alias(@_);
-                    
-                }   unless $TARGET_CLASS->can($alias);
-                
+
+                  }
+                  unless $TARGET_CLASS->can($alias);
+
             }
-            
+
             # inject wrapped prototype class aliases unless exist
-            
+
             my @wrapped_aliases = $proto_class->proxy_methods_wrapped;
-            
+
             foreach my $alias (@wrapped_aliases) {
-                
+
                 # slight-of-hand
                 *{"$TARGET_CLASS\::$alias"} = sub {
-                    
+
                     my $self = shift @_;
-                    
+
                     my $proto = return_class_proto(ref $self); # isnt recursive
-                    
+
                     $proto->$alias($self, @_);
-                    
-                }   unless $TARGET_CLASS->can($alias);
-                
+
+                  }
+                  unless $TARGET_CLASS->can($alias);
+
             }
-            
+
             my $self = bless $proto, $proto_class;
-            
-            $self->{config} = merge $proto_class->configuration, $self->{config};
-            
-            $self; # return-once
-            
+
+            $self->{config} = merge $proto_class->configuration,
+              $self->{config};
+
+            $self;    # return-once
+
         };
-        
+
     }
-    
+
     sub configure_class_proto {
-        
+
         my $configuration_routine = shift;
-        
+
         return undef unless "CODE" eq ref $configuration_routine;
-        
+
         no strict 'refs';
-        
+
         my $proto = return_class_proto;
-        
+
         $configuration_routine->($proto);
-        
+
         return $proto;
-        
+
     }
-    
+
 }
 
 sub import {
-    
+
     my $caller = caller(0) || caller(1);
-    
+
     if ($caller) {
-        
-        return_class_proto $caller # create prototype instance when used
-        
+
+        return_class_proto $caller    # create prototype instance when used
+
     }
-    
+
     strict->import;
     warnings->import;
-    
+
     __PACKAGE__->export_to_level(1, @_);
-    
+
 }
 
 our @ISA    = qw(Exporter);
 our @EXPORT = qw(
 
-    attribute
-    bld
-    build
-    dir
-    directive
-    fld
-    field
-    flt
-    filter
-    has
-    load
-    mth
-    method
-    mxn
-    mixin
-    pro
-    profile
-    set
+  attribute
+  bld
+  build
+  dir
+  directive
+  fld
+  field
+  flt
+  filter
+  has
+  load
+  mth
+  method
+  mxn
+  mixin
+  pro
+  profile
+  set
 
 );
 
 
-
 sub has { goto &attribute }
+
 sub attribute {
-    
+
     my ($attrs, $default) = @_;
 
     return unless $attrs;
 
     confess "Error creating accessor, default must be a coderef or constant"
-        if ref $default && ref $default ne 'CODE';
+      if ref $default && ref $default ne 'CODE';
 
     $attrs = [$attrs] unless ref $attrs eq 'ARRAY';
 
     for my $attr (@$attrs) {
 
         confess "Error creating accessor '$attr', name has invalid characters"
-            unless $attr =~ /^[a-zA-Z_]\w*$/;
-        
-        my $code ;
-        
+          unless $attr =~ /^[a-zA-Z_]\w*$/;
+
+        my $code;
+
         if (defined $default) {
-            
+
             $code = sub {
-                
+
                 if (@_ == 1) {
                     return $_[0]->{$attr} if exists $_[0]->{$attr};
-                    return $_[0]->{$attr} = ref $default eq 'CODE' ?
-                        $default->($_[0]) : $default;
+                    return $_[0]->{$attr} =
+                      ref $default eq 'CODE' ? $default->($_[0]) : $default;
                 }
-                $_[0]->{$attr} = $_[1]; $_[0];
-                
+                $_[0]->{$attr} = $_[1];
+                $_[0];
+
             };
-            
+
         }
-        
+
         else {
-            
+
             $code = sub {
-                
+
                 return $_[0]->{$attr} if @_ == 1;
-                $_[0]->{$attr} = $_[1]; $_[0];
-                
+                $_[0]->{$attr} = $_[1];
+                $_[0];
+
             };
-            
+
         }
-        
+
         return configure_class_proto sub {
-            
+
             my ($proto) = @_;
-            
+
             my $accessors = $proto->{config}->{ATTRIBUTES} ||= {};
-            
+
             no strict 'refs';
             no warnings 'redefine';
-            
+
             *{"$proto->{package}\::$attr"} = $accessors->{$attr} = $code;
-            
+
         };
 
     }
-    
+
 }
 
 
 sub bld { goto &build }
+
 sub build {
-    
+
     my ($code) = @_;
-    
+
     return undef unless ("CODE" eq ref $code);
-    
+
     return configure_class_proto sub {
-        
+
         my ($proto) = @_;
-        
+
         $proto->{config}->{BUILDERS} ||= [];
-        
+
         push @{$proto->{config}->{BUILDERS}}, $code;
-        
+
     };
-    
+
 }
 
 
 sub dir { goto &directive }
+
 sub directive {
-    
+
     my ($name, $data) = @_;
-    
+
     return undef unless ($name && $data);
-    
+
     return configure_class_proto sub {
-        
+
         my ($proto) = @_;
-        
+
         $proto->{config}->{DIRECTIVES} ||= {};
-        
+
         $proto->{config}->{DIRECTIVES}->{$name} = {
-            
+
             mixin     => 1,
             field     => 1,
             validator => $data
-            
+
         };
-        
+
     };
-    
+
 }
 
 
 sub fld { goto &field }
+
 sub field {
-    
+
     my ($name, $data) = @_;
-    
+
     return undef unless ($name && $data);
-    
+
     confess "Error creating field $name, name is using unconventional naming"
-        unless $name =~ /^[a-zA-Z_](([\w\.]+)?\w)$/
-        xor    $name =~ /^[a-zA-Z_](([\w\.]+)?\w)\:\d+$/;
-    
+      unless $name =~ /^[a-zA-Z_](([\w\.]+)?\w)$/ xor $name
+          =~ /^[a-zA-Z_](([\w\.]+)?\w)\:\d+$/;
+
     return configure_class_proto sub {
-        
+
         my ($proto) = @_;
-    
+
         $proto->{config}->{FIELDS} ||= {};
-        
-        confess "Error creating accessor $name on $proto->{package}, ".
-            "attribute collision" if exists $proto->{config}->{FIELDS}->{$name};
-        
-        confess "Error creating accessor $name on $proto->{package}, ".
-            "method collision" if $proto->{package}->can($name);
-        
+
+        confess "Error creating accessor $name on $proto->{package}, "
+          . "attribute collision"
+          if exists $proto->{config}->{FIELDS}->{$name};
+
+        confess "Error creating accessor $name on $proto->{package}, "
+          . "method collision"
+          if $proto->{package}->can($name);
+
         $data->{name} = $name;
-        
+
         $proto->{config}->{FIELDS}->{$name} = $data;
-        
+
         no strict 'refs';
-        
+
         my $accessor = $name;
-        
+
         $accessor =~ s/[^a-zA-Z0-9_]/_/g;
-        
+
         my $accessor_routine = sub {
-            
+
             my ($self, $data) = @_;
-            
+
             my $proto  = $self->proto;
             my $fields = $proto->fields;
             my $result = undef;
-            
+
             if (defined $data) {
-                
+
                 $proto->set_params($name => $data);
-                
+
             }
-            
+
             $result = $proto->get_value($name);
-            
+
             return $result;
-            
+
         };
-        
+
         *{"$proto->{package}\::$accessor"} = $accessor_routine;
-        
+
     };
-    
+
 }
 
 
 sub flt { goto &filter }
+
 sub filter {
-    
+
     my ($name, $data) = @_;
-    
+
     return undef unless ($name && $data);
-    
+
     return configure_class_proto sub {
-        
+
         my ($proto) = @_;
-        
+
         $proto->{config}->{FILTERS} ||= {};
-        
+
         $proto->{config}->{FILTERS}->{$name} = $data;
-        
+
     };
-    
+
 }
 
 
 sub set { goto &load }
+
 sub load {
-    
-    my $data  = pop @_;
-    my $self  = pop @_;
-    
+
+    my $data = pop @_;
+    my $self = pop @_;
+
     return configure_class_proto sub {
-        
+
         my $proto = $self ? $self->proto : $_[0];
-        
+
         my $name = $proto->{package};
-        
+
         $proto->{config}->{BUILDERS} ||= [];
 
         if ($data->{classes}) {
-            
-            my @parents ;
-            
-            if (! ref $data->{classes} && $data->{classes} == 1) {
-                
+
+            my @parents;
+
+            if (!ref $data->{classes} && $data->{classes} == 1) {
+
                 push @parents, $name;
-                
+
             }
-            
+
             else {
-            
-                push @parents, "ARRAY" eq ref $data->{classes} ?
-                    @{$data->{classes}} : $data->{classes};
-            
+
+                push @parents,
+                  "ARRAY" eq ref $data->{classes}
+                  ? @{$data->{classes}}
+                  : $data->{classes};
+
             }
-            
+
             foreach my $parent (@parents) {
-                
+
                 # load class children and create relationship map (hash)
                 foreach my $child (useall $parent) {
-                
-                    my $nickname  = $child;
-                       $nickname  =~ s/^$name//;
-                       $nickname  =~ s/^:://;
-                       $nickname  =~ s/([a-z])([A-Z])/$1\_$2/g;
-                       $nickname  =~ s/::/-/g;
-                    
+
+                    my $nickname = $child;
+                    $nickname =~ s/^$name//;
+                    $nickname =~ s/^:://;
+                    $nickname =~ s/([a-z])([A-Z])/$1\_$2/g;
+                    $nickname =~ s/::/-/g;
+
                     $proto->{config}->{RELATIVES} ||= {};
                     $proto->{config}->{RELATIVES}->{lc $nickname} = $child;
-                
-                
+
+
                 }
-                
+
             }
-            
+
         }
-        
+
         if ($data->{plugins}) {
-            
-            my @plugins ;
-            
-            push @plugins, "ARRAY" eq ref $data->{plugins} ?
-                @{$data->{plugins}} : $data->{plugins};
-            
+
+            my @plugins;
+
+            push @plugins,
+              "ARRAY" eq ref $data->{plugins}
+              ? @{$data->{plugins}}
+              : $data->{plugins};
+
             foreach my $plugin (@plugins) {
-        
+
                 if ($plugin !~ /^\+/) {
-            
+
                     $plugin = "Validation::Class::Plugin::$plugin";
-            
+
                 }
-                
+
                 $plugin =~ s/^\+//;
-                
+
                 # require plugin
                 my $file = $plugin;
-                   $file =~ s/::/\//g;
-                   $file .= ".pm";
-                
+                $file =~ s/::/\//g;
+                $file .= ".pm";
+
                 eval "require $plugin"
-                    unless $INC{$file}; # unless already loaded
-            
+                  unless $INC{$file};    # unless already loaded
+
             }
-            
+
             $proto->{config}->{PLUGINS}->{$_} = 1 for @plugins;
-            
+
         }
-        
+
         # attach roles
         if (grep { $data->{$_} } qw/base bases role roles/) {
-            
-            my @roles ;
-            
+
+            my @roles;
+
             my $alias =
-                $data->{base} || $data->{role} ||
-                $data->{roles} || $data->{bases};
-            
+                 $data->{base}
+              || $data->{role}
+              || $data->{roles}
+              || $data->{bases};
+
             if ($alias) {
-                
-                push @roles, "ARRAY" eq ref $alias ?
-                    @{$alias} : $alias;
-                
+
+                push @roles, "ARRAY" eq ref $alias ? @{$alias} : $alias;
+
             }
-            
+
             if (@roles) {
-                
+
                 foreach my $role (@roles) {
-                    
+
                     # require plugin
                     my $file = $role;
-                       $file =~ s/::/\//g;
-                       $file .= ".pm";
-                    
+                    $file =~ s/::/\//g;
+                    $file .= ".pm";
+
                     no strict 'refs';
-                    
+
                     eval "require $role"
-                        unless $INC{$file}; # unless already loaded
-                    
+                      unless $INC{$file};    # unless already loaded
+
                     my @routines = grep { defined &{"$role\::$_"} }
-                        keys %{"$role\::"};
-                    
+                      keys %{"$role\::"};
+
                     if (@routines) {
-                        
+
                         # copy methods
                         foreach my $routine (@routines) {
-                            
+
                             eval {
-                            
+
                                 *{"$proto->{package}\::$routine"} =
-                                *{"$role\::$routine"}
-                            
-                            }   unless $proto->{package}->can($routine);
+                                  *{"$role\::$routine"}
+
+                            } unless $proto->{package}->can($routine);
+
                             # maybe I should issue a warning?
-                            
+
                         }
-                        
+
                         my $role_proto = return_class_proto $role;
-                        
-                        $proto->{config}       ||= {}; # good measure
-                        $role_proto->{config}  ||= {}; # good measure
-                        
+
+                        $proto->{config}      ||= {};    # good measure
+                        $role_proto->{config} ||= {};    # good measure
+
                         # merge configs
-                        $proto->{config} =
-                            merge $proto->{config}, $role_proto->{config};
-                        
+                        $proto->{config} = merge $proto->{config},
+                          $role_proto->{config};
+
                     }
-                    
+
                 }
-                
+
             }
-            
+
         }
-        
+
     };
-    
+
 }
 
 
 sub mth { goto &method }
+
 sub method {
 
     my ($name, $data) = @_;
 
     return undef unless ($name && $data);
-    
-    return configure_class_proto  sub {
-        
+
+    return configure_class_proto sub {
+
         my ($proto) = @_;
-        
-        $proto->{config}->{METHODS} ||= {};
+
+        $proto->{config}->{METHODS}    ||= {};
         $proto->{config}->{ATTRIBUTES} ||= {};
-        
-        confess "Error creating method $name on $proto->{package}, ".
-            "collides with attribute $name"
-                if exists $proto->{config}->{ATTRIBUTES}->{$name};
-        
-        confess "Error creating method $name on $proto->{package}, ".
-            "collides with method $name"
-                if $proto->{package}->can($name);
-        
+
+        confess "Error creating method $name on $proto->{package}, "
+          . "collides with attribute $name"
+          if exists $proto->{config}->{ATTRIBUTES}->{$name};
+
+        confess "Error creating method $name on $proto->{package}, "
+          . "collides with method $name"
+          if $proto->{package}->can($name);
+
         # create method
-        
-        confess "Error creating method $name, requires 'input' and 'using' options"
-            unless $data->{input} && $data->{using};
-        
+
+        confess
+          "Error creating method $name, requires 'input' and 'using' options"
+          unless $data->{input} && $data->{using};
+
         $proto->{config}->{METHODS}->{$name} = $data;
-        
+
         no strict 'refs';
-        
+
         *{"$proto->{package}\::$name"} = sub {
-            
-            my $self  = shift;
-            my @args  = @_;
-            
+
+            my $self = shift;
+            my @args = @_;
+
             my $validator;
-            
+
             my $input  = $data->{'input'};
             my $using  = $data->{'using'};
             my $output = $data->{'output'};
-            
+
             if ($input) {
-            
-                $validator = "ARRAY" eq ref $input ?
-                    
-                    # validate fields
-                    sub { $self->validate(@{$input}) } :
-                    
-                    # validate profile
-                    sub { $self->validate_profile($input, @args) } ;
-            
+
+                $validator = "ARRAY" eq ref $input
+                  ?
+
+                  # validate fields
+                  sub { $self->validate(@{$input}) }
+                  :
+
+                  # validate profile
+                  sub { $self->validate_profile($input, @args) };
+
             }
-            
+
             if ($using) {
-                
+
                 if ("CODE" eq ref $using) {
-                    
+
                     my $error = "Method $name failed to validate";
-                        
+
                     # run input validation
                     if ("CODE" eq ref $validator) {
-                        
+
                         unless ($validator->(@args)) {
-                        
+
                             unshift @{$self->errors}, $error
-                                if $self->report_failure;
-                            
-                            confess $error. " input, ". $self->errors_to_string
-                                if ! $self->ignore_failure;
-                            
+                              if $self->report_failure;
+
+                            confess $error
+                              . " input, "
+                              . $self->errors_to_string
+                              if !$self->ignore_failure;
+
                             return undef;
-                            
+
                         }
-                        
+
                     }
-                    
+
                     # execute routine
                     my $return = $data->{using}->($self, @args);
-                    
+
                     # run output validation
                     if ($output) {
-                        
-                        $validator = "ARRAY" eq ref $output ?
-                            
-                            # validate fields
-                            sub { $self->validate(@{$output}) } :
-                            
-                            # validate profile
-                            sub { $self->validate_profile($output, @args) } ;
-                        
-                        confess $error. " output, ". $self->errors_to_string
-                            unless $validator->(@args);
-                        
+
+                        $validator = "ARRAY" eq ref $output
+                          ?
+
+                          # validate fields
+                          sub { $self->validate(@{$output}) }
+                          :
+
+                          # validate profile
+                          sub { $self->validate_profile($output, @args) };
+
+                        confess $error. " output, " . $self->errors_to_string
+                          unless $validator->(@args);
+
                     }
-                    
+
                     return $return;
-                    
+
                 }
-                
+
                 else {
-                    
+
                     confess "Error executing $name, no associated coderef";
-                    
+
                 }
-                
+
             }
-            
+
             return undef;
-            
+
         };
-        
+
     };
 
 }
 
 
 sub mxn { goto &mixin }
+
 sub mixin {
 
     my ($name, $data) = @_;
-    
+
     return undef unless ($name && $data);
 
     return configure_class_proto sub {
-        
+
         my $proto = shift;
-        
+
         $proto->{config}->{MIXINS} ||= {};
-        
+
         $proto->{config}->{MIXINS}->{$name} = $data;
-        
+
     };
 
 }
@@ -637,104 +664,108 @@ sub mixin {
 sub new {
 
     my $class = shift;
-    
-    my $proto  = return_class_proto $class;
-    
+
+    my $proto = return_class_proto $class;
+
     my $config = $proto->{config};
-    
-    my $self = bless {},  $class;
-    
+
+    my $self = bless {}, $class;
+
     # clone config values
-    
-    my @clonables = qw(fields filters methods mixins profiles relatives) ;
-    
-    $proto->{$_} = merge $proto->{config}->{uc $_}, $proto->{$_} for @clonables;
-    
+
+    my @clonables = qw(fields filters methods mixins profiles relatives);
+
+    $proto->{$_} = merge $proto->{config}->{uc $_}, $proto->{$_}
+      for @clonables;
+
     my %ARGS = @_ ? @_ > 1 ? @_ : "HASH" eq ref $_[0] ? %{$_[0]} : () : ();
-    
+
     # bless special collections
-    
+
     $proto->{errors} = Validation::Class::Errors->new;
     $proto->{params} = Validation::Class::Params->new;
-    $proto->{fields} = Validation::Class::Fields->new($proto->{fields}); #!!!
-    
+    $proto->{fields} = Validation::Class::Fields->new($proto->{fields});   #!!!
+
     # process overridable attributes
-    
+
     my $fields = delete $ARGS{fields} if defined $ARGS{fields};
     my $params = delete $ARGS{params} if defined $ARGS{params};
-    
+
     $proto->set_fields($fields) if $fields;
     $proto->set_params($params) if $params;
-    
+
     # process attribute assignments
-    
-    while (my($attr, $value) = each (%ARGS)) {
-        
+
+    while (my ($attr, $value) = each(%ARGS)) {
+
         $self->$attr($value);
-        
+
     }
-    
+
     # process plugins
-    
+
     foreach my $plugin (keys %{$config->{PLUGINS}}) {
-        
+
         $plugin->new($self) if $plugin->can('new');
-        
+
     }
-    
+
     # process builders
-    
+
     foreach my $builder (@{$config->{BUILDERS}}) {
-        
+
         $builder->($self);
-        
+
     }
-    
+
     # initialize prototype
-    
+
     $proto->normalize;
     $proto->apply_filters('pre') if $proto->filtering;
-    
+
     # ready-set-go !!!
-    
+
     return $self;
 
 }
 
 
 sub pro { goto &profile }
+
 sub profile {
 
     my ($name, $data) = @_;
 
     return undef unless ($name && "CODE" eq ref $data);
-    
+
     return configure_class_proto sub {
-        
+
         my ($proto) = @_;
-        
+
         $proto->{config}->{PROFILES} ||= {};
-        
+
         $proto->{config}->{PROFILES}->{$name} = $data;
-        
+
     };
 
 }
 
 
 sub proto { goto &prototype }
+
 sub prototype {
-    
+
     my ($self) = pop @_;
-    
+
     return_class_proto ref $self || $self;
-    
+
 }
 
 
-
 1;
+
 __END__
+
 =pod
 
 =head1 NAME
@@ -743,7 +774,7 @@ Validation::Class - Self-Validating Object System and Data Validation Framework
 
 =head1 VERSION
 
-version 7.11
+version 7.12
 
 =head1 SYNOPSIS
 
@@ -921,7 +952,7 @@ packages to be used in all your classes.
         
             my $handle = $field->{label} || $field->{name};
             
-            $self->errors->add_error("$handle must be a valid email address");
+            $field->{errors}->add("$handle must be a valid email address");
             
             return 0;
         
@@ -1281,8 +1312,8 @@ instantiation process.
 
 The prototype method (or proto) returns an instance of the associated class
 prototype. The class prototype is responsible for manipulating and validating
-the data model (current class). It is not likely that you'll need to access
-this method directly.
+the data model (the class). It is not likely that you'll need to access
+this method directly, see L<Validation::Class/"THE PROTOTYPE CLASS">.
 
     package MyApp;
     
@@ -1299,7 +1330,7 @@ this method directly.
 =head1 THE PROTOTYPE CLASS
 
 This module provides mechanisms (sugar functions to model your data) which allow
-you to define self-validating classes. Each class your create is associated with
+you to define self-validating classes. Each class you create is associated with
 a *prototype* class which provides data validation functionality and keeps your
 class' namespace free from pollution, please see L<Validation::Class::Prototype>
 for more information on specific methods, and attributes.
@@ -1307,8 +1338,8 @@ for more information on specific methods, and attributes.
 All derived classes will have a prototype-class attached to it which does all
 the heavy lifting (regarding validation and error handling). The prototype
 injects a few proxy methods into your class which are basically aliases to your
-prototype class, however it is possible to access the prototype directly using
-the proto/prototype methods.
+prototype class methods, however it is possible to access the prototype directly 
+using the proto/prototype methods.
 
     package MyApp::User;
     
@@ -1326,8 +1357,162 @@ the proto/prototype methods.
 All derived classes will benefit from the light-weight, straight-forward and
 simple object system Validation::Class provides. The standard *new* method
 should be used to instantiate a new object and the *bld/build* keywords can be
-used to hook into the instantiation process. Validation::Class does NOT provide
-method modifiers but can be extended with L<Class::Method::Modifiers>.
+used to hook into the instantiation process. 
+
+As previously stated, Validation::Class injects a few proxy methods into your 
+class which are basically aliases to your prototype class methods. You can 
+find additional information on the prototype class and its method at 
+L<Validation::Class::Prototype>. The following is a list of *proxy* methods, 
+methods which are injected into your class as shorthand to methods defined in 
+the prototype class (these methods are overridable):
+
+=head2 class
+
+    $self->class;
+
+See L<Validation::Class::Prototype/class> for full documentation.
+
+=head2 clear_queue
+
+    $self->clear_queue;
+
+See L<Validation::Class::Prototype/clear_queue> for full documentation.
+
+=head2 error_count
+
+    $self->error_count;
+
+See L<Validation::Class::Prototype/error_count> for full documentation.
+
+=head2 error_fields
+
+    $self->error_fields;
+
+See L<Validation::Class::Prototype/error_fields> for full documentation.
+
+=head2 errors
+
+    $self->errors;
+
+See L<Validation::Class::Prototype/errors> for full documentation.
+
+head2 errors_to_string
+
+    $self->errors_to_string;
+
+See L<Validation::Class::Prototype/errors_to_string> for full 
+documentation.
+
+=head2 get_errors
+
+    $self->get_errors;
+
+See L<Validation::Class::Prototype/get_errors> for full documentation.
+
+=head2 fields
+
+    $self->fields;
+
+See L<Validation::Class::Prototype/fields> for full documentation.
+
+=head2 filtering
+
+    $self->filtering;
+
+See L<Validation::Class::Prototype/filtering> for full documentation.
+
+=head2 hash_inflator
+
+    $self->hash_inflator;
+
+See L<Validation::Class::Prototype/hash_inflator> for full 
+documentation.
+
+=head2 ignore_failure
+
+    $self->ignore_failure;
+
+See L<Validation::Class::Prototype/ignore_failure> for full 
+documentation.
+
+=head2 ignore_unknown
+
+    $self->ignore_unknown;
+
+See L<Validation::Class::Prototype/ignore_unknown> for full 
+documentation.
+
+=head2 param
+
+    $self->param;
+
+See L<Validation::Class::Prototype/param> for full documentation.
+
+=head2 params
+
+    $self->params;
+
+See L<Validation::Class::Prototype/params> for full documentation.
+
+=head2 queue
+
+    $self->queue;
+
+See L<Validation::Class::Prototype/queue> for full documentation.
+
+=head2 report_failure
+
+    $self->report_failure;
+
+See L<Validation::Class::Prototype/report_failure> for full 
+documentation.
+
+=head2 report_unknown
+
+    $self->report_unknown;
+
+See L<Validation::Class::Prototype/report_unknown> for full documentation.
+
+=head2 reset_errors
+
+    $self->reset_errors;
+
+See L<Validation::Class::Prototype/reset_errors> for full documentation.
+
+=head2 set_errors
+
+    $self->set_errors;
+
+See L<Validation::Class::Prototype/set_errors> for full documentation.
+
+=head2 set_method
+
+    $self->set_method;
+
+See L<Validation::Class::Prototype/set_method> for full documentation.
+
+=head2 stash
+
+    $self->stash;
+
+See L<Validation::Class::Prototype/stash> for full documentation.
+
+=head2 validate
+
+    $self->validate;
+
+See L<Validation::Class::Prototype/validate> for full documentation.
+
+=head2 validate_profile
+
+    $self->validate_profile;
+
+See L<Validation::Class::Prototype/validate_profile> for full documentation.
+
+=head1 EXTENDING VALIDATION::CLASS
+
+Validation::Class does NOT provide
+method modifiers but can be easily extended with L<Class::Method::Modifiers>.
 
 =head2 before
 

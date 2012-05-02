@@ -2,74 +2,75 @@
 
 package Validation::Class::Backwards;
 {
-  $Validation::Class::Backwards::VERSION = '7.11';
+    $Validation::Class::Backwards::VERSION = '7.12';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.11'; # VERSION
+our $VERSION = '7.12';    # VERSION
 
 use Carp 'confess';
 
-$ENV{'VALIDATION_CLASS_BC_WARNING'} = <<'WARNING'; # usage warning
+$ENV{'VALIDATION_CLASS_BC_WARNING'} = <<'WARNING';    # usage warning
 The method you're attempting to use is (or will be) DEPRECIATED.
 WARNING
 
 sub warning {
     warn $ENV{'VALIDATION_CLASS_BC_WARNING'}
-        if $ENV{'VALIDATION_CLASS_BC_WARNING'}
+      if $ENV{'VALIDATION_CLASS_BC_WARNING'};
 }
 
 
+sub error {
+    warning();
 
-sub error { warning();
-    
-    my ( $self, @args ) = @_;
+    my ($self, @args) = @_;
 
     # set an error message on a particular field
-    if ( @args == 2 ) {
-    
+    if (@args == 2) {
+
         # set error message
-        my ( $field, $error ) = @args;
-        
+        my ($field, $error) = @args;
+
         # field must be a reference (hashref) to a field object
-        if ( ref($field) && ( !ref($error) && $error ) ) {
-        
+        if (ref($field) && (!ref($error) && $error)) {
+
             # temporary, may break stuff
             $error = $field->{error} if defined $field->{error};
-            
+
             # add error to field-level errors
             $field->{errors}->add($error);
-            
+
             # add error to class-level errors
             $self->errors->add($error);
-            
+
         }
         else {
-            
+
             confess "Can't set error without proper field object, "
               . "field must be a hashref with name and value keys";
-            
-        }
-    
-    }
-    
-    # retrieve an error message on a particular field
-    if ( @args == 1 ) {
 
-        # add error to class-level errors    
-        $self->errors->add($args[0]);
-    
+        }
+
     }
-    
+
+    # retrieve an error message on a particular field
+    if (@args == 1) {
+
+        # add error to class-level errors
+        $self->errors->add($args[0]);
+
+    }
+
     # return all class-level error messages
     return $self->errors->all;
-    
+
 }
 
 1;
 __END__
+
 =pod
 
 =head1 NAME
@@ -78,7 +79,7 @@ Validation::Class::Backwards - Backwards-Compatibility Layer for Validation::Cla
 
 =head1 VERSION
 
-version 7.11
+version 7.12
 
 =head1 SYNOPSIS
 

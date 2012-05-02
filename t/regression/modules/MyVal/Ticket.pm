@@ -8,8 +8,8 @@ field description => {
 };
 
 field priority => {
-    mixin => 'TMP',
-    label => 'Ticket priority',
+    mixin   => 'TMP',
+    label   => 'Ticket priority',
     options => [qw/Low Normal High Other/]
 };
 

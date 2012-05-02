@@ -1,16 +1,16 @@
-# ABSTRACT: Data Validation Engine for Validation::Class Classes
+# ABSTRACT: Prototype and Data Validation Engine for Validation::Class
 
 package Validation::Class::Prototype;
 {
-  $Validation::Class::Prototype::VERSION = '7.11';
+    $Validation::Class::Prototype::VERSION = '7.12';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.11'; # VERSION
+our $VERSION = '7.12';    # VERSION
 
-use base 'Validation::Class::Backwards'; # I'm pro-life
+use base 'Validation::Class::Backwards';    # I'm pro-life
 
 use Carp 'confess';
 use Hash::Merge 'merge';
@@ -22,89 +22,50 @@ use Validation::Class::Errors;
 use Validation::Class::Fields;
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # is never changed so direct access is OK
-hold 'directives' => sub { shift->{config}->{DIRECTIVES} || {} }; 
+hold 'directives' => sub { shift->{config}->{DIRECTIVES} || {} };
 
 
-hold 'errors' => sub {[]};
+hold 'errors' => sub { [] };
 
 
-hold 'fields' => sub {{}};
+hold 'fields' => sub { {} };
 
 
 has 'filtering' => 'pre';
 
 
-hold 'filters' => sub {{}};
+hold 'filters' => sub { {} };
 
 
 has 'hash_inflator' => sub {
-    
-    my $options = @_ > 1 ? pop @_ : {
+
+    my $options = @_ > 1
+      ? pop @_
+      : {
         hash_delimiter  => '.',
         array_delimiter => ':',
         escape_sequence => '',
-    };
-    
+      };
+
     foreach my $option (keys %{$options}) {
-        
+
         if ($option =~ /\_/) {
-        
+
             my $cc_option = $option;
-            
+
             $cc_option =~ s/([a-zA-Z])\_([a-zA-Z])/$1\u$2/gi;
-            
+
             $options->{ucfirst $cc_option} = $options->{$option};
-            
+
             delete $options->{$option};
-        
+
         }
-        
+
     }
 
     return $options;
-    
+
 };
 
 
@@ -114,26 +75,26 @@ has 'ignore_failure' => '1';
 has 'ignore_unknown' => '0';
 
 
-hold 'methods' => sub {{}};
+hold 'methods' => sub { {} };
 
 
-hold 'mixins' => sub {{}};
+hold 'mixins' => sub { {} };
 
 
-hold 'params' => sub {{}};
+hold 'params' => sub { {} };
 
 
 has plugins => sub { shift->{config}->{PLUGINS} || {} };
 
 
-hold 'profiles' => sub {{}};
+hold 'profiles' => sub { {} };
 
 
-has 'queued' => sub {[]};
+has 'queued' => sub { [] };
 
 
 # class relatives (child-classes) store
-hold 'relatives' => sub {{}};
+hold 'relatives' => sub { {} };
 
 
 # switch: report method requirement failures
@@ -144,25 +105,25 @@ has 'report_failure' => 0;
 has 'report_unknown' => 0;
 
 # stash object storage
-has 'stashed' => sub {{}};
+has 'stashed' => sub { {} };
 
 # hash of directives by type
 hold 'types' => sub {
-    
+
     my $self  = shift;
-    my $types = { mixin => {}, field => {} };
+    my $types = {mixin => {}, field => {}};
     my $dirts = $self->directives;
-    
+
     # build types hash from directives by their usability
-    while (my($name, $directive) = each(%{$dirts})) {
-        
+    while (my ($name, $directive) = each(%{$dirts})) {
+
         $types->{mixin}->{$name} = $directive if $dirts->{$name}->{mixin};
         $types->{field}->{$name} = $directive if $dirts->{$name}->{field};
-        
+
     }
-    
+
     return $types;
-    
+
 };
 
 sub apply_filter {
@@ -170,71 +131,68 @@ sub apply_filter {
     my ($self, $filter, $field) = @_;
 
     if ($self->params->has($field)) {
-        
+
         if ($self->filters->{$filter} || "CODE" eq ref $filter) {
-        
+
             if ($self->params->{$field}) {
-                
-                my $code = "CODE" eq ref $filter ?
-                    $filter : $self->filters->{$filter};
-                
-                $self->set_value(
-                    $field => $code->($self->params->{$field})
-                );
-                
+
+                my $code =
+                  "CODE" eq ref $filter ? $filter : $self->filters->{$filter};
+
+                $self->set_value($field => $code->($self->params->{$field}));
+
             }
-        
+
         }
-        
+
     }
-    
+
     return $self;
 
 }
 
 
 sub apply_filters {
-    
+
     my ($self, $state) = @_;
-    
-    $state ||= 'pre'; # state defaults to (pre) filtering
-    
+
+    $state ||= 'pre';    # state defaults to (pre) filtering
+
     # check for and process input filters and default values
     my $process = sub {
-        
+
         my ($name, $config) = @_;
-        
+
         if ($config->filtering eq $state) {
-            
+
             # the filters directive should always be an arrayref
             $config->filters([$config->filters])
-                unless "ARRAY" eq ref $config->filters;
-            
+              unless "ARRAY" eq ref $config->filters;
+
             # apply filters
             $self->apply_filter($_, $name) for @{$config->filters};
-            
+
             # set default value - absolute last resort
             if ($self->params->has($name)) {
-                
+
                 if (!$self->params->{$name}) {
-                    
+
                     if (defined $config->{default}) {
-                        
-                        $self->params->{$name} =
-                            $self->get_value($name);
-                        
+
+                        $self->params->{$name} = $self->get_value($name);
+
                     }
-                    
+
                 }
-                
+
             }
-            
+
         }
-        
+
     };
-    
+
     $self->fields->each($process);
-    
+
     return $self;
 
 }
@@ -244,20 +202,19 @@ sub apply_mixin {
     my ($self, $field, $mixin) = @_;
 
     # mixin values should be in arrayref form
-    
+
     my $mixins = ref($mixin) eq "ARRAY" ? $mixin : [$mixin];
 
     foreach my $mixin (@{$mixins}) {
-        
+
         if (defined $self->{mixins}->{$mixin}) {
-            
-            $self->fields->{$field} = $self->merge_mixin(
-                $self->fields->{$field},
-                $self->{mixins}->{$mixin}
-            );
-            
+
+            $self->fields->{$field} =
+              $self->merge_mixin($self->fields->{$field},
+                $self->{mixins}->{$mixin});
+
         }
-        
+
     }
 
     return $self;
@@ -267,33 +224,31 @@ sub apply_mixin {
 sub apply_mixin_field {
 
     my ($self, $field, $target) = @_;
-    
-    $self->check_field( $field, $self->fields->{$field} );
+
+    $self->check_field($field, $self->fields->{$field});
 
     # some overwriting restricted
-    
+
     my $name = $self->fields->{$target}->{name}
       if defined $self->fields->{$target}->{name};
-    
+
     my $label = $self->fields->{$target}->{label}
       if defined $self->fields->{$target}->{label};
 
     # merge
-    
-    $self->fields->{$target} = $self->merge_field(
-        $self->fields->{$target},
-        $self->fields->{$field}
-    );
-    
+
+    $self->fields->{$target} =
+      $self->merge_field($self->fields->{$target}, $self->fields->{$field});
+
     # restore
 
     $self->fields->{$target}->{name}  = $name  if defined $name;
     $self->fields->{$target}->{label} = $label if defined $label;
 
-    foreach my $key ( keys %{$self->fields->{$field}}) {
-    
-        $self->apply_mixin( $target, $key ) if $key eq 'mixin';
-    
+    foreach my $key (keys %{$self->fields->{$field}}) {
+
+        $self->apply_mixin($target, $key) if $key eq 'mixin';
+
     }
 
     return $self;
@@ -302,60 +257,59 @@ sub apply_mixin_field {
 
 sub apply_validator {
 
-    my ( $self, $field_name, $field ) = @_;
+    my ($self, $field_name, $field) = @_;
 
     # does field have a label, if not use field name (e.g. for errors, etc)
-    
-    my $name  = $field->{label} ? $field->{label} : $field_name;
-    my $value = $field->{value} ;
+
+    my $name = $field->{label} ? $field->{label} : $field_name;
+    my $value = $field->{value};
 
     # check if required
-    
+
     my $req = $field->{required} ? 1 : 0;
-    
+
     if (defined $field->{':toggle'}) {
-    
+
         $req = 1 if $field->{':toggle'} eq '+';
         $req = 0 if $field->{':toggle'} eq '-';
-    
-    }
-    
-    if ( $req && ( !defined $value || $value eq '' ) ) {
-    
-        my $error = defined $field->{error} ?
-            $field->{error} : "$name is required";
-        
-        $field->{errors}->add($error);
-        
-        return $self; # if required and fails, stop processing immediately
-    
+
     }
 
-    if ( $req || $value ) {
+    if ($req && (!defined $value || $value eq '')) {
+
+        my $error =
+          defined $field->{error} ? $field->{error} : "$name is required";
+
+        $field->{errors}->add($error);
+
+        return $self;    # if required and fails, stop processing immediately
+
+    }
+
+    if ($req || $value) {
 
         # find and process all the validators
-    
+
         foreach my $key (keys %{$field}) {
-            
+
             my $directive = $self->directives->{$key};
-            
+
             if ($directive) {
-                
+
                 if ($directive->{validator}) {
-                    
+
                     if ("CODE" eq ref $directive->{validator}) {
-                        
+
                         # execute validator directives
-                        $directive->{validator}->(
-                            $field->{$key}, $value, $field, $self
-                        );
-                        
+                        $directive->{validator}
+                          ->($field->{$key}, $value, $field, $self);
+
                     }
-                    
+
                 }
-                
+
             }
-            
+
         }
 
     }
@@ -364,78 +318,26 @@ sub apply_validator {
 
 }
 
-
-sub class {
-    
-    my ( $self, $class, %args ) = @_;
-    
-    return 0 unless defined $self->relatives->{$class};
-    
-    my @attrs = qw(
-        hash_inflator
-        ignore_failure
-        ignore_unknown
-        report_failure
-        report_unknown
-    );  # to be copied (stash and params copied later)
-    
-    my $delimiter = $self->hash_inflator->{'HashDelimiter'};
-    
-    my %defaults = ( map { $_ => $self->$_ } @attrs );
-    
-    $defaults{'stash'}  = $self->stash; # copy stash
-    $defaults{'params'} = $self->get_params; # copy params
-    
-    my %settings = %{ merge(\%args, \%defaults) };
-    
-    my $child = $self->relatives->{$class}->new(%settings);
-    
-    my $proto = $child->proto;
-
-    if (defined $settings{'params'}) {
-        
-        $delimiter =~ s/([\.\+\-\:\,\\\/])/\\$1/g;
-        
-        foreach my $name ($proto->params->keys) {
-            
-            if ($name =~ /^$class$delimiter(.*)/) {
-                
-                if ($proto->fields->has($1)) {
-                    
-                    push @{$proto->fields->{$1}->{alias}}, $name;
-                    
-                }
-                
-            }
-            
-        }
-
-    }
-    
-    return $child;
-
-}
-
 sub check_field {
-    
-    my ( $self, $name, $spec ) = @_;
+
+    my ($self, $name, $spec) = @_;
 
     my $directives = $self->types->{field};
 
-    foreach ( keys %{$spec} ) {
-        
+    foreach (keys %{$spec}) {
+
         # check if the field's directives are registered
-        
-        if ( ! defined $directives->{$_} ) {
-            
+
+        if (!defined $directives->{$_}) {
+
             my $error = qq{
                 The $_ directive supplied by the $name field is not supported
             };
 
             $self->pitch_error($error);
-            
+
         }
-        
+
     }
 
     return 1;
@@ -443,33 +345,33 @@ sub check_field {
 }
 
 sub check_mixin {
-    
-    my ( $self, $mixin, $spec ) = @_;
+
+    my ($self, $mixin, $spec) = @_;
 
     my $directives = $self->types->{mixin};
 
-    foreach ( keys %{$spec} ) {
-        
-        if ( ! defined $directives->{$_} ) {
-            
+    foreach (keys %{$spec}) {
+
+        if (!defined $directives->{$_}) {
+
             my $error = qq{
                 The $_ directive supplied by the $mixin mixin is not supported
             };
-            
+
             $self->pitch_error($error);
-            
+
         }
-        
-        if ( ! $directives->{$_} ) {
-            
+
+        if (!$directives->{$_}) {
+
             my $error = qq{
                 The $_ directive supplied by the $mixin mixin is empty
             };
-            
+
             $self->pitch_error($error);
-            
+
         }
-        
+
     }
 
     return 1;
@@ -477,487 +379,542 @@ sub check_mixin {
 }
 
 
+sub class {
+
+    my ($self, $class, %args) = @_;
+
+    return 0 unless defined $self->relatives->{$class};
+
+    my @attrs = qw(
+      hash_inflator
+      ignore_failure
+      ignore_unknown
+      report_failure
+      report_unknown
+      );    # to be copied (stash and params copied later)
+
+    my $delimiter = $self->hash_inflator->{'HashDelimiter'};
+
+    my %defaults = (map { $_ => $self->$_ } @attrs);
+
+    $defaults{'stash'}  = $self->stash;         # copy stash
+    $defaults{'params'} = $self->get_params;    # copy params
+
+    my %settings = %{merge(\%args, \%defaults)};
+
+    my $child = $self->relatives->{$class}->new(%settings);
+
+    my $proto = $child->proto;
+
+    if (defined $settings{'params'}) {
+
+        $delimiter =~ s/([\.\+\-\:\,\\\/])/\\$1/g;
+
+        foreach my $name ($proto->params->keys) {
+
+            if ($name =~ /^$class$delimiter(.*)/) {
+
+                if ($proto->fields->has($1)) {
+
+                    push @{$proto->fields->{$1}->{alias}}, $name;
+
+                }
+
+            }
+
+        }
+
+    }
+
+    return $child;
+
+}
+
+
 sub clear_queue {
-    
+
     my $self = shift @_;
-    
+
     my @names = @{$self->queued};
-    
+
     $self->queued([]);
-    
+
     for (my $i = 0; $i < @names; $i++) {
-        
+
         $names[$i] =~ s/^[\-\+]{1}//;
         $_[$i] = $self->param($names[$i]);
-        
+
     }
-    
+
     return @_;
 
 }
 
 
 sub clone {
-    
+
     my ($self, $field_name, $new_field_name, $directives) = @_;
-    
+
     $directives ||= {};
-    
+
     $directives->{name} = $new_field_name unless $directives->{name};
-    
+
     # build a new field from an existing one during runtime
     $self->fields->{$new_field_name} =
-        Validation::Class::Field->new($directives);
-    
-    $self->apply_mixin_field( $field_name, $new_field_name );
-    
+      Validation::Class::Field->new($directives);
+
+    $self->apply_mixin_field($field_name, $new_field_name);
+
     return $self;
-    
+
 }
 
 sub configuration {
-    
+
     return {
-        
-        ATTRIBUTES  => {},
-        
-        BUILDERS    => [],
-        
-        DIRECTIVES  => {
-            
+
+        ATTRIBUTES => {},
+
+        BUILDERS => [],
+
+        DIRECTIVES => {
+
             ':toggle' => {
-                
+
                 mixin => 0,
                 field => 1,
                 multi => 0
-                
+
             },
-            
+
             alias => {
-                
+
                 mixin => 0,
                 field => 1,
                 multi => 1
-                
+
             },
-            
+
             between => {
-                
-                mixin     => 1,
-                field     => 1,
-                multi     => 0,
-                
+
+                mixin => 1,
+                field => 1,
+                multi => 0,
+
                 validator => \&configuration_validator_between
-                
+
             },
-            
+
             default => {
-                
+
                 mixin => 1,
                 field => 1,
                 multi => 1
-                
+
             },
-            
+
             depends_on => {
-            
-                mixin     => 1,
-                field     => 1,
-                multi     => 1,
-            
+
+                mixin => 1,
+                field => 1,
+                multi => 1,
+
                 validator => \&configuration_validator_depends_on
-            
+
             },
-            
+
             error => {
-            
+
                 mixin => 0,
                 field => 1,
                 multi => 0
-            
+
             },
-            
+
             errors => {
-            
+
                 mixin => 0,
                 field => 1,
                 multi => 0
-            
+
             },
-            
+
             filters => {
-            
+
                 mixin => 1,
                 field => 1,
                 multi => 1
-            
+
             },
-            
+
             filtering => {
-            
+
                 mixin => 1,
                 field => 1,
                 multi => 1
-            
+
             },
-            
+
             label => {
-            
+
                 mixin => 0,
                 field => 1,
                 multi => 0
-           
+
             },
-           
+
             length => {
-           
-                mixin     => 1,
-                field     => 1,
-                multi     => 0,
-           
+
+                mixin => 1,
+                field => 1,
+                multi => 0,
+
                 validator => \&configuration_validator_length
-           
+
             },
-           
+
             matches => {
-           
-                mixin     => 1,
-                field     => 1,
-                multi     => 0,
-           
+
+                mixin => 1,
+                field => 1,
+                multi => 0,
+
                 validator => \&configuration_validator_matches
-           
+
             },
-           
+
             max_alpha => {
-                
-                mixin     => 1,
-                field     => 1,
-                multi     => 0,
-                
+
+                mixin => 1,
+                field => 1,
+                multi => 0,
+
                 validator => \&configuration_validator_max_alpha
-            
+
             },
-            
+
             max_digits => {
-            
-                mixin     => 1,
-                field     => 1,
-                multi     => 0,
-            
+
+                mixin => 1,
+                field => 1,
+                multi => 0,
+
                 validator => \&configuration_validator_max_digits
-            
+
             },
-            
+
             max_length => {
-            
-                mixin     => 1,
-                field     => 1,
-                multi     => 0,
-            
+
+                mixin => 1,
+                field => 1,
+                multi => 0,
+
                 validator => \&configuration_validator_max_length
-            
+
             },
-            
+
             max_sum => {
-            
-                mixin     => 1,
-                field     => 1,
-                multi     => 0,
-            
+
+                mixin => 1,
+                field => 1,
+                multi => 0,
+
                 validator => \&configuration_validator_max_sum
-            
+
             },
-            
+
             max_symbols => {
-            
-                mixin     => 1,
-                field     => 1,
-                multi     => 0,
-            
+
+                mixin => 1,
+                field => 1,
+                multi => 0,
+
                 validator => \&configuration_validator_max_symbols
-            
+
             },
-            
+
             min_alpha => {
-            
-                mixin     => 1,
-                field     => 1,
-                multi     => 0,
-            
+
+                mixin => 1,
+                field => 1,
+                multi => 0,
+
                 validator => \&configuration_validator_min_alpha
-            
+
             },
-            
+
             min_digits => {
-            
-                mixin     => 1,
-                field     => 1,
-                multi     => 0,
-            
+
+                mixin => 1,
+                field => 1,
+                multi => 0,
+
                 validator => \&configuration_validator_min_digits
-            
+
             },
-            
+
             min_length => {
-            
-                mixin     => 1,
-                field     => 1,
-                multi     => 0,
-            
+
+                mixin => 1,
+                field => 1,
+                multi => 0,
+
                 validator => \&configuration_validator_min_length
-            
+
             },
-            
+
             min_sum => {
-            
-                mixin     => 1,
-                field     => 1,
-                multi     => 0,
-            
+
+                mixin => 1,
+                field => 1,
+                multi => 0,
+
                 validator => \&configuration_validator_min_sum
-            
+
             },
-            
+
             min_symbols => {
-            
-                mixin     => 1,
-                field     => 1,
-                multi     => 0,
-            
+
+                mixin => 1,
+                field => 1,
+                multi => 0,
+
                 validator => \&configuration_validator_min_symbols
-            
+
             },
-            
+
             mixin => {
-            
+
                 mixin => 0,
                 field => 1,
                 multi => 1
-            
+
             },
-            
+
             mixin_field => {
-            
+
                 mixin => 0,
                 field => 1,
                 multi => 0
-            
+
             },
-            
+
             name => {
-            
+
                 mixin => 0,
                 field => 1,
                 multi => 0
-            
+
             },
-            
+
             options => {
-            
-                mixin     => 1,
-                field     => 1,
-                multi     => 0,
-            
+
+                mixin => 1,
+                field => 1,
+                multi => 0,
+
                 validator => \&configuration_validator_options
-            
+
             },
-            
+
             pattern => {
-            
-                mixin     => 1,
-                field     => 1,
-                multi     => 0,
-            
+
+                mixin => 1,
+                field => 1,
+                multi => 0,
+
                 validator => \&configuration_validator_pattern
-            
+
             },
-            
+
             readonly => {
-                
+
                 mixin => 0,
                 field => 1,
                 multi => 0
-                
+
             },
-            
+
             required => {
-            
+
                 mixin => 1,
                 field => 1,
                 multi => 0
-            
+
             },
-            
+
             validation => {
-            
+
                 mixin => 0,
                 field => 1,
                 multi => 0
-            
+
             },
-            
+
             value => {
-            
+
                 mixin => 1,
                 field => 1,
                 multi => 1
-            
-            }
-        
+
+              }
+
         },
-        
-        FIELDS     => {},
-        
-        FILTERS    => {
-        
+
+        FIELDS => {},
+
+        FILTERS => {
+
             alpha => sub {
-        
+
                 $_[0] =~ s/[^A-Za-z]//g;
                 $_[0];
-        
+
             },
-        
+
             alphanumeric => sub {
-        
+
                 $_[0] =~ s/[^A-Za-z0-9]//g;
                 $_[0];
-        
+
             },
-        
+
             capitalize => sub {
-        
+
                 $_[0] = ucfirst $_[0];
                 $_[0] =~ s/\.\s+([a-z])/\. \U$1/g;
                 $_[0];
-        
+
             },
-        
+
             decimal => sub {
-        
+
                 $_[0] =~ s/[^0-9\.\,]//g;
                 $_[0];
-        
+
             },
-        
+
             lowercase => sub {
-        
+
                 lc $_[0];
-        
+
             },
-        
+
             numeric => sub {
-        
+
                 $_[0] =~ s/\D//g;
                 $_[0];
-        
+
             },
-        
+
             strip => sub {
-        
+
                 $_[0] =~ s/\s+/ /g;
                 $_[0] =~ s/^\s+//;
                 $_[0] =~ s/\s+$//;
                 $_[0];
-        
+
             },
-        
+
             titlecase => sub {
-        
-                join( " ", map ( ucfirst, split( /\s/, lc $_[0] ) ) );
-        
+
+                join(" ", map (ucfirst, split(/\s/, lc $_[0])));
+
             },
-        
+
             trim => sub {
-        
+
                 $_[0] =~ s/^\s+//g;
                 $_[0] =~ s/\s+$//g;
                 $_[0];
-        
+
             },
-        
+
             uppercase => sub {
-        
+
                 uc $_[0];
-        
-            }
-        
+
+              }
+
         },
-        
-        METHODS    => {},
-        
-        MIXINS     => {},
-        
-        PLUGINS    => {},
-        
-        PROFILES   => {},
-        
-        RELATIVES  => {},
-    
-    }
-    
+
+        METHODS => {},
+
+        MIXINS => {},
+
+        PLUGINS => {},
+
+        PROFILES => {},
+
+        RELATIVES => {},
+
+      }
+
 }
 
 sub configuration_validator_between {
-    
+
     my ($directive, $value, $field, $class) = @_;
-    
-    my ($min, $max) = "ARRAY" eq ref $directive ?
-        @{$directive} : split /(?:\s{1,})?[,\-]{1,}(?:\s{1,})?/, $directive;
-    
+
+    my ($min, $max) =
+      "ARRAY" eq ref $directive
+      ? @{$directive}
+      : split /(?:\s{1,})?[,\-]{1,}(?:\s{1,})?/, $directive;
+
     $min = scalar($min);
     $max = scalar($max);
-    
+
     $value = length($value);
-    
+
     if ($value) {
-    
+
         unless ($value >= $min && $value <= $max) {
-    
+
             my $handle = $field->{label} || $field->{name};
-            my $error  = "$handle must contain between $directive characters";
-            
+            my $error = "$handle must contain between $directive characters";
+
             $field->errors->add($field->{error} || $error);
-            
+
             return 0;
-    
+
         }
-    
+
     }
-    
+
     return 1;
-    
+
 }
 
 sub configuration_validator_depends_on {
 
     my ($directive, $value, $field, $class) = @_;
-    
+
     if ($value) {
-        
-        my $dependents = "ARRAY" eq ref $directive ?
-        $directive : [$directive];
-        
+
+        my $dependents = "ARRAY" eq ref $directive ? $directive : [$directive];
+
         if (@{$dependents}) {
-            
+
             my @blanks = ();
 
             foreach my $dep (@{$dependents}) {
 
-                push @blanks,
-                    $class->fields->{$dep}->{label} ||
-                    $class->fields->{$dep}->{name} 
-                    if ! $class->param($dep);
+                push @blanks, $class->fields->{$dep}->{label}
+                  || $class->fields->{$dep}->{name}
+                  if !$class->param($dep);
 
             }
-                
+
             if (@blanks) {
 
                 my $handle = $field->{label} || $field->{name};
-                
-                my $error = "$handle requires " . join(", ", @blanks) .
-                    " to have " . (@blanks > 1 ? "values" : "a value");
-                
+
+                my $error =
+                    "$handle requires "
+                  . join(", ", @blanks)
+                  . " to have "
+                  . (@blanks > 1 ? "values" : "a value");
+
                 $field->errors->add($field->{error} || $error);
 
                 return 0;
@@ -965,9 +922,9 @@ sub configuration_validator_depends_on {
             }
 
         }
-        
+
     }
-    
+
     return 1;
 
 }
@@ -975,20 +932,19 @@ sub configuration_validator_depends_on {
 sub configuration_validator_length {
 
     my ($directive, $value, $field, $class) = @_;
-    
+
     $value = length($value);
-    
+
     if ($value) {
 
         unless ($value == $directive) {
 
             my $handle = $field->{label} || $field->{name};
-            my $characters = $directive > 1 ?
-            "characters" : "character";
-            
-            my $error = "$handle must contain exactly " .
-                "$directive $characters";
-            
+            my $characters = $directive > 1 ? "characters" : "character";
+
+            my $error =
+              "$handle must contain exactly " . "$directive $characters";
+
             $field->errors->add($field->{error} || $error);
 
             return 0;
@@ -1003,26 +959,26 @@ sub configuration_validator_length {
 
 sub configuration_validator_matches {
 
-    my ( $directive, $value, $field, $class ) = @_;
+    my ($directive, $value, $field, $class) = @_;
 
     if ($value) {
-        
+
         # build the regex
         my $this = $value;
         my $that = $class->param($directive) || '';
-        
-        unless ( $this eq $that ) {
-            
-            my $handle  = $field->{label} || $field->{name};
+
+        unless ($this eq $that) {
+
+            my $handle = $field->{label} || $field->{name};
             my $handle2 = $class->fields->{$directive}->{label}
-                || $class->fields->{$directive}->{name};
-            
+              || $class->fields->{$directive}->{name};
+
             my $error = "$handle does not match $handle2";
-            
+
             $field->errors->add($field->{error} || $error);
-            
+
             return 0;
-            
+
         }
 
     }
@@ -1033,25 +989,24 @@ sub configuration_validator_matches {
 
 sub configuration_validator_max_alpha {
 
-    my ( $directive, $value, $field, $class ) = @_;
+    my ($directive, $value, $field, $class) = @_;
 
     if ($value) {
 
         my @i = ($value =~ /[a-zA-Z]/g);
-        
-        unless ( @i <= $directive ) {
-        
+
+        unless (@i <= $directive) {
+
             my $handle = $field->{label} || $field->{name};
-            my $characters = int( $directive ) > 1 ?
-                "characters" : "character";
-            
+            my $characters = int($directive) > 1 ? "characters" : "character";
+
             my $error = "$handle must contain at-least "
-                . "$directive alphabetic $characters";
-            
+              . "$directive alphabetic $characters";
+
             $field->errors->add($field->{error} || $error);
-            
+
             return 0;
-        
+
         }
 
     }
@@ -1062,23 +1017,22 @@ sub configuration_validator_max_alpha {
 
 sub configuration_validator_max_digits {
 
-    my ( $directive, $value, $field, $class ) = @_;
+    my ($directive, $value, $field, $class) = @_;
 
     if ($value) {
 
         my @i = ($value =~ /[0-9]/g);
 
-        unless ( @i <= $directive ) {
+        unless (@i <= $directive) {
 
             my $handle = $field->{label} || $field->{name};
-            my $characters = int( $directive ) > 1 ?
-                "digits" : "digit";
-            
-            my $error = "$handle must contain at-least "
-                ."$directive $characters";
-            
+            my $characters = int($directive) > 1 ? "digits" : "digit";
+
+            my $error =
+              "$handle must contain at-least " . "$directive $characters";
+
             $field->errors->add($field->{error} || $error);
-            
+
             return 0;
 
         }
@@ -1091,19 +1045,18 @@ sub configuration_validator_max_digits {
 
 sub configuration_validator_max_length {
 
-    my ( $directive, $value, $field, $class ) = @_;
+    my ($directive, $value, $field, $class) = @_;
 
     if ($value) {
 
-        unless ( length($value) <= $directive ) {
+        unless (length($value) <= $directive) {
 
             my $handle = $field->{label} || $field->{name};
-            my $characters = int( $directive ) > 1 ?
-                "characters" : "character";
-            
-            my $error = "$handle can't contain more than "
-                ."$directive $characters";
-            
+            my $characters = int($directive) > 1 ? "characters" : "character";
+
+            my $error =
+              "$handle can't contain more than " . "$directive $characters";
+
             $field->errors->add($field->{error} || $error);
 
             return 0;
@@ -1118,18 +1071,17 @@ sub configuration_validator_max_length {
 
 sub configuration_validator_max_sum {
 
-    my ( $directive, $value, $field, $class ) = @_;
+    my ($directive, $value, $field, $class) = @_;
 
     if ($value) {
 
-        unless ( $value <= $directive ) {
+        unless ($value <= $directive) {
 
             my $handle = $field->{label} || $field->{name};
-            my $error = "$handle can't be greater than "
-                ."$directive";
-            
+            my $error = "$handle can't be greater than " . "$directive";
+
             $field->errors->add($field->{error} || $error);
-            
+
             return 0;
 
         }
@@ -1142,21 +1094,20 @@ sub configuration_validator_max_sum {
 
 sub configuration_validator_max_symbols {
 
-    my ( $directive, $value, $field, $class ) = @_;
+    my ($directive, $value, $field, $class) = @_;
 
     if ($value) {
 
         my @i = ($value =~ /[^0-9a-zA-Z]/g);
 
-        unless ( @i <= $directive ) {
+        unless (@i <= $directive) {
 
             my $handle = $field->{label} || $field->{name};
-            my $characters = int( $directive ) > 1 ?
-                "symbols" : "symbol";
-            
-            my $error = "$handle can't contain more than "
-                ."$directive $characters";
-            
+            my $characters = int($directive) > 1 ? "symbols" : "symbol";
+
+            my $error =
+              "$handle can't contain more than " . "$directive $characters";
+
             $field->errors->add($field->{error} || $error);
 
             return 0;
@@ -1171,21 +1122,20 @@ sub configuration_validator_max_symbols {
 
 sub configuration_validator_min_alpha {
 
-    my ( $directive, $value, $field, $class ) = @_;
+    my ($directive, $value, $field, $class) = @_;
 
     if ($value) {
 
         my @i = ($value =~ /[a-zA-Z]/g);
 
-        unless ( @i >= $directive ) {
+        unless (@i >= $directive) {
 
             my $handle = $field->{label} || $field->{name};
-            my $characters = int( $directive ) > 1 ?
-                "characters" : "character";
-            
+            my $characters = int($directive) > 1 ? "characters" : "character";
+
             my $error = "$handle must contain at-least "
-                ."$directive alphabetic $characters";
-            
+              . "$directive alphabetic $characters";
+
             $field->errors->add($field->{error} || $error);
 
             return 0;
@@ -1200,21 +1150,20 @@ sub configuration_validator_min_alpha {
 
 sub configuration_validator_min_digits {
 
-    my ( $directive, $value, $field, $class ) = @_;
+    my ($directive, $value, $field, $class) = @_;
 
     if ($value) {
 
         my @i = ($value =~ /[0-9]/g);
 
-        unless ( @i >= $directive ) {
+        unless (@i >= $directive) {
 
             my $handle = $field->{label} || $field->{name};
-            my $characters = int( $directive ) > 1 ?
-                "digits" : "digit";
-            
-            my $error = "$handle must contain at-least "
-                ."$directive $characters";
-            
+            my $characters = int($directive) > 1 ? "digits" : "digit";
+
+            my $error =
+              "$handle must contain at-least " . "$directive $characters";
+
             $field->errors->add($field->{error} || $error);
 
             return 0;
@@ -1229,19 +1178,18 @@ sub configuration_validator_min_digits {
 
 sub configuration_validator_min_length {
 
-    my ( $directive, $value, $field, $class ) = @_;
+    my ($directive, $value, $field, $class) = @_;
 
     if ($value) {
 
-        unless ( length($value) >= $directive ) {
+        unless (length($value) >= $directive) {
 
             my $handle = $field->{label} || $field->{name};
-            my $characters = int( $directive ) > 1 ?
-                "characters" : "character";
-            
-            my $error = "$handle must contain at-least "
-                ."$directive $characters";
-            
+            my $characters = int($directive) > 1 ? "characters" : "character";
+
+            my $error =
+              "$handle must contain at-least " . "$directive $characters";
+
             $field->errors->add($field->{error} || $error);
 
             return 0;
@@ -1256,16 +1204,15 @@ sub configuration_validator_min_length {
 
 sub configuration_validator_min_sum {
 
-    my ( $directive, $value, $field, $class ) = @_;
+    my ($directive, $value, $field, $class) = @_;
 
     if ($value) {
 
-        unless ( $value >= $directive ) {
+        unless ($value >= $directive) {
 
             my $handle = $field->{label} || $field->{name};
-            my $error = "$handle can't be less than "
-            ."$directive";
-            
+            my $error = "$handle can't be less than " . "$directive";
+
             $field->errors->add($field->{error} || $error);
 
             return 0;
@@ -1280,21 +1227,20 @@ sub configuration_validator_min_sum {
 
 sub configuration_validator_min_symbols {
 
-    my ( $directive, $value, $field, $class ) = @_;
+    my ($directive, $value, $field, $class) = @_;
 
     if ($value) {
 
         my @i = ($value =~ /[^0-9a-zA-Z]/g);
 
-        unless ( @i >= $directive ) {
+        unless (@i >= $directive) {
 
             my $handle = $field->{label} || $field->{name};
-            my $characters = int( $directive ) > 1 ?
-                "symbols" : "symbol";
-            
-            my $error = "$handle must contain at-least "
-                ."$directive $characters";
-            
+            my $characters = int($directive) > 1 ? "symbols" : "symbol";
+
+            my $error =
+              "$handle must contain at-least " . "$directive $characters";
+
             $field->errors->add($field->{error} || $error);
 
             return 0;
@@ -1309,20 +1255,22 @@ sub configuration_validator_min_symbols {
 
 sub configuration_validator_options {
 
-    my ( $directive, $value, $field, $class ) = @_;
+    my ($directive, $value, $field, $class) = @_;
 
     if ($value) {
 
         # build the regex
-        my (@options) = "ARRAY" eq ref $directive ?
-            @{$directive} : split /(?:\s{1,})?[,\-]{1,}(?:\s{1,})?/, $directive;
+        my (@options) =
+          "ARRAY" eq ref $directive
+          ? @{$directive}
+          : split /(?:\s{1,})?[,\-]{1,}(?:\s{1,})?/, $directive;
 
-        unless ( grep { $value =~ /^$_$/ } @options ) {
+        unless (grep { $value =~ /^$_$/ } @options) {
 
-            my $handle  = $field->{label} || $field->{name};
-            
+            my $handle = $field->{label} || $field->{name};
+
             my $error = "$handle must be " . join " or ", @options;
-            
+
             $field->errors->add($field->{error} || $error);
 
             return 0;
@@ -1337,7 +1285,7 @@ sub configuration_validator_options {
 
 sub configuration_validator_pattern {
 
-    my ( $directive, $value, $field, $class ) = @_;
+    my ($directive, $value, $field, $class) = @_;
 
     if ($value) {
 
@@ -1353,13 +1301,12 @@ sub configuration_validator_pattern {
 
         }
 
-        unless ( $value =~ $regex ) {
+        unless ($value =~ $regex) {
 
             my $handle = $field->{label} || $field->{name};
-            
-            my $error = "$handle does not match the "
-                ."pattern $directive";
-            
+
+            my $error = "$handle does not match the " . "pattern $directive";
+
             $field->errors->add($field->{error} || $error);
 
             return 0;
@@ -1374,55 +1321,57 @@ sub configuration_validator_pattern {
 
 
 sub error_count {
-    
+
     my ($self) = @_;
-    
+
     my $count = scalar($self->get_errors) || 0;
-    
+
     return $count;
-    
+
 }
 
 
 sub error_fields {
-    
+
     my ($self, @fields) = @_;
-    
+
     my $failed = {};
-    
+
     @fields = $self->fields->keys unless @fields;
-    
+
     foreach my $name (@fields) {
-        
+
         my $field = $self->fields->{$name};
-        
+
         if ($field->{errors}->count) {
-            
+
             $failed->{$name} = $field->{errors}->list;
-        
+
         }
-        
+
     }
-    
+
     return $failed;
 
 }
 
 
 sub errors_to_string {
-    
+
     my ($self, $delimiter, $transformer) = @_;
-    
-    my $errors = Validation::Class::Errors->new([]); # handle combined errors
-    
+
+    my $errors = Validation::Class::Errors->new([]);   # handle combined errors
+
     $errors->add($self->{errors}->all);
-    
-    $self->fields->each(sub{
-        
-        $errors->add($_[1]->{errors}->all);
-        
-    });
-    
+
+    $self->fields->each(
+        sub {
+
+            $errors->add($_[1]->{errors}->all);
+
+        }
+    );
+
     return $errors->to_string($delimiter, $transformer);
 
 }
@@ -1431,64 +1380,69 @@ sub errors_to_string {
 sub flatten_params {
 
     my ($self, $params) = @_;
-    
+
     return undef unless "HASH" eq ref $params;
-    
-    my ($ad, $hd) = @{$self->hash_inflator}{
-        'ArrayDelimiter', 'HashDelimiter'
-    };
-    
+
+    my ($ad, $hd) = @{$self->hash_inflator}{'ArrayDelimiter', 'HashDelimiter'};
+
     my $serializer = Hash::Flatten->new($self->hash_inflator);
-    
-    return grep({ ref $_ } values %{$params}) ?
-        # do not flatten params if suspected to have already been flattened
-        $serializer->flatten($params) : $params;
-    
+
+    return grep({ref $_} values %{$params})
+      ?
+
+      # do not flatten params if suspected to have already been flattened
+      $serializer->flatten($params)
+      : $params;
+
 }
 
 
 sub get_errors {
 
     my ($self, @criteria) = @_;
-    
-    my $errors = Validation::Class::Errors->new([]); # handle combined errors
-    
+
+    my $errors = Validation::Class::Errors->new([]);   # handle combined errors
+
     if (!@criteria) {
-        
+
         $errors->add($self->{errors}->all);
-        
-        $self->fields->each(sub{
-            
-            $errors->add($_[1]->{errors}->all);
-            
-        });
-        
+
+        $self->fields->each(
+            sub {
+
+                $errors->add($_[1]->{errors}->all);
+
+            }
+        );
+
     }
-    
+
     elsif ("REGEXP" eq uc ref $criteria[0]) {
-        
+
         my $query = $criteria[0];
-        
+
         $errors->add($self->{errors}->find($query));
-        
-        $self->fields->each(sub{
-            
-            $errors->add($_[1]->{errors}->find($query));
-            
-        });
-        
+
+        $self->fields->each(
+            sub {
+
+                $errors->add($_[1]->{errors}->find($query));
+
+            }
+        );
+
     }
-    
+
     else {
-        
+
         for (@criteria) {
-        
+
             $errors->add($self->fields->{$_}->{errors}->all);
-        
+
         }
-        
+
     }
-    
+
     return ($errors->all);
 
 }
@@ -1497,21 +1451,21 @@ sub get_errors {
 sub get_fields {
 
     my ($self, @fields) = @_;
-    
+
     my $fields = {};
-    
-    $self->fields->each(sub{ $fields->{$_[0]} = $_[1] || {} });
-    
+
+    $self->fields->each(sub { $fields->{$_[0]} = $_[1] || {} });
+
     if (@fields) {
-    
+
         return @fields ? (map { $fields->{$_} || undef } @fields) : ();
-    
+
     }
-    
+
     else {
-        
+
         return $fields;
-        
+
     }
 
 }
@@ -1520,405 +1474,408 @@ sub get_fields {
 sub get_params {
 
     my ($self, @params) = @_;
-    
+
     my $params = $self->params->hash || {};
-    
+
     $params = $self->unflatten_params($params);
-    
+
     if (@params) {
-    
+
         return @params ? (map { $params->{$_} || undef } @params) : ();
-    
+
     }
-    
+
     else {
-        
+
         return $params;
-        
+
     }
-    
+
 }
 
 
 sub get_value {
-    
+
     my ($self, $name) = @_;
-    
+
     return undef unless $self->fields->has($name);
-    
-    my $field  = $self->fields->{$name};
-    
+
+    my $field = $self->fields->{$name};
+
     my $value = undef;
-    
+
     if (exists $self->params->{$name}) {
-        
+
         $value = $self->params->{$name};
-        
+
     }
-    
+
     else {
-    
-        my $params = $self->get_params; # unflattened params
-        
+
+        my $params = $self->get_params;    # unflattened params
+
         if (exists $params->{$name}) {
-            
+
             $value = $params->{$name};
-            
+
         }
-    
+
     }
-    
+
     unless (defined $value) {
-        
+
         if (exists $field->{default}) {
-            
-            $value = "CODE" eq ref $field->{default} ?
-                $field->{default}->($self) :
-                $field->{default};
-            
+
+            $value =
+              "CODE" eq ref $field->{default}
+              ? $field->{default}->($self)
+              : $field->{default};
+
         }
-        
+
     }
-    
+
     return $value;
-    
+
 }
 
 sub merge_field {
 
     my ($self, $field, $mixin_field) = @_;
-    
-    while (my($key,$value) = each(%{$mixin_field})) {
-        
+
+    while (my ($key, $value) = each(%{$mixin_field})) {
+
         # skip unless the directive is mixin compatible
-        
+
         next unless $self->types->{mixin}->{$key}->{mixin};
-        
+
         # do not override existing keys but multi values append
-        
+
         if (grep { $key eq $_ } keys %{$field}) {
-            
+
             next unless $self->types->{field}->{$key}->{multi};
-            
+
         }
-        
+
         if (defined $self->types->{field}->{$key}) {
-            
+
             # can the directive have multiple values, merge array
-        
+
             if ($self->types->{field}->{$key}->{multi}) {
-                
+
                 # if field has existing array value, merge unique
-                
+
                 if ("ARRAY" eq ref $field->{$key}) {
-                    
+
                     my @values = "ARRAY" eq ref $value ? @{$value} : ($value);
-                    
+
                     push @values, @{$field->{$key}};
-                    
+
                     @values = do {
-                        
+
                         my %uniq = ();
-                        
+
                         $uniq{$_} = $_ for @values;
-                        
+
                         values %uniq
-                        
-                        
+
+
                     };
-                    
+
                     $field->{$key} = [@values];
-                    
+
                 }
-                
+
                 # simple copy
-                
+
                 else {
-                    
+
                     $field->{$key} = "ARRAY" eq ref $value ? $value : [$value];
-                    
+
                 }
-                
+
             }
-            
+
             # simple copy
-            
+
             else {
-                
+
                 $field->{$key} = $value;
-                
+
             }
-            
+
         }
-        
+
     }
-    
-    return $field;    
+
+    return $field;
 
 }
 
 sub merge_mixin {
 
     my ($self, $field, $mixin) = @_;
-    
-    while (my($key,$value) = each(%{$mixin})) {
-        
+
+    while (my ($key, $value) = each(%{$mixin})) {
+
         # do not override existing keys but multi values append
-        
+
         if (grep { $key eq $_ } keys %{$field}) {
-        
+
             next unless $self->types->{field}->{$key}->{multi};
-        
+
         }
-        
+
         if (defined $self->types->{field}->{$key}) {
-            
+
             # can the directive have multiple values, merge array
-        
+
             if ($self->types->{field}->{$key}->{multi}) {
-                
+
                 # if field has existing array value, merge unique
-        
+
                 if ("ARRAY" eq ref $field->{$key}) {
-                    
+
                     my @values = "ARRAY" eq ref $value ? @{$value} : ($value);
-                    
+
                     push @values, @{$field->{$key}};
-                    
+
                     @values = do {
-                        
+
                         my %uniq = ();
-                        
+
                         $uniq{$_} = $_ for @values;
-                        
+
                         values %uniq
-                        
+
                     };
-                    
+
                     $field->{$key} = [@values];
-                    
+
                 }
-                
+
                 # merge copy
                 else {
-                    
+
                     my @values = "ARRAY" eq ref $value ? @{$value} : ($value);
-                    
+
                     push @values, $field->{$key} if $field->{$key};
-                    
+
                     @values = do {
-                        
+
                         my %uniq = ();
-                        
+
                         $uniq{$_} = $_ for @values;
-                        
+
                         values %uniq
-                        
+
                     };
-                    
+
                     $field->{$key} = [@values];
-                    
+
                 }
-        
+
             }
-            
+
             # simple copy
             else {
-        
+
                 $field->{$key} = $value;
-        
+
             }
-            
+
         }
-        
+
     }
-    
+
     return $field;
 
 }
 
 
 sub normalize {
-    
+
     my $self = shift;
-    
+
     # reset fields
     # NOTICE: (called twice in this routine, not sure why, must
     # investigate further although it doesn't currently break anything)
-    
+
     $self->reset_fields;
 
     # validate mixin directives
-    
-    while (my($name, $mixin) = each(%{ $self->mixins })) {
-        
+
+    while (my ($name, $mixin) = each(%{$self->mixins})) {
+
         $self->check_mixin($name, $mixin);
-        
+
     }
 
     # validate field directives and create default directives if needed
-    
+
     my $validate_field = sub {
-        
-        my($name, $field) = @_;
-        
+
+        my ($name, $field) = @_;
+
         $self->check_field($name, $field);
-        
+
         # by default fields should have a filters directive
-        
+
         if (!defined $field->{filters}) {
-            
+
             $field->{filters} = [];
-            
+
         }
-        
+
         # by default fields should have a filtering directive
-        
+
         if (!defined $field->{filtering}) {
-            
+
             $field->{filtering} = $self->filtering if $self->filtering;
-            
+
         }
-        
+
         # static labels and error messages may contain multiline
         # strings for the sake of aesthetics, flatten them here
-        
+
         foreach my $string ('error', 'label') {
-            
+
             if (defined $field->{$string}) {
-                
+
                 $field->{$string} =~ s/^[\n\s\t\r]+//g;
                 $field->{$string} =~ s/[\n\s\t\r]+$//g;
                 $field->{$string} =~ s/[\n\s\t\r]+/ /g;
-                
+
             }
-            
+
         }
-        
+
         # respect readonly fields
-        
+
         if (defined $field->{readonly}) {
-            
+
             delete $self->params->{$name} if exists $self->params->{$name};
-            
+
         }
-        
+
     };
-    
+
     $self->fields->each($validate_field);
 
     # check for and process a mixin directive
-    
+
     my $process_mixins = sub {
-        
-        my($name, $field)  = @_;
-        
+
+        my ($name, $field) = @_;
+
         $self->apply_mixin($name, $field->{mixin}) if $field->{mixin};
-        
+
     };
-    
+
     $self->fields->each($process_mixins);
 
     # check for and process a mixin_field directive
-    
+
     my $process_mixin_fields = sub {
-        
-        my($name, $field)  = @_;
-        
+
+        my ($name, $field) = @_;
+
         if ($field->{mixin_field}) {
-            
+
             $self->apply_mixin_field($field->{mixin_field}, $name)
-                if $self->fields->{$field->{mixin_field}};
-            
+              if $self->fields->{$field->{mixin_field}};
+
         }
-        
+
     };
-    
+
     $self->fields->each($process_mixin_fields);
-    
+
     # alias checking, ... for duplicate aliases, etc
-    
+
     my $fieldtree = {};
     my $aliastree = {};
-    
+
     my $find_duplicates = sub {
-        
-        my($name, $field)  = @_;
-        
-        $fieldtree->{$name} = $name; # just a counter
-        
+
+        my ($name, $field) = @_;
+
+        $fieldtree->{$name} = $name;    # just a counter
+
         if (defined $field->{alias}) {
-            
-            my $aliases = "ARRAY" eq ref $field->{alias}
-                ? $field->{alias} : [$field->{alias}];
-            
+
+            my $aliases =
+              "ARRAY" eq ref $field->{alias}
+              ? $field->{alias}
+              : [$field->{alias}];
+
             foreach my $alias (@{$aliases}) {
-                
+
                 if ($aliastree->{$alias}) {
-                    
+
                     my $error = qq(
                         The field $field contains the alias $alias which is
                         also defined in the field $aliastree->{$alias}
                     );
-                    
+
                     $self->throw_error($error);
-                    
+
                 }
                 elsif ($fieldtree->{$alias}) {
-                    
+
                     my $error = qq(
                         The field $field contains the alias $alias which is 
                         the name of an existing field
                     );
-                    
+
                     $self->throw_error($error);
-                    
+
                 }
                 else {
-                    
+
                     $aliastree->{$alias} = $field;
-                    
+
                 }
-                
+
             }
-            
+
         }
-        
+
     };
-    
+
     $self->fields->each($find_duplicates);
-    
+
     # restore order to the land
-    
+
     $self->reset_fields;
-    
+
     return $self;
 
 }
 
 
 sub param {
-    
-    my  ($self, $name, $value) = @_;
-    
+
+    my ($self, $name, $value) = @_;
+
     if ($name && !ref($name)) {
-    
+
         if (defined $value) {
-            
+
             $self->set_params($name => $value);
-            
+
             return $value;
-            
+
         }
-        
+
         if ($self->params->has($name)) {
-            
+
             return $self->params->{$name};
-            
+
         }
-        
+
     }
-    
+
     return undef;
 
 }
@@ -1926,78 +1883,77 @@ sub param {
 sub pitch_error {
 
     my ($self, $error_message) = @_;
-    
+
     $error_message =~ s/\n/ /g;
     $error_message =~ s/\s+/ /g;
-    
+
     if ($self->ignore_unknown) {
-        
+
         if ($self->report_unknown) {
-        
+
             $self->errors->add($error_message);
-        
+
         }
-        
+
     }
-    
+
     else {
-        
+
         $self->throw_error($error_message);
-        
+
     }
-    
+
 }
 
 sub proxy_methods {
-    
+
     return qw{
-        
-        class
-        clear_queue
-        copy_errors
-        error
-        error_count
-        error_fields
-        errors
-        errors_to_string
-        get_errors
-        fields
-        filtering
-        hash_inflator
-        ignore_failure
-        ignore_unknown
-        param
-        params
-        queue
-        report_failure
-        report_unknown
-        reset_errors
-        set_errors
-        stash
-        
-    }
-    
+
+      class
+      reset_errors
+      clear_queue
+      error
+      error_count
+      error_fields
+      errors
+      errors_to_string
+      get_errors
+      fields
+      filtering
+      hash_inflator
+      ignore_failure
+      ignore_unknown
+      param
+      params
+      queue
+      report_failure
+      report_unknown
+      set_errors
+      stash
+
+      }
+
 }
 
 sub proxy_methods_wrapped {
-    
+
     return qw{
-        
-        set_method
-        validate
-        validate_profile
-        
-    }
-    
+
+      set_method
+      validate
+      validate_profile
+
+      }
+
 }
 
 
 sub queue {
-    
+
     my $self = shift;
-    
+
     push @{$self->queued}, @_;
-    
+
     return $self;
 
 }
@@ -2005,12 +1961,12 @@ sub queue {
 
 sub reset {
 
-    my  $self = shift;
-    
-        $self->queued([]);
-        
-        $self->reset_fields;
-        
+    my $self = shift;
+
+    $self->queued([]);
+
+    $self->reset_fields;
+
     return $self;
 
 }
@@ -2019,15 +1975,15 @@ sub reset {
 sub reset_errors {
 
     my $self = shift;
-    
+
     $self->errors->clear;
-    
+
     foreach my $field ($self->fields->values) {
-        
+
         $field->{errors}->clear;
-        
+
     }
-    
+
     return $self;
 
 }
@@ -2036,19 +1992,19 @@ sub reset_errors {
 sub reset_fields {
 
     my $self = shift;
-    
-    foreach my $field ( $self->fields->keys ) {
-        
+
+    foreach my $field ($self->fields->keys) {
+
         # set default, special directives, etc
-        $self->fields->{$field}->{name}      = $field;
+        $self->fields->{$field}->{name} = $field;
         $self->fields->{$field}->{':toggle'} = undef;
-        
+
         delete $self->fields->{$field}->{value};
-        
+
     }
-    
+
     $self->reset_errors();
-    
+
     return $self;
 
 }
@@ -2057,13 +2013,13 @@ sub reset_fields {
 sub reset_params {
 
     my $self = shift;
-    
-    my $params = @_ % 2 ? $_[0] : { @_ };
-    
+
+    my $params = @_ % 2 ? $_[0] : {@_};
+
     $self->params->clear;
-    
+
     $self->params->add($params);
-    
+
     return $self;
 
 }
@@ -2072,9 +2028,9 @@ sub reset_params {
 sub set_errors {
 
     my ($self, @errors) = @_;
-    
+
     $self->errors->add(@errors) if @errors;
-    
+
     return $self->errors->count;
 
 }
@@ -2083,64 +2039,65 @@ sub set_errors {
 sub set_fields {
 
     my $self = shift;
-    
-    my $fields = @_ % 2 ? $_[0] : { @_ };
-    
+
+    my $fields = @_ % 2 ? $_[0] : {@_};
+
     $self->fields->add($fields);
-    
+
     return $self;
 
 }
 
 
 sub set_method {
-    
+
     my ($self, $context, $name, $code) = @_;
-    
-    confess
-        "Context object ($self->{package} class instance) required ".
-        "to perform validation" unless $self->{package} eq ref $context;
-    
+
+    confess "Context object ($self->{package} class instance) required "
+      . "to perform validation"
+      unless $self->{package} eq ref $context;
+
     my $class = ref $context;
-    
-    my $shortname  = $name;
-       $shortname  =~ s/::/\_/g;
-       $shortname  =~ s/[^a-zA-Z0-9\_]/\_/g;
-       $shortname  =~ s/([a-z])([A-Z])/$1\_$2/g;
-       $shortname  = lc $shortname;
-       
-    $self->throw_error("Error creating method $shortname, method already exists")
-        if $class->can($shortname);
-    
+
+    my $shortname = $name;
+    $shortname =~ s/::/\_/g;
+    $shortname =~ s/[^a-zA-Z0-9\_]/\_/g;
+    $shortname =~ s/([a-z])([A-Z])/$1\_$2/g;
+    $shortname = lc $shortname;
+
+    $self->throw_error(
+        "Error creating method $shortname, method already exists")
+      if $class->can($shortname);
+
     # place code on the calling class
-    
+
     no strict 'refs';
-    
+
     *{"${class}::$shortname"} = $code;
-    
+
 }
 
 
 sub set_params {
 
     my $self = shift;
-    
-    my $args = @_ % 2 ? $_[0] : { @_ };
-    
-    my $params = $self->get_params; # unflattened params
-    
-    while (my($k,$v) = each(%{$args})) {
-        
-        $params->{$k} = $v; # add new/overwrite existing
-        
+
+    my $args = @_ % 2 ? $_[0] : {@_};
+
+    my $params = $self->get_params;    # unflattened params
+
+    while (my ($k, $v) = each(%{$args})) {
+
+        $params->{$k} = $v;            # add new/overwrite existing
+
     }
-    
+
     $params = $self->flatten_params($params);
-    
+
     $self->params->clear;
-    
+
     $self->params->add($params);
-    
+
     return $self;
 
 }
@@ -2149,34 +2106,34 @@ sub set_params {
 sub set_value {
 
     my ($self, $name, $value) = @_;
-    
-    if (! $self->fields->has($name)) {
-        
+
+    if (!$self->fields->has($name)) {
+
         $self->pitch_error("Field $name does not exist");
-        
+
     }
-    
+
     else {
-        
+
         my $error = qq{
             "Field value for $name must be a scalar value or arrayref"
         };
-        
+
         $self->throw_error($error)
-            if ref($value) && "ARRAY" ne ref $value;
-        
+          if ref($value) && "ARRAY" ne ref $value;
+
         unless (defined $self->fields->{$name}->{readonly}) {
-            
+
             my $params = $self->unflatten_params($self->params->hash);
-            
+
             $params->{$name} = $value;
-            
+
             $self->set_params($name => $value);
-            
+
         }
-        
+
     }
-    
+
     return $self;
 
 }
@@ -2185,313 +2142,318 @@ sub set_value {
 sub stash {
 
     my ($self, @requests) = @_;
-    
+
     if (@requests) {
-        
+
         if (@requests == 1) {
-            
+
             my $request = $requests[0];
-            
+
             if ("HASH" eq ref $request) {
-                
+
                 @requests = %{$request};
-                
+
             }
             else {
-                
+
                 return $self->stashed->{$request};
-                
+
             }
-            
+
         }
-        
+
         if (@requests > 1) {
-            
+
             my %data = @requests;
-            
-            while (my($key, $value) = each %data) {
-                
+
+            while (my ($key, $value) = each %data) {
+
                 $self->stashed->{$key} = $value;
-                
+
             }
-            
+
         }
-        
+
     }
-    
+
     return $self->stashed;
 
 }
 
 sub throw_error {
-    
+
     my $error_message = pop;
-    
+
     $error_message =~ s/\n/ /g;
     $error_message =~ s/\s+/ /g;
-    
+
     confess $error_message ;
-    
+
 }
 
 
 sub unflatten_params {
-    
+
     my ($self, $params) = @_;
-    
+
     return undef unless "HASH" eq ref $params;
-    
+
     my $serializer = Hash::Flatten->new($self->hash_inflator);
-    
+
     return $serializer->unflatten($params) || {};
-    
+
 }
 
 
 sub validate {
 
-    my ( $self, $context, @fields ) = @_;
-    
-    confess
-        "Context object ($self->{package} class instance) required ".
-        "to perform validation" unless $self->{package} eq ref $context;
-    
+    my ($self, $context, @fields) = @_;
+
+    confess "Context object ($self->{package} class instance) required "
+      . "to perform validation"
+      unless $self->{package} eq ref $context;
+
     # first-things-first, normalize our environment
-    
+
     $self->normalize();
-    
+
     # include fields queued by the queue method
-    
+
     if (@{$self->queued}) {
-    
+
         push @fields, @{$self->queued};
-    
+
     }
-    
+
     # process field patterns
-    
+
     my @new_fields = ();
-    
+
     foreach my $field (@fields) {
-        
+
         if ("Regexp" eq ref $field) {
-    
+
             push @new_fields, grep { $_ =~ $field }
-                sort keys %{$self->fields};
-    
+              sort keys %{$self->fields};
+
         }
         else {
-    
+
             push @new_fields, $field;
-    
+
         }
-        
+
     }
-    
+
     @fields = @new_fields;
-    
+
     # process toggled fields
-    
+
     foreach my $field (@fields) {
-        
-        my ($switch) = $field =~ /^([\-\+]{1})./; 
-        
+
+        my ($switch) = $field =~ /^([\-\+]{1})./;
+
         if ($switch) {
-            
+
             # set fields toggle directive
             $field =~ s/^[\-\+]{1}//;
             $self->fields->{$field}->{':toggle'} = $switch;
         }
-        
+
     }
-    
+
     # create alias map manually if requested
     # extremely-depreciated but it remains for back-compat and nostalgia !!!
-    
-    my $alias_map ;
-    
-    if ( "HASH" eq ref $fields[0] ) {
-        
-        $alias_map = $fields[0]; @fields = (); # blank
-        
-        while (my($name, $alias) = each(%{$alias_map})) {
-            
+
+    my $alias_map;
+
+    if ("HASH" eq ref $fields[0]) {
+
+        $alias_map = $fields[0];
+        @fields    = ();           # blank
+
+        while (my ($name, $alias) = each(%{$alias_map})) {
+
             $self->set_params($alias => delete $self->params->{$name});
             push @fields, $alias;
-            
+
         }
-        
+
     }
-    
+
     # create a map from aliases if applicable
-    
+
     my $alias_mapping = sub {
-        
-        my($name, $field) = @_;
-        
+
+        my ($name, $field) = @_;
+
         if (defined $field->{alias}) {
-            
-            my $aliases = "ARRAY" eq ref $field->{alias} ?
-                $field->{alias} : [$field->{alias}];
-            
+
+            my $aliases =
+              "ARRAY" eq ref $field->{alias}
+              ? $field->{alias}
+              : [$field->{alias}];
+
             foreach my $alias (@{$aliases}) {
-                
+
                 if (defined $self->params->{$alias}) {
-                    
+
                     $self->set_params($name => delete $self->params->{$alias});
                     push @fields, $name;
-                    
+
                 }
-                
+
             }
-            
+
         }
-        
+
     };
-    
+
     $self->fields->each($alias_mapping);
-    
+
     my @clones = ();
-    
+
     # begin validation !!!
-    
+
     if ($self->params->count) {
-        
+
         # check if any parameters are arrayrefs
         # and handle them appropriately (clone, validate, then reap)
-        
+
         my ($ad, $hd) = @{$self->hash_inflator}{
+
             # ^^ pun here
             'ArrayDelimiter', 'HashDelimiter'
-        };
-        
+          };
+
         my %seen = ();
-        
+
         my $create_clones_routine = sub {
-            
-            my($key, $value) = @_;
-            
+
+            my ($key, $value) = @_;
+
             my $name = $1 if $key =~ /(.*)$ad\d+$/;
-            
+
             if (defined $name) {
-            
+
                 unless ($seen{$name}) {
-                
+
                     my $field = $self->fields->{$name};
-                    
+
                     if ($field) {
-                        
+
                         $seen{$name}++;
-                        
-                        my $varcount = scalar grep { /$name$ad\d+$/ }
-                            $self->params->keys;
-                        
+
+                        my $varcount =
+                          scalar grep {/$name$ad\d+$/} $self->params->keys;
+
                         for (my $i = 0; $i < $varcount; $i++) {
-                            
+
                             unless (defined $self->fields->{"$name:$i"}) {
-                            
-                                my $label = ($field->{label} || $field->{name});
-                                
-                                $self->clone($name, "$name:$i", {
-                                    label  => $label . " #" . ($i+1)
-                                }); 
-                                
-                                push @clones, "$name:$i"; # to be reaped later
-                                push @fields, "$name:$i"  # black hackery
-                                    if @fields && grep { $_ eq $name } @fields;
-                            
+
+                                my $label =
+                                  ($field->{label} || $field->{name});
+
+                                $self->clone($name, "$name:$i",
+                                    {label => $label . " #" . ($i + 1)});
+
+                                push @clones, "$name:$i";  # to be reaped later
+                                push @fields, "$name:$i"   # black hackery
+                                  if @fields && grep { $_ eq $name } @fields;
+
                             }
-                            
+
                         }
-                        
+
                         # like it never existed ...
-                        
-                        @fields = grep { $_ ne $name } @fields if @fields; # ...
-                    
+
+                        @fields = grep { $_ ne $name } @fields
+                          if @fields;                      # ...
+
                     }
-                
+
                 }
-            
+
             }
-            
+
         };
-        
+
         $self->params->each($create_clones_routine);
-        
+
         # run pre-filtering if filtering is enabled
-    
+
         $self->apply_filters('pre') if $self->filtering;
-        
+
         if (@fields) {
-            
+
             # validate all parameters against only the fields explicitly
             # requested to be validated
-            
+
             $self->validate_params_specified($context, @fields);
-            
+
         }
-        
+
         else {
-            
-            # validate all parameters against all defined fields because no fields
-            # were explicitly requested to be validated - i.e. not explicitly
-            # defining fields to be validated effectively allows the parameters
-            # submitted to dictate what gets validated (may not be ideal)
-            
+
+         # validate all parameters against all defined fields because no fields
+         # were explicitly requested to be validated - i.e. not explicitly
+         # defining fields to be validated effectively allows the parameters
+         # submitted to dictate what gets validated (may not be ideal)
+
             $self->validate_params_discovered($context);
-            
+
         }
-        
+
     }
-    
+
     else {
-        
+
         if (@fields) {
-            
+
             # validate fields specified although no parameters were submitted
             # will likely pass validation unless fields exist with
             # a *required* directive or other validation logic
             # expecting a value
-            
+
             $self->validate_fields_specified($context, @fields);
-            
+
         }
-        
+
         else {
-            
+
             # validate all defined fields although no parameters were submitted
             # will likely pass validation unless fields exist with
             # a *required* directive or other validation logic
             # expecting a value
-            
+
             $self->validate_fields_discovered($context);
-            
+
         }
-        
+
     }
-    
+
     my $valid = $self->error_count ? 0 : 1;
-    
+
     # restore parameters from depreciated alias map functionality
-    
-    if ( defined $alias_map ) {
-        
+
+    if (defined $alias_map) {
+
         # reversal
-        while (my($name, $alias) = each(%{$alias_map})) {
-            
+        while (my ($name, $alias) = each(%{$alias_map})) {
+
             $self->set_params($name => delete $self->params->{$alias});
-            
+
         }
-        
+
     }
-    
+
     # reap cloned fields
     # we are currently NOT reaping clones, because we need them to stick around
     # so we can reference any errors they may have generated ...
     # $self->fields->remove($_) for @clones;
-    
+
     # run post-validation filtering
-    
+
     $self->apply_filters('post') if $self->filtering && $valid;
 
     return $valid;    # returns true if no errors
@@ -2499,68 +2461,67 @@ sub validate {
 }
 
 sub validate_fields_discovered {
-    
+
     my ($self, $context) = @_;
-    
+
     my @fields = sort $self->fields->keys;
-    
+
     if (@fields) {
-        
+
         $self->validate_fields_specified($context, @fields);
-        
+
     }
-    
+
     else {
-        
+
         # if no parameters (or) fields are found ... you're screwed :)
         # instead of dying, warn and continue, depending on configuration
-        
+
         my $error = qq{
             No parameters were submitted and no fields are 
             registered. Fields and parameters are required 
             for validation
         };
-        
+
         if ($self->ignore_unknown) {
-            
+
             if ($self->report_unknown) {
-                
+
                 $self->errors->add($error);
-                
+
             }
-            
+
         }
-        
+
         else {
-        
+
             $self->throw_error($error);
-            
+
         }
-        
+
     }
 
 }
 
 sub validate_fields_specified {
-    
+
     my ($self, $context, @fields) = @_;
-    
+
     foreach my $field_name (@fields) {
-        
-        if ( !defined $self->fields->{$field_name} ) {
-            
+
+        if (!defined $self->fields->{$field_name}) {
+
             $self->pitch_error(
-                "Data validation field $field_name does not exist"
-            );
+                "Data validation field $field_name does not exist");
             next;
-            
+
         }
-        
+
         my $field = $self->fields->{$field_name};
-        
+
         $field->{name}  = $field_name;
         $field->{value} = $self->get_value($field_name);
-        
+
         my @args = ($context, $field, $self->params);
 
         # execute simple validation
@@ -2570,14 +2531,14 @@ sub validate_fields_specified {
         # custom validation
 
         if (defined $field->{validation} && $field->{value}) {
-            
+
             my $count = $self->error_count;
-            
+
             unless ($field->{validation}->(@args)) {
-                
+
                 # assuming the validation routine didnt issue an error
                 if ($count == $self->error_count) {
-                    
+
                     if (defined $field->{error}) {
 
                         $field->{errors}->add($field->{error});
@@ -2585,124 +2546,119 @@ sub validate_fields_specified {
                     }
 
                     else {
-                        
+
                         my $error_msg = join " ",
-                        
-                            ($field->{label} || $field->{name}),
-                            "could not be validated"
-                        ;
-                        
+
+                          ($field->{label} || $field->{name}),
+                          "could not be validated";
+
                         $field->{errors}->add($error_msg);
-                        
+
                     }
-                    
+
                 }
-                
+
             }
-            
+
         }
-        
+
     }
 
 }
 
 sub validate_params_discovered {
-    
+
     my ($self, $context) = @_;
-    
+
     # process all params
 
     my $validate_param = sub {
-        
-        my($name, $param) = @_;
-        
-        if ( ! $self->fields->has($name) ) {
-        
-            $self->pitch_error(
-                "Data validation field $name does not exist"
-            );
-        
+
+        my ($name, $param) = @_;
+
+        if (!$self->fields->has($name)) {
+
+            $self->pitch_error("Data validation field $name does not exist");
+
         }
-        
+
         else {
-            
+
             my $field = $self->fields->{$name};
-            
+
             $field->{name}  = $name;
             $field->{value} = $self->get_value($name);
-            
+
             # create arguments to be passed to the validation directive
-    
+
             my @args = ($context, $field, $self->params);
-    
+
             # execute validator directives
-    
+
             $self->apply_validator($name, $field);
-    
+
             # execute custom/validation directive
-    
+
             if (defined $field->{validation} && $field->{value}) {
-                
+
                 my $count = $self->error_count;
-                
+
                 unless ($field->{validation}->(@args)) {
-                    
+
                     # assuming the validation routine didnt issue an error
-    
+
                     if ($count == $self->error_count) {
-                        
+
                         if (defined $field->{error}) {
-    
+
                             $field->{errors}->add($field->{error});
-    
+
                         }
-    
+
                         else {
-                            
+
                             my $error_msg = join " ",
-                            
-                                ($field->{label} || $field->{name}),
-                                "could not be validated"
-                            ;
-                            
+
+                              ($field->{label} || $field->{name}),
+                              "could not be validated";
+
                             $field->{errors}->add($error_msg);
-                            
+
                         }
-                        
+
                     }
-                    
+
                 }
-                
+
             }
-        
+
         }
-        
+
     };
-    
+
     $self->params->each($validate_param);
-    
+
 }
 
 sub validate_params_specified {
-    
+
     my ($self, $context, @fields) = @_;
-    
+
     foreach my $field_name (@fields) {
-        
+
         if (!defined $self->fields->{$field_name}) {
-            
+
             $self->pitch_error(
-                "Data validation field $field_name does not exist"
-            );
+                "Data validation field $field_name does not exist");
             next;
-            
+
         }
-        
+
         my $field = $self->fields->{$field_name};
-        
+
         $field->{name}  = $field_name;
         $field->{value} = $self->get_value($field_name);
-        
+
         my @args = ($context, $field, $self->params);
 
         # execute simple validation
@@ -2712,78 +2668,79 @@ sub validate_params_specified {
         # custom validation
 
         if (defined $field->{validation} && $field->{value}) {
-            
+
             my $count = $self->error_count;
-            
+
             unless ($field->{validation}->(@args)) {
-                
+
                 # assuming the validation routine didnt issue an error
 
                 if ($count == $self->error_count) {
-                    
-                    if ( defined $field->{error} ) {
+
+                    if (defined $field->{error}) {
 
                         $field->{errors}->add($field->{error});
 
                     }
 
                     else {
-                        
+
                         my $error_msg = join " ",
-                        
-                            ($field->{label} || $field->{name}),
-                            "could not be validated"
-                        ;
-                        
+
+                          ($field->{label} || $field->{name}),
+                          "could not be validated";
+
                         $field->{errors}->add($error_msg);
-                        
+
                     }
-                    
+
                 }
-                
+
             }
-            
+
         }
-        
+
     }
-    
+
 }
 
 
 sub validate_profile {
 
-    my  ($self, $context, $name, @args) = @_;
-    
-    confess
-        "Context object ($self->{package} class instance) required ".
-        "to perform validation" unless $self->{package} eq ref $context;
-    
+    my ($self, $context, $name, @args) = @_;
+
+    confess "Context object ($self->{package} class instance) required "
+      . "to perform validation"
+      unless $self->{package} eq ref $context;
+
     return 0 unless $name;
-    
+
     $self->normalize();
     $self->apply_filters('pre') if $self->filtering;
-    
+
     if ("CODE" eq ref $self->profiles->{$name}) {
-        
+
         return $self->profiles->{$name}->($context, @args)
-        
+
     }
-    
+
     return 0;
 
 }
 
 1;
+
 __END__
+
 =pod
 
 =head1 NAME
 
-Validation::Class::Prototype - Data Validation Engine for Validation::Class Classes
+Validation::Class::Prototype - Prototype and Data Validation Engine for Validation::Class
 
 =head1 VERSION
 
-version 7.11
+version 7.12
 
 =head1 SYNOPSIS
 

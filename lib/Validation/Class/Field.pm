@@ -2,13 +2,13 @@
 
 package Validation::Class::Field;
 {
-  $Validation::Class::Field::VERSION = '7.11';
+    $Validation::Class::Field::VERSION = '7.12';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.11'; # VERSION
+our $VERSION = '7.12';    # VERSION
 
 use Carp 'confess';
 use Validation::Class::Base 'has';
@@ -16,43 +16,43 @@ use Validation::Class::Prototype;
 
 my $directives = Validation::Class::Prototype->configuration->{DIRECTIVES};
 
-while (my($dir, $cfg) = each %{$directives}) {
-    
-    if ($cfg->{field}) {
-        
-        next if $dir =~ s/[^a-zA-Z0-9\_]/\_/g;
-        
-        # create accessors from default configuration (once)
-        has $dir => undef unless grep { $dir eq $_ } qw(errors); 
-        
-    }
-    
-}
+while (my ($dir, $cfg) = each %{$directives}) {
 
+    if ($cfg->{field}) {
+
+        next if $dir =~ s/[^a-zA-Z0-9\_]/\_/g;
+
+        # create accessors from default configuration (once)
+        has $dir => undef unless grep { $dir eq $_ } qw(errors);
+
+    }
+
+}
 
 
 has 'errors' => sub { Validation::Class::Errors->new };
 
 
 sub new {
-    
+
     my ($class, $config) = @_;
-    
+
     confess "Can't create a new field object without a name attribute"
-        unless $config->{name};
-    
+      unless $config->{name};
+
     my $self = bless $config, $class;
-    
+
     delete $self->{errors} if exists $self->{errors};
-    
-    $self->errors; # initialize if not already
-    
+
+    $self->errors;    # initialize if not already
+
     return $self;
-    
+
 }
 
 1;
 __END__
+
 =pod
 
 =head1 NAME
@@ -61,7 +61,7 @@ Validation::Class::Field - Field Object for Validation::Class Classes
 
 =head1 VERSION
 
-version 7.11
+version 7.12
 
 =head1 SYNOPSIS
 
