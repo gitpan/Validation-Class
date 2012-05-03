@@ -2,13 +2,13 @@
 
 package Validation::Class::Prototype;
 {
-    $Validation::Class::Prototype::VERSION = '7.13';
+    $Validation::Class::Prototype::VERSION = '7.15';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.13';    # VERSION
+our $VERSION = '7.15';    # VERSION
 
 use base 'Validation::Class::Backwards';    # I'm pro-life
 
@@ -1910,7 +1910,6 @@ sub proxy_methods {
     return qw{
 
       class
-      reset_errors
       clear_queue
       error
       error_count
@@ -1918,6 +1917,8 @@ sub proxy_methods {
       errors
       errors_to_string
       get_errors
+      get_fields
+      get_params
       fields
       filtering
       hash_inflator
@@ -1928,7 +1929,12 @@ sub proxy_methods {
       queue
       report_failure
       report_unknown
+      reset_errors
+      reset_fields
+      reset_params
       set_errors
+      set_fields
+      set_params
       stash
 
       }
@@ -2740,7 +2746,7 @@ Validation::Class::Prototype - Prototype and Data Validation Engine for Validati
 
 =head1 VERSION
 
-version 7.13
+version 7.15
 
 =head1 SYNOPSIS
 
