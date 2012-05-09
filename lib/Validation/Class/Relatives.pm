@@ -2,13 +2,13 @@
 
 package Validation::Class::Relatives;
 {
-    $Validation::Class::Relatives::VERSION = '7.16';
+    $Validation::Class::Relatives::VERSION = '7.17';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.16';    # VERSION
+our $VERSION = '7.17';    # VERSION
 
 use Carp 'confess';
 
@@ -26,7 +26,7 @@ Validation::Class::Relatives - Container Class for Relatives
 
 =head1 VERSION
 
-version 7.16
+version 7.17
 
 =head1 SYNOPSIS
 
