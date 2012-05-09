@@ -2,24 +2,26 @@
 
 package Validation::Class;
 {
-    $Validation::Class::VERSION = '7.15';
+    $Validation::Class::VERSION = '7.16';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.15';    # VERSION
+our $VERSION = '7.16';    # VERSION
 
 use Module::Find;
 use Carp 'confess';
 use Hash::Merge 'merge';
 use Exporter ();
 
+use Validation::Class::Errors;
 use Validation::Class::Field;
 use Validation::Class::Fields;
 use Validation::Class::Params;
+use Validation::Class::Relatives;
+
 use Validation::Class::Prototype;
-use Validation::Class::Errors;
 
 {
 
@@ -395,7 +397,7 @@ sub load {
                 foreach my $child (useall $parent) {
 
                     my $nickname = $child;
-                    $nickname =~ s/^$name//;
+                    $nickname =~ s/^$parent//;
                     $nickname =~ s/^:://;
                     $nickname =~ s/([a-z])([A-Z])/$1\_$2/g;
                     $nickname =~ s/::/-/g;
@@ -683,8 +685,13 @@ sub new {
     # bless special collections
 
     $proto->{errors} = Validation::Class::Errors->new;
+
     $proto->{params} = Validation::Class::Params->new;
+
     $proto->{fields} = Validation::Class::Fields->new($proto->{fields});   #!!!
+
+    $proto->{relatives} =
+      Validation::Class::Relatives->new($proto->{relatives});
 
     # process overridable attributes
 
@@ -774,7 +781,7 @@ Validation::Class - Self-Validating Object System and Data Validation Framework
 
 =head1 VERSION
 
-version 7.15
+version 7.16
 
 =head1 SYNOPSIS
 

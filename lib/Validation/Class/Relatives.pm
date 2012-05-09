@@ -1,8 +1,8 @@
-# ABSTRACT: Container Class for Data Input Parameters
+# ABSTRACT: Container Class for Relatives
 
-package Validation::Class::Params;
+package Validation::Class::Relatives;
 {
-    $Validation::Class::Params::VERSION = '7.16';
+    $Validation::Class::Relatives::VERSION = '7.16';
 }
 
 use strict;
@@ -22,7 +22,7 @@ __END__
 
 =head1 NAME
 
-Validation::Class::Params - Container Class for Data Input Parameters
+Validation::Class::Relatives - Container Class for Relatives
 
 =head1 VERSION
 
@@ -34,8 +34,9 @@ version 7.16
 
 =head1 DESCRIPTION
 
-Validation::Class::Params is a container class for standard data input
-parameters and is derived from the L<Validation::Class::Collection> class.
+Validation::Class::Relatives is a container class for sub-classes registered via
+the set/load function, this class is derived from the
+L<Validation::Class::Collection> class.
 
 =head1 AUTHOR
 

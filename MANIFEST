@@ -5,6 +5,7 @@ META.yml
 Makefile.PL
 README
 README.mkdn
+eg/generate-jsapi
 lib/Validation/Class.pm
 lib/Validation/Class/Backwards.pm
 lib/Validation/Class/Base.pm
@@ -16,8 +17,11 @@ lib/Validation/Class/Fields.pm
 lib/Validation/Class/Intro.pod
 lib/Validation/Class/Params.pm
 lib/Validation/Class/Prototype.pm
+lib/Validation/Class/Relatives.pm
 t/00-load.t
 t/01-access.t
+t/09-modifiers.t
+t/myapp/lib/MyApp/Introspect.pm
 t/myapp/lib/MyApp/Test.pm
 t/regression/00-load.t
 t/regression/01-attributes.t
