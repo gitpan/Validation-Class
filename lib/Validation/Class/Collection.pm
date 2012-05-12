@@ -2,13 +2,13 @@
 
 package Validation::Class::Collection;
 {
-    $Validation::Class::Collection::VERSION = '7.17';
+    $Validation::Class::Collection::VERSION = '7.20';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.17';    # VERSION
+our $VERSION = '7.20';    # VERSION
 
 use Carp 'confess';
 
@@ -157,7 +157,7 @@ Validation::Class::Collection - Generic Container Class for Various Collections
 
 =head1 VERSION
 
-version 7.17
+version 7.20
 
 =head1 SYNOPSIS
 

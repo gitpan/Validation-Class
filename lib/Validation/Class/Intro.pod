@@ -1,7 +1,7 @@
 # PODNAME: Validation::Class::Intro
 # ABSTRACT: Getting Started with Validation::Class
 
-our $VERSION = '7.17'; # VERSION
+our $VERSION = '7.20'; # VERSION
 
 
 __END__
@@ -13,7 +13,7 @@ Validation::Class::Intro - Getting Started with Validation::Class
 
 =head1 VERSION
 
-version 7.17
+version 7.20
 
 =head1 OVERVIEW
 
@@ -730,31 +730,6 @@ introspect design template that will work in most cases:
 
 What follows is a miscellaneous list of tips and tricks that leverage
 Validation::Class to perform additional operations.
-
-=head2 Log All Validation Attempts
-
-    package MyApp::User;
-    
-    use Validation::Class;
-    use Class::Method::Modifiers;
-    
-    ...
-    
-    after validate => sub {
-        
-        my ($self, @args) = @_;
-        
-        # maybe using Log::Log4Perl to write log validation attempts
-        
-    };
-    
-    after validate_profile => sub {
-        
-        my ($self, @args) = @_;
-        
-        # maybe using Log::Log4Perl to write log validation attempts
-        
-    };
 
 =head2 Client-Side Validation Library
 

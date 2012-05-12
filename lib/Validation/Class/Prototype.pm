@@ -2,13 +2,13 @@
 
 package Validation::Class::Prototype;
 {
-    $Validation::Class::Prototype::VERSION = '7.17';
+    $Validation::Class::Prototype::VERSION = '7.20';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.17';    # VERSION
+our $VERSION = '7.20';    # VERSION
 
 use base 'Validation::Class::Backwards';    # I'm pro-life
 
@@ -2746,7 +2746,7 @@ Validation::Class::Prototype - Prototype and Data Validation Engine for Validati
 
 =head1 VERSION
 
-version 7.17
+version 7.20
 
 =head1 SYNOPSIS
 
@@ -3001,7 +3001,7 @@ filters defined in their matching fields.
 
     $self = $self->apply_filters;
     
-    # apply filters to fields labeled as "dont filter automatically" (post)
+    # apply filters to fields labeled as "don't filter automatically" (post)
     $self = $self->apply_filters('post'); 
 
 =head2 class
@@ -3190,7 +3190,7 @@ exploded/unflattened parameters.
         my ($name, $email, $login, $password) =
             $self->get_params(qw/name email login password/);
         
-        # you should note that if the params dont exist they will return undef
+        # you should note that if the params don't exist they will return undef
         # ... meaning you should check that it is defined before doing any
         # comparison checking -- as doing so would generate an error
         # e.g.

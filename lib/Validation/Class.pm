@@ -2,13 +2,13 @@
 
 package Validation::Class;
 {
-    $Validation::Class::VERSION = '7.17';
+    $Validation::Class::VERSION = '7.20';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.17';    # VERSION
+our $VERSION = '7.20';    # VERSION
 
 use Module::Find;
 use Carp 'confess';
@@ -152,6 +152,8 @@ our @EXPORT = qw(
   method
   mxn
   mixin
+  obj
+  object
   pro
   profile
   set
@@ -737,6 +739,68 @@ sub new {
 }
 
 
+sub obj { goto &object }
+
+sub object {
+
+    my ($name, $data) = @_;
+
+    return undef unless ($name && $data);
+
+    return configure_class_proto sub {
+
+        my ($proto) = @_;
+
+        $proto->{config}->{OBJECTS}    ||= {};
+        $proto->{config}->{ATTRIBUTES} ||= {};
+
+        confess "Error creating method $name on $proto->{package}, "
+          . "collides with attribute $name"
+          if exists $proto->{config}->{ATTRIBUTES}->{$name};
+
+        confess "Error creating method $name on $proto->{package}, "
+          . "collides with method $name"
+          if $proto->{package}->can($name);
+
+        # create method
+
+        confess "Error creating method $name, requires a 'type' option"
+          unless $data->{type};
+
+        $proto->{config}->{OBJECTS}->{$name} = $data;
+
+        no strict 'refs';
+
+        *{"$proto->{package}\::$name"} = sub {
+
+            my $self = shift;
+            my @args = @_;
+
+            my $validator;
+
+            my $type = $data->{'type'};
+            my $init = $data->{'init'} ||= 'new';
+            my $args = $data->{'args'};
+
+            my @params = ($args->($self)) if "CODE" eq ref $args;
+
+            # maybe merge @params with @args or vice versa ???
+
+            if (my $instance = $type->$init(@params)) {
+
+                return $instance;
+
+            }
+
+            return undef;
+
+        };
+
+    };
+
+}
+
+
 sub pro { goto &profile }
 
 sub profile {
@@ -781,7 +845,7 @@ Validation::Class - Self-Validating Object System and Data Validation Framework
 
 =head1 VERSION
 
-version 7.17
+version 7.20
 
 =head1 SYNOPSIS
 
@@ -1249,6 +1313,117 @@ first so existing field directives will override the mixed-in directives.
 
 The mixin keyword takes two arguments, the mixin name and a hashref of key/values
 pairs known as directives.
+
+=head2 object
+
+The object keyword (or obj) registers a class object builder which builds and
+returns a class object on-demand. The object keyword also creates a method on
+the calling class which invokes the builder. Unlike class attributes, this
+method does not cache or otherwise store the returned class object it
+constructs.
+
+    package MyApp::Database;
+    
+    use DBI;
+    use Validation::Class;
+    
+    fld name => {
+        required => 1,
+    };
+    
+    fld host => {
+        required => 1,
+    };
+    
+    fld port => {
+        required => 1,
+    };
+    
+    fld user => {
+        required => 1,
+    };
+    
+    fld pass => {
+        # ...
+    };
+    
+    has dbh => sub { shift->_build_dbh }; # cache the _build_dbh
+    obj _build_dbh => {
+        type => 'DBI',
+        init => 'connect', # defaults to new
+        args => sub {
+            
+            my ($self) = @_;
+            
+            my @conn_str_parts =
+                ('dbi', 'mysql', $self->name, $self->host, $self->port);
+            
+            return (
+                join(':', @conn_str_parts),
+                $self->user,
+                $self->pass
+            )
+            
+        }
+    };
+    
+    sub connect {
+    
+        my ($self) = @_;
+        
+        my @parameters = ('name', 'host', 'port', 'user');
+        
+        if ($self->validate(@parameters)) {
+        
+            if ($self->dbh) {
+                
+                my $db = $self->dbh;
+                
+                # ... do something else with DBI
+                
+                return 1;
+                
+            }
+            
+            $self->set_errors($DBI::errstr);
+        
+        }
+        
+        return 0;
+    
+    }
+    
+    package main;
+    
+    my $database = MyApp::Database->new(
+        name => 'test',
+        host => 'localhost',
+        port => '3306',
+        user => 'root'
+    );
+    
+    if ($database->connect) {
+    
+        # ...
+    
+    }
+
+The object keyword takes two arguments, an object builder name and a hashref
+of key/value pairs which are used to instruct the builder on how to construct
+the object. The supplied hashref should be configured as follows:
+
+    {
+    
+        # class to construct
+        type => 'ClassName',
+        
+        # optional: constructor name (defaults to new)
+        init => 'new',
+        
+        # optional: coderef which returns arguments for the constructor
+        args => sub {}
+        
+    }
 
 =head2 profile
 

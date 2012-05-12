@@ -19,7 +19,7 @@ requires:
   Module::Find: 0
   utf8: 0
 resources:
-  bugtracker: http://rt.cpan.org/NoAuth/Bugs.html?Dist=Validation-Class
-  homepage: http://ana.io/
+  bugtracker: https://github.com/alnewkirk/Validation-Class/issues
+  homepage: https://github.com/alnewkirk/Validation-Class
   repository: http://github.com/alnewkirk/Validation-Class.git
-version: 7.17
+version: 7.20
