@@ -2,13 +2,13 @@
 
 package Validation::Class;
 {
-    $Validation::Class::VERSION = '7.20';
+    $Validation::Class::VERSION = '7.21';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.20';    # VERSION
+our $VERSION = '7.21';    # VERSION
 
 use Module::Find;
 use Carp 'confess';
@@ -845,7 +845,7 @@ Validation::Class - Self-Validating Object System and Data Validation Framework
 
 =head1 VERSION
 
-version 7.20
+version 7.21
 
 =head1 SYNOPSIS
 
@@ -1347,7 +1347,6 @@ constructs.
         # ...
     };
     
-    has dbh => sub { shift->_build_dbh }; # cache the _build_dbh
     obj _build_dbh => {
         type => 'DBI',
         init => 'connect', # defaults to new
@@ -1366,6 +1365,8 @@ constructs.
             
         }
     };
+    
+    has dbh => sub { shift->_build_dbh }; # cache the _build_dbh object
     
     sub connect {
     

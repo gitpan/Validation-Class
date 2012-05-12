@@ -2,13 +2,13 @@
 
 package Validation::Class::Backwards;
 {
-    $Validation::Class::Backwards::VERSION = '7.20';
+    $Validation::Class::Backwards::VERSION = '7.21';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.20';    # VERSION
+our $VERSION = '7.21';    # VERSION
 
 use Carp 'confess';
 
@@ -79,7 +79,7 @@ Validation::Class::Backwards - Backwards-Compatibility Layer for Validation::Cla
 
 =head1 VERSION
 
-version 7.20
+version 7.21
 
 =head1 SYNOPSIS
 
