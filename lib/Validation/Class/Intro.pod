@@ -1,7 +1,7 @@
 # PODNAME: Validation::Class::Intro
 # ABSTRACT: Getting Started with Validation::Class
 
-our $VERSION = '7.21'; # VERSION
+our $VERSION = '7.25'; # VERSION
 
 
 __END__
@@ -13,7 +13,7 @@ Validation::Class::Intro - Getting Started with Validation::Class
 
 =head1 VERSION
 
-version 7.21
+version 7.25
 
 =head1 OVERVIEW
 
