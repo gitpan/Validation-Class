@@ -2,13 +2,13 @@
 
 package Validation::Class::Field;
 {
-    $Validation::Class::Field::VERSION = '7.36';
+    $Validation::Class::Field::VERSION = '7.37';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.36';    # VERSION
+our $VERSION = '7.37';    # VERSION
 
 use Carp 'confess';
 use Validation::Class::Base 'has';
@@ -61,7 +61,7 @@ Validation::Class::Field - Field Object for Validation::Class Classes
 
 =head1 VERSION
 
-version 7.36
+version 7.37
 
 =head1 SYNOPSIS
 
