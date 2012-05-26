@@ -1,7 +1,7 @@
 # PODNAME: Validation::Class::Intro
 # ABSTRACT: Getting Started with Validation::Class
 
-our $VERSION = '7.25'; # VERSION
+our $VERSION = '7.35'; # VERSION
 
 
 __END__
@@ -13,17 +13,12 @@ Validation::Class::Intro - Getting Started with Validation::Class
 
 =head1 VERSION
 
-version 7.25
+version 7.35
 
 =head1 OVERVIEW
 
 This documentation will serves as a brief overview of various usage scenarios
 for Validation::Class.
-
-=head1 SCREENCAST
-
-The following L<screencast|http://youtu.be/YCPViiB5jv0> explains what
-L<Validation::Class> is, why it was created, and what it has to offer.
 
 =head1 INTRODUCTION
 
@@ -103,6 +98,11 @@ L<Validation::Class> is, why it was created, and what it has to offer.
     };
     
     1;
+
+=head1 SCREENCAST
+
+The following L<screencast|http://youtu.be/YCPViiB5jv0> explains what
+L<Validation::Class> is, why it was created, and what it has to offer.
 
 =head2 Data Modeling Fun
 
@@ -278,8 +278,8 @@ usage scenarios:
         label      => 'user login',
         error      => 'login invalid',
         validation => sub {
-            my ($self, $this, $fields) = @_;
-            return $this->{value} eq 'admin' ? 1 : 0;
+            my ($self, $field, $params) = @_;
+            return $field->{value} eq 'admin' ? 1 : 0;
         }
     };
     
@@ -290,8 +290,8 @@ usage scenarios:
         label         => 'user login',
         error         => 'login invalid',
         validation    => sub {
-            my ($self, $this, $fields) = @_;
-            return $this->{value} eq 'pass' ? 1 : 0;
+            my ($self, $field, $params) = @_;
+            return $field->{value} eq 'pass' ? 1 : 0;
         }
     };
     
