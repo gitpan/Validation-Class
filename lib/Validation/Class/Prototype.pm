@@ -2,13 +2,13 @@
 
 package Validation::Class::Prototype;
 {
-    $Validation::Class::Prototype::VERSION = '7.38';
+    $Validation::Class::Prototype::VERSION = '7.39';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.38';    # VERSION
+our $VERSION = '7.39';    # VERSION
 
 use base 'Validation::Class::Backwards';    # I'm pro-life
 
@@ -2541,29 +2541,27 @@ sub validate_fields_specified {
 
         if (defined $field->{validation} && $field->{value}) {
 
-            my $count = $self->error_count;
+            my $count  = $self->error_count;
+            my $result = $field->{validation}->(@args);
 
-            unless ($field->{validation}->(@args)) {
+            if (!$result || $count < $self->error_count) {
 
-                # assuming the validation routine didnt issue an error
-                if ($count == $self->error_count) {
+                # assuming the validation routine failed or issued an error
 
-                    if (defined $field->{error}) {
+                if (defined $field->{error}) {
 
-                        $field->{errors}->add($field->{error});
+                    $field->{errors}->add($field->{error});
 
-                    }
+                }
 
-                    else {
+                else {
 
-                        my $error_msg = join " ",
+                    my $error_msg = join " ",
 
-                          ($field->{label} || $field->{name}),
-                          "could not be validated";
+                      ($field->{label} || $field->{name}),
+                      "could not be validated";
 
-                        $field->{errors}->add($error_msg);
-
-                    }
+                    $field->{errors}->add($error_msg);
 
                 }
 
@@ -2610,30 +2608,27 @@ sub validate_params_discovered {
 
             if (defined $field->{validation} && $field->{value}) {
 
-                my $count = $self->error_count;
+                my $count  = $self->error_count;
+                my $result = $field->{validation}->(@args);
 
-                unless ($field->{validation}->(@args)) {
+                if (!$result || $count < $self->error_count) {
 
-                    # assuming the validation routine didnt issue an error
+                    # assuming the validation routine failed or issued an error
 
-                    if ($count == $self->error_count) {
+                    if (defined $field->{error}) {
 
-                        if (defined $field->{error}) {
+                        $field->{errors}->add($field->{error});
 
-                            $field->{errors}->add($field->{error});
+                    }
 
-                        }
+                    else {
 
-                        else {
+                        my $error_msg = join " ",
 
-                            my $error_msg = join " ",
+                          ($field->{label} || $field->{name}),
+                          "could not be validated";
 
-                              ($field->{label} || $field->{name}),
-                              "could not be validated";
-
-                            $field->{errors}->add($error_msg);
-
-                        }
+                        $field->{errors}->add($error_msg);
 
                     }
 
@@ -2678,30 +2673,27 @@ sub validate_params_specified {
 
         if (defined $field->{validation} && $field->{value}) {
 
-            my $count = $self->error_count;
+            my $count  = $self->error_count;
+            my $result = $field->{validation}->(@args);
 
-            unless ($field->{validation}->(@args)) {
+            if (!$result || $count < $self->error_count) {
 
-                # assuming the validation routine didnt issue an error
+                # assuming the validation routine failed or issued an error
 
-                if ($count == $self->error_count) {
+                if (defined $field->{error}) {
 
-                    if (defined $field->{error}) {
+                    $field->{errors}->add($field->{error});
 
-                        $field->{errors}->add($field->{error});
+                }
 
-                    }
+                else {
 
-                    else {
+                    my $error_msg = join " ",
 
-                        my $error_msg = join " ",
+                      ($field->{label} || $field->{name}),
+                      "could not be validated";
 
-                          ($field->{label} || $field->{name}),
-                          "could not be validated";
-
-                        $field->{errors}->add($error_msg);
-
-                    }
+                    $field->{errors}->add($error_msg);
 
                 }
 
@@ -2749,7 +2741,7 @@ Validation::Class::Prototype - Prototype and Data Validation Engine for Validati
 
 =head1 VERSION
 
-version 7.38
+version 7.39
 
 =head1 SYNOPSIS
 
