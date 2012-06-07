@@ -2,13 +2,13 @@
 
 package Validation::Class::Prototype;
 {
-    $Validation::Class::Prototype::VERSION = '7.39';
+    $Validation::Class::Prototype::VERSION = '7.40';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.39';    # VERSION
+our $VERSION = '7.40';    # VERSION
 
 use base 'Validation::Class::Backwards';    # I'm pro-life
 
@@ -2264,9 +2264,13 @@ sub validate {
 
         if ($switch) {
 
-            # set fields toggle directive
+            # set field toggle directive
+
             $field =~ s/^[\-\+]{1}//;
-            $self->fields->{$field}->{':toggle'} = $switch;
+
+            $self->fields->{$field}->{':toggle'} = $switch
+              if $self->fields->has($field);
+
         }
 
     }
@@ -2741,7 +2745,7 @@ Validation::Class::Prototype - Prototype and Data Validation Engine for Validati
 
 =head1 VERSION
 
-version 7.39
+version 7.40
 
 =head1 SYNOPSIS
 

@@ -21,6 +21,7 @@ t/00-load.t
 t/01-access.t
 t/02-keyword-object.t
 t/09-modifiers.t
+t/90-rand-bugfixes.t
 t/myapp/lib/MyApp/Introspect.pm
 t/myapp/lib/MyApp/Test.pm
 t/regression/00-load.t
