@@ -21,6 +21,7 @@ t/00-load.t
 t/01-access.t
 t/02-keyword-object.t
 t/03-field-object.t
+t/03-keyword-load.t
 t/09-modifiers.t
 t/90-rand-bugfixes.t
 t/myapp/lib/MyApp/Introspect.pm
@@ -69,7 +70,6 @@ t/regression/modules/MyVal/Plugin/Glade.pm
 t/regression/modules/MyVal/Staff.pm
 t/regression/modules/MyVal/Temp.pm
 t/regression/modules/MyVal/Ticket.pm
-t/regression/tmp4sM6jR.html
 t/regression/validators/01-min_length.t
 t/regression/validators/02-max_length.t
 t/regression/validators/03-pattern.t

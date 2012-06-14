@@ -2,13 +2,13 @@
 
 package Validation::Class;
 {
-    $Validation::Class::VERSION = '7.51';
+    $Validation::Class::VERSION = '7.55';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.51';    # VERSION
+our $VERSION = '7.55';    # VERSION
 
 use Module::Find;
 use Carp 'confess';
@@ -363,14 +363,11 @@ sub set { goto &load }
 
 sub load {
 
-    # check for alternate usages
-
-    my $data = pop @_;
-    my $self = pop @_;
+    my $data = @_ % 2 ? $_[0] || {} : {@_};
 
     return configure_class_proto sub {
 
-        my $proto = $self ? $self->proto : $_[0];
+        my ($proto) = @_;
 
         my $name = $proto->{package};
 
@@ -843,7 +840,7 @@ Validation::Class - Self-Validating Object System and Data Validation Framework
 
 =head1 VERSION
 
-version 7.51
+version 7.55
 
 =head1 SYNOPSIS
 
