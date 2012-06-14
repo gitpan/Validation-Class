@@ -2,13 +2,13 @@
 
 package Validation::Class::Prototype;
 {
-    $Validation::Class::Prototype::VERSION = '7.40';
+    $Validation::Class::Prototype::VERSION = '7.50';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.40';    # VERSION
+our $VERSION = '7.50';    # VERSION
 
 use base 'Validation::Class::Backwards';    # I'm pro-life
 
@@ -381,28 +381,92 @@ sub check_mixin {
 
 sub class {
 
-    my ($self, $class, %args) = @_;
+    my $self = shift;
+
+    my ($class, %args);
+
+    if (@_ % 2) {
+
+        ($class, %args) = @_;
+
+    }
+
+    else {
+
+        %args  = @_;
+        $class = $args{name};
+        delete $args{name};
+
+    }
+
+    return 0 unless $class;
+
+    my $shortname;
+
+    # transform what looks like a shortname
+
+    if ($class !~ /::/) {
+
+        $shortname = $class;
+
+        my @parts = split /[^0-9A-Za-z_]/, $class;
+
+        foreach my $part (@parts) {
+
+            $part = ucfirst $part;
+            $part =~ s/([a-z])_([a-z])/$1\u$2/g;
+
+        }
+
+        $class = join "::", @parts;
+
+    }
+
+    else {
+
+        $shortname = $class;
+        $shortname =~ s/([a-z])([A-Z])/$1_$2/g;
+        $shortname =~ s/::/\./g;
+        $shortname = lc $shortname;
+
+    }
 
     return 0 unless defined $self->relatives->{$class};
 
     my @attrs = qw(
+
       hash_inflator
       ignore_failure
       ignore_unknown
       report_failure
       report_unknown
+
       );    # to be copied (stash and params copied later)
 
     my $delimiter = $self->hash_inflator->{'HashDelimiter'};
 
     my %defaults = (map { $_ => $self->$_ } @attrs);
 
-    $defaults{'stash'}  = $self->stash;         # copy stash
+    $defaults{'stash'} = $self->stash;    # copy stash
+
     $defaults{'params'} = $self->get_params;    # copy params
 
-    my %settings = %{merge(\%args, \%defaults)};
+    my %settings = %{merge \%args, \%defaults};
 
-    my $child = $self->relatives->{$class}->new(%settings);
+    my $class_name = $self->relatives->{$class};
+
+    {
+
+        # load class if not loaded
+        my $file = $class_name;
+        $file =~ s/::/\//g;
+        $file .= ".pm";
+
+        eval "require $class_name" unless $INC{$file};
+
+    }
+
+    my $child = $class_name->new(%settings);
 
     my $proto = $child->proto;
 
@@ -412,7 +476,7 @@ sub class {
 
         foreach my $name ($proto->params->keys) {
 
-            if ($name =~ /^$class$delimiter(.*)/) {
+            if ($name =~ /^$shortname$delimiter(.*)/) {
 
                 if ($proto->fields->has($1)) {
 
@@ -2745,7 +2809,7 @@ Validation::Class::Prototype - Prototype and Data Validation Engine for Validati
 
 =head1 VERSION
 
-version 7.40
+version 7.50
 
 =head1 SYNOPSIS
 
@@ -2776,7 +2840,7 @@ version 7.40
         
             my ($self, $this_field, $all_params) = @_;
         
-            return $this_field->{value} eq 'admin' ? 1 : 0;
+            return $this_field->value eq 'admin' ? 1 : 0;
         
         }
         
@@ -2793,7 +2857,7 @@ version 7.40
         
             my ($self, $this_field, $all_params) = @_;
         
-            return $this_field->{value} eq 'pass' ? 1 : 0;
+            return $this_field->value eq 'pass' ? 1 : 0;
         
         }
         
@@ -3013,8 +3077,8 @@ Existing parameters and configuration options are passed to the relative class'
 constructor (including the stash). All attributes can be easily overwritten using
 the attribute's accessors on the relative class.
 
-Also, you may prevent/override arguments from being copy to the new class object
-by supplying the them as arguments to this method.
+Also, you may prevent/override arguments from being copied to the new class
+object by supplying the them as arguments to this method.
 
 The class method is also quite handy in that it will detect parameters that are
 prefixed with the name of the class being fetched, and adjust the matching rule
@@ -3024,33 +3088,44 @@ prefixed with the name of the class being fetched, and adjust the matching rule
     
     use Validation::Class;
     
-    load {
-        classes => 1 # load child classes e.g. Class::*
-    };
+    load classes => 1; # load child classes e.g. Class::*
     
     package main;
     
     my $input = Class->new(params => $params);
     
-    my $kid1 = $input->class('Child');      # loads Class::Child;
-    my $kid2 = $input->class('StepChild');  # loads Class::StepChild;
+    my $child1  = $input->class('Child');      # loads Class::Child;
+    my $child2  = $input->class('StepChild');  # loads Class::StepChild;
     
-    my $kid3 = $input->class('child');      # loads Class::Child;
-    my $kid4 = $input->class('step_child'); # loads Class::StepChild;
-    my $kid5 = $input->class('step-child'); # loads Class::Step::Child;
+    my $child3  = $input->class('child');      # loads Class::Child;
+    my $child4  = $input->class('step_child'); # loads Class::StepChild;
+    
+    # use any non-alpha character except for underscore to split the namespace
+    
+    my $child5  = $input->class('step-child'); # loads Class::Step::Child;
+    my $child5a = $input->class('step:child'); # loads Class::Step::Child;
+    my $child5b = $input->class('step.child'); # loads Class::Step::Child;
+    
+    my $child6  = $input->class('CHILD');      # loads Class::CHILD;
     
     # intelligently detecting and map params to child class
     
     my $params = {
+    
         'my.name'    => 'Guy Friday',
         'child.name' => 'Guy Friday Jr.'
+    
     };
     
     $input->class('child'); # child field *name* mapped to param *child.name*
     
     # without copying params from class
     
-    my $kid5 = $input->class('child', params => {}); # .. etc
+    my $child = $input->class('child', params => {});
+    
+    # alternate syntax
+    
+    my $child = $input->class(name => 'child', params => {});
     
     1;
 
@@ -3968,8 +4043,8 @@ contingent on the success or failure of the routine.
         
             my ($self, $this_field, $all_params) = @_;
         
-            return 0 unless $this_field->{value};
-            return $this_field->{value} eq 'admin' ? 1 : 0;
+            return 0 unless $this_field->value;
+            return $this_field->value eq 'admin' ? 1 : 0;
         
         },
         

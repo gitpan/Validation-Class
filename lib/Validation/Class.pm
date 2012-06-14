@@ -2,13 +2,13 @@
 
 package Validation::Class;
 {
-    $Validation::Class::VERSION = '7.40';
+    $Validation::Class::VERSION = '7.50';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.40';    # VERSION
+our $VERSION = '7.50';    # VERSION
 
 use Module::Find;
 use Carp 'confess';
@@ -363,6 +363,8 @@ sub set { goto &load }
 
 sub load {
 
+    # check for alternate usages
+
     my $data = pop @_;
     my $self = pop @_;
 
@@ -396,17 +398,13 @@ sub load {
             foreach my $parent (@parents) {
 
                 # load class children and create relationship map (hash)
-                foreach my $child (useall $parent) {
+                foreach my $child (findallmod $parent) {
 
                     my $nickname = $child;
-                    $nickname =~ s/^$parent//;
-                    $nickname =~ s/^:://;
-                    $nickname =~ s/([a-z])([A-Z])/$1\_$2/g;
-                    $nickname =~ s/::/-/g;
+                    $nickname =~ s/^$parent\:://;
 
                     $proto->{config}->{RELATIVES} ||= {};
-                    $proto->{config}->{RELATIVES}->{lc $nickname} = $child;
-
+                    $proto->{config}->{RELATIVES}->{$nickname} = $child;
 
                 }
 
@@ -845,7 +843,7 @@ Validation::Class - Self-Validating Object System and Data Validation Framework
 
 =head1 VERSION
 
-version 7.40
+version 7.50
 
 =head1 SYNOPSIS
 
@@ -876,18 +874,21 @@ version 7.40
     
     unless ($user->validate('login', 'password')) {
     
-        print $user->errors_to_string, "\n";
+        # do something with the errors, e.g. print $user->errors_to_string
     
     }
     
     1;
 
 Validation::Class is a data validation framework and simple object system. It
-allows you to model data and construct objects with focus on structure and
-reusability. It expects user input errors (without dying), and validation only
-occurs when you ask for it. Validation::Class classes are designed to ensure
-consistency and promote reuse of data validation rules. L<Validation::Class::Intro>
-will help you better understand the framework's rationale and typical use-cases.
+allows you to model data and construct objects with focus on structure, 
+reusability and data validation. It expects user input errors (without dying),
+validation only occurs when you ask it to. Validation::Class classes are designed
+to ensure consistency and promote reuse of data validation rules.
+
+L<Validation::Class::Intro> will help you better understand the framework's
+rationale and typical use-cases while L<Validation::Class::Prototype> will help
+you discover all the bells-and-whistles included in the framework.
 
 =head1 DESCRIPTION
 
@@ -1173,6 +1174,8 @@ constant or an arrayref of constants.
 
     package MyVal;
     
+    use Validation::Class;
+    
     load {
         plugins => [
             'CPANPlugin', # Validation::Class::Plugin::CPANPlugin
@@ -1189,6 +1192,8 @@ an arrayref of constants.
 
     package MyVal::User;
     
+    use Validation::Class;
+    
     load {
         roles => [
             'MyVal::Person'
@@ -1196,6 +1201,21 @@ an arrayref of constants.
     };
     
     1;
+
+Purely for the sake of aesthetics we have designed an alternate syntax for
+executing load/set commands, the syntax is as follows:
+
+    package MyVal::User;
+    
+    use Validation::Class;
+    
+    load roles => ['MyVal::Person'];
+    load classes => [__PACKAGE__];
+    
+    load plugins => [
+        'CPANPlugin', # Validation::Class::Plugin::CPANPlugin
+        '+MyVal::Plugin'
+    ];
 
 =head2 method
 

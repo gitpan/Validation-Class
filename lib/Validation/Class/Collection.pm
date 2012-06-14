@@ -2,13 +2,13 @@
 
 package Validation::Class::Collection;
 {
-    $Validation::Class::Collection::VERSION = '7.40';
+    $Validation::Class::Collection::VERSION = '7.50';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.40';    # VERSION
+our $VERSION = '7.50';    # VERSION
 
 use Carp 'confess';
 
@@ -101,6 +101,15 @@ sub find {
 }
 
 
+sub get {
+
+    my ($self, $name) = @_;
+
+    return $self->{$name};
+
+}
+
+
 sub has {
 
     my ($self, $name) = @_;
@@ -157,7 +166,7 @@ Validation::Class::Collection - Generic Container Class for Various Collections
 
 =head1 VERSION
 
-version 7.40
+version 7.50
 
 =head1 SYNOPSIS
 
@@ -171,7 +180,7 @@ version 7.40
 
 =head1 DESCRIPTION
 
-Validation::Class::Collection provides an all-purpose container for objects.
+Validation::Class::Collection provides an all-purpose container for hash objects.
 This class is primarily used as a base class for collection management classes.
 
 =head1 METHODS
@@ -206,6 +215,10 @@ This class is primarily used as a base class for collection management classes.
 =head2 find
 
     my $matches = $self->find(qr/update_/); # hashref
+
+=head2 get
+
+    my $object = $self->get($name);
 
 =head2 has
 
