@@ -2,18 +2,18 @@
 
 package Validation::Class::Backwards;
 {
-    $Validation::Class::Backwards::VERSION = '7.50';
+    $Validation::Class::Backwards::VERSION = '7.51';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.50';    # VERSION
+our $VERSION = '7.51';    # VERSION
 
 use Carp 'confess';
 
 $ENV{'VALIDATION_CLASS_BC_WARNING'} = <<'WARNING';    # usage warning
-The method you're attempting to use is (or will be) DEPRECIATED.
+The method you're attempting to use is (or will be) DEPRECATED.
 WARNING
 
 sub warning {
@@ -69,6 +69,7 @@ sub error {
 }
 
 1;
+
 __END__
 
 =pod
@@ -79,7 +80,7 @@ Validation::Class::Backwards - Backwards-Compatibility Layer for Validation::Cla
 
 =head1 VERSION
 
-version 7.50
+version 7.51
 
 =head1 SYNOPSIS
 
@@ -97,7 +98,7 @@ version 7.50
 
 =head1 DESCRIPTION
 
-Validation::Class::Backwards is responsible for providing depreciated
+Validation::Class::Backwards is responsible for providing deprecated
 functionality to the L<Validation::Class::Prototype> layer whilst clearly
 remaining separate via namespacing.
 
@@ -110,7 +111,7 @@ unset the $ENV{'VALIDATION_CLASS_BC_WARNING'} environment variable.
 
 =head2 error
 
-DEPRECIATING:
+DEPRECATING:
 
 The error method is used to set and/or retrieve errors encountered during
 validation. The error method with no parameters returns the error message object

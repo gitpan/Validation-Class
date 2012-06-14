@@ -2,13 +2,13 @@
 
 package Validation::Class::Prototype;
 {
-    $Validation::Class::Prototype::VERSION = '7.50';
+    $Validation::Class::Prototype::VERSION = '7.51';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.50';    # VERSION
+our $VERSION = '7.51';    # VERSION
 
 use base 'Validation::Class::Backwards';    # I'm pro-life
 
@@ -2340,7 +2340,7 @@ sub validate {
     }
 
     # create alias map manually if requested
-    # extremely-depreciated but it remains for back-compat and nostalgia !!!
+    # extremely-deprecated but it remains for back-compat and nostalgia !!!
 
     my $alias_map;
 
@@ -2511,7 +2511,7 @@ sub validate {
 
     my $valid = $self->error_count ? 0 : 1;
 
-    # restore parameters from depreciated alias map functionality
+    # restore parameters from deprecated alias map functionality
 
     if (defined $alias_map) {
 
@@ -2809,7 +2809,7 @@ Validation::Class::Prototype - Prototype and Data Validation Engine for Validati
 
 =head1 VERSION
 
-version 7.50
+version 7.51
 
 =head1 SYNOPSIS
 
