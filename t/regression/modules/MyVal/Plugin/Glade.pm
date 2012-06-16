@@ -6,7 +6,10 @@ sub new {
 
     $caller->stash(smell  => \&smell);
     $caller->stash(squirt => \&squirt);
+
     $caller->set_method(squash => sub {'abc'});
+
+    return bless {}, $plugin;
 
 }
 
