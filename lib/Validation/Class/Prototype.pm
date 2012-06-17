@@ -2,18 +2,19 @@
 
 package Validation::Class::Prototype;
 {
-    $Validation::Class::Prototype::VERSION = '7.58';
+    $Validation::Class::Prototype::VERSION = '7.65';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.58';    # VERSION
+our $VERSION = '7.65';    # VERSION
 
 use base 'Validation::Class::Backwards';    # I'm pro-life
 
 use Carp 'confess';
 use Hash::Merge 'merge';
+use Module::Runtime 'use_module';
 use Hash::Flatten;
 
 use Validation::Class::Base 'has', 'hold';
@@ -455,16 +456,7 @@ sub class {
 
     my $class_name = $self->relatives->{$class};
 
-    {
-
-        # load class if not loaded
-        my $file = $class_name;
-        $file =~ s/::/\//g;
-        $file .= ".pm";
-
-        eval "require $class_name" unless $INC{$file};
-
-    }
+    use_module $class_name;
 
     my $child = $class_name->new(%settings);
 
@@ -2840,7 +2832,7 @@ Validation::Class::Prototype - Prototype and Data Validation Engine for Validati
 
 =head1 VERSION
 
-version 7.58
+version 7.65
 
 =head1 SYNOPSIS
 

@@ -2,7 +2,7 @@
 
 package Validation::Class::Exporter;
 {
-    $Validation::Class::Exporter::VERSION = '7.58';
+    $Validation::Class::Exporter::VERSION = '7.65';
 }
 
 use 5.008001;
@@ -10,7 +10,7 @@ use 5.008001;
 use strict;
 use warnings;
 
-our $VERSION = '7.58';    # VERSION
+our $VERSION = '7.65';    # VERSION
 
 
 sub apply_spec {
@@ -23,10 +23,8 @@ sub apply_spec {
 
     my $parent = caller(0);
 
-    my @keywords = @{$args{keywords}} if $args{keywords};
-
-    my @routines = @{$args{routines}} if $args{routines};
-
+    my @keywords = @{$args{keywords}}   if $args{keywords};
+    my @routines = @{$args{routines}}   if $args{routines};
     my $settings = {@{$args{settings}}} if $args{settings};
 
     *{"$parent\::import"} = sub {
@@ -69,7 +67,7 @@ Validation::Class::Exporter - Simple Exporter for Validation::Class Classes
 
 =head1 VERSION
 
-version 7.58
+version 7.65
 
 =head1 SYNOPSIS
 
