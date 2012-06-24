@@ -2,13 +2,13 @@
 
 package Validation::Class;
 {
-    $Validation::Class::VERSION = '7.67';
+    $Validation::Class::VERSION = '7.69';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.67';    # VERSION
+our $VERSION = '7.69';    # VERSION
 
 use Carp 'confess';
 use Exporter ();
@@ -582,7 +582,7 @@ sub load {
 
                 $plugin =~ s/^\+//;
 
-                use_module $plugin;
+                eval { use_module $plugin };
 
             }
 
@@ -612,7 +612,7 @@ sub load {
 
                 foreach my $role (@roles) {
 
-                    use_module $role;
+                    eval { use_module $role };
 
                     no strict 'refs';
 
@@ -931,7 +931,7 @@ Validation::Class - Self-Validating Object System and Data Validation Framework
 
 =head1 VERSION
 
-version 7.67
+version 7.69
 
 =head1 SYNOPSIS
 

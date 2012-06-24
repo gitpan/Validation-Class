@@ -2,13 +2,13 @@
 
 package Validation::Class::Prototype;
 {
-    $Validation::Class::Prototype::VERSION = '7.67';
+    $Validation::Class::Prototype::VERSION = '7.69';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.67';    # VERSION
+our $VERSION = '7.69';    # VERSION
 
 use base 'Validation::Class::Backwards';    # I'm pro-life
 
@@ -1984,9 +1984,36 @@ sub plugin {
 
         }
 
-        !$parts[0] ? shift @parts : push @parts, 'Validation::Class::Plugin';
+        if (!$parts[0]) {
 
-        $class = join "::", @parts;
+            shift @parts;
+
+            $class = join "::", @parts;
+
+        }
+
+        else {
+
+            my @rootspaces = (
+
+                $self->{package},
+                'Validation::Class::Plugin'
+
+            );
+
+            my $matched = 0;
+
+            foreach my $rootspace (@rootspaces) {
+
+                $class = join "::", $rootspace, @parts;
+
+                eval '$matched = $class->can("new") ? 1 : 0';
+
+                last if $matched;
+
+            }
+
+        }
 
     }
 
@@ -2832,7 +2859,7 @@ Validation::Class::Prototype - Prototype and Data Validation Engine for Validati
 
 =head1 VERSION
 
-version 7.67
+version 7.69
 
 =head1 SYNOPSIS
 
@@ -3367,7 +3394,14 @@ class.
     # get object for Class::Plugin::Form::Elements;
     # note the leading character/delimiter
     
-    my $plugin = $input->plugin(':class:plugin:form:elements'); 
+    # automatically resolves to the first matching namespace for $self
+    # or Validation::Class::Plugin 
+    
+    my $plugin = $input->plugin('plugin:form:elements');
+    
+    # prefix with a special character to denote a fully-qualified namespace
+    
+    my $plugin = $input->plugin('+class:plugin:form:elements'); 
     
     # same as $input->proto->plugins->{'Class::Plugin::Form::Elements'};
     
