@@ -2,13 +2,13 @@
 
 package Validation::Class;
 {
-    $Validation::Class::VERSION = '7.69';
+    $Validation::Class::VERSION = '7.70';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.69';    # VERSION
+our $VERSION = '7.70';    # VERSION
 
 use Carp 'confess';
 use Exporter ();
@@ -183,7 +183,10 @@ sub initialize {
 
     while (my ($attr, $value) = each(%ARGS)) {
 
-        $self->$attr($value);
+        $self->$attr($value)
+          if $config->{FIELDS}->{$attr}
+              || $config->{ATTRIBUTES}->{$attr}
+              || grep { $attr eq $_ } ($proto->proxy_attributes);
 
     }
 
@@ -931,7 +934,7 @@ Validation::Class - Self-Validating Object System and Data Validation Framework
 
 =head1 VERSION
 
-version 7.69
+version 7.70
 
 =head1 SYNOPSIS
 
