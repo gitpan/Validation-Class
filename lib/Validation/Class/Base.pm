@@ -1,12 +1,12 @@
 package Validation::Class::Base;
 {
-    $Validation::Class::Base::VERSION = '7.70';
+    $Validation::Class::Base::VERSION = '7.72';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.70';    # VERSION
+our $VERSION = '7.72';    # VERSION
 
 use Exporter ();
 use Carp 'confess';

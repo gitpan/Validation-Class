@@ -2,13 +2,13 @@
 
 package Validation::Class;
 {
-    $Validation::Class::VERSION = '7.70';
+    $Validation::Class::VERSION = '7.72';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.70';    # VERSION
+our $VERSION = '7.72';    # VERSION
 
 use Carp 'confess';
 use Exporter ();
@@ -43,9 +43,10 @@ use Validation::Class::Prototype;
                 config  => {}
             };
 
-            # respect a foreign new() constructor (which may be a bad idea)
+            # respect foreign constructors (as is $class->new) if found
 
-            my $new = $TARGET_CLASS->can("new") ? "initialize" : "new";
+            my $new =
+              $TARGET_CLASS->can("new") ? "initialize_validator" : "new";
 
             # injected into every derived class
 
@@ -143,7 +144,7 @@ sub import {
 
 }
 
-sub initialize {
+sub initialize_validator {
 
     my $self = shift;
 
@@ -818,7 +819,7 @@ sub new {
 
     my $self = bless {}, $class;
 
-    initialize $self, @_;
+    initialize_validator $self, @_;
 
     return $self;
 
@@ -934,7 +935,7 @@ Validation::Class - Self-Validating Object System and Data Validation Framework
 
 =head1 VERSION
 
-version 7.70
+version 7.72
 
 =head1 SYNOPSIS
 
@@ -1540,6 +1541,8 @@ data relevant to a specific action.
         
         my ($self, @args) = @_;
         
+        # ... do other stuff
+        
         return $self->validate(qw(
             +name
             +email
@@ -1581,7 +1584,7 @@ instantiation process.
     
     build sub {
         
-        my ($self) = @_; # is instantiated
+        my ($self, @args) = @_; # is instantiated
         
     };
     
@@ -1646,21 +1649,47 @@ L<Moose>, L<Mouse>, L<Moo>, etc. The following example explains how to setup a
 Validation::Class class in cooperation with Moose (while this example focuses
 on Moose, the approach is the same regardless of the existing system):
 
+    # MOOSE AS YOUR PRIMARY OO SYSTEM
+    
     package MyApp;
     
     use Moose;
-    use Validation::Class 'field'; # only export as needed
+    use Validation::Class '!has'; # in cooperative mode, dont export has()
+    
+    # you must run initialization routines yourself ...
+    # specifying it in a BUILD routine will run it automatically
     
     sub BUILD {
         
         my ($self, $args) = @_;
         
-        # you must run initialization routines yourself ...
-        # automatically run initialization routines
-        
-        $self->initialize(params => $args->{params});
+        $self->initialize_validator(
+            params => $args->{params}
+        );
         
     }
+    
+    field login     => {
+        min_length  => 5
+        max_length  => 50
+    };
+    
+    field password  => {
+        min_length  => 8,
+        min_symbols => 1
+        max_length  => 50
+    };
+    
+    # MOOSE AS YOUR SECONDARY/BACKUP OO SYSTEM
+    
+    package MyApp;
+    
+    use Validation::Class '!has'; # avoids has() keyword clash
+    use Moose;
+    
+    has foo => (
+        is => 
+    );
     
     field login     => {
         min_length  => 5

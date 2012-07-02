@@ -2,13 +2,13 @@
 
 package Validation::Class::Prototype;
 {
-    $Validation::Class::Prototype::VERSION = '7.70';
+    $Validation::Class::Prototype::VERSION = '7.72';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.70';    # VERSION
+our $VERSION = '7.72';    # VERSION
 
 use base 'Validation::Class::Backwards';    # I'm pro-life
 
@@ -395,8 +395,8 @@ sub class {
     else {
 
         %args  = @_;
-        $class = $args{name};
-        delete $args{name};
+        $class = $args{'-name'};    # i hate this convention, not ideal but...
+        delete $args{'-name'};
 
     }
 
@@ -457,6 +457,12 @@ sub class {
     my $class_name = $self->relatives->{$class};
 
     use_module $class_name;
+
+    for (keys %settings) {
+
+        delete $settings{$_} unless $class_name->can($_);
+
+    }
 
     my $child = $class_name->new(%settings);
 
@@ -2895,7 +2901,7 @@ Validation::Class::Prototype - Prototype and Data Validation Engine for Validati
 
 =head1 VERSION
 
-version 7.70
+version 7.72
 
 =head1 SYNOPSIS
 
@@ -3212,7 +3218,7 @@ prefixed with the name of the class being fetched, and adjust the matching rule
     
     # alternate syntax
     
-    my $child = $input->class(name => 'child', params => {});
+    my $child = $input->class(-name => 'child', params => {});
     
     1;
 
