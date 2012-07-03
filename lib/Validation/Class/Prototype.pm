@@ -2,13 +2,13 @@
 
 package Validation::Class::Prototype;
 {
-    $Validation::Class::Prototype::VERSION = '7.73';
+    $Validation::Class::Prototype::VERSION = '7.74';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.73';    # VERSION
+our $VERSION = '7.74';    # VERSION
 
 use base 'Validation::Class::Backwards';    # I'm pro-life
 
@@ -466,19 +466,32 @@ sub class {
 
     my $child = $class_name->new(%settings);
 
-    my $proto = $child->proto;
+    {
 
-    if (defined $settings{'params'}) {
+        my $proto_method =
+            $child->can('proto')     ? 'proto'
+          : $child->can('prototype') ? 'prototype'
+          :                            undef;
 
-        $delimiter =~ s/([\.\+\-\:\,\\\/])/\\$1/g;
+        if ($proto_method) {
 
-        foreach my $name ($proto->params->keys) {
+            my $proto = $child->$proto_method;
 
-            if ($name =~ /^$shortname$delimiter(.*)/) {
+            if (defined $settings{'params'}) {
 
-                if ($proto->fields->has($1)) {
+                $delimiter =~ s/([\.\+\-\:\,\\\/])/\\$1/g;
 
-                    push @{$proto->fields->{$1}->{alias}}, $name;
+                foreach my $name ($proto->params->keys) {
+
+                    if ($name =~ /^$shortname$delimiter(.*)/) {
+
+                        if ($proto->fields->has($1)) {
+
+                            push @{$proto->fields->{$1}->{alias}}, $name;
+
+                        }
+
+                    }
 
                 }
 
@@ -2901,7 +2914,7 @@ Validation::Class::Prototype - Prototype and Data Validation Engine for Validati
 
 =head1 VERSION
 
-version 7.73
+version 7.74
 
 =head1 SYNOPSIS
 
