@@ -2,13 +2,13 @@
 
 package Validation::Class::Prototype;
 {
-    $Validation::Class::Prototype::VERSION = '7.75';
+    $Validation::Class::Prototype::VERSION = '7.76';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.75';    # VERSION
+our $VERSION = '7.76';    # VERSION
 
 use base 'Validation::Class::Backwards';    # I'm pro-life
 
@@ -2885,7 +2885,7 @@ sub validate_method {
     my ($self, $context, $name, @args) = @_;
 
     confess "Context object ($self->{package} class instance) required "
-      . "to perform validation"
+      . "to perform method validation"
       unless $self->{package} eq ref $context;
 
     return 0 unless $name;
@@ -2901,7 +2901,7 @@ sub validate_method {
 
         if ("ARRAY" eq ref $input) {
 
-            return $self->validate(@{$input});
+            return $self->validate($context, @{$input});
 
         }
 
@@ -2923,7 +2923,7 @@ sub validate_profile {
     my ($self, $context, $name, @args) = @_;
 
     confess "Context object ($self->{package} class instance) required "
-      . "to perform validation"
+      . "to perform profile validation"
       unless $self->{package} eq ref $context;
 
     return 0 unless $name;
@@ -2953,7 +2953,7 @@ Validation::Class::Prototype - Prototype and Data Validation Engine for Validati
 
 =head1 VERSION
 
-version 7.75
+version 7.76
 
 =head1 SYNOPSIS
 
