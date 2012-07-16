@@ -2,13 +2,13 @@
 
 package Validation::Class::Prototype;
 {
-    $Validation::Class::Prototype::VERSION = '7.74';
+    $Validation::Class::Prototype::VERSION = '7.75';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.74';    # VERSION
+our $VERSION = '7.75';    # VERSION
 
 use base 'Validation::Class::Backwards';    # I'm pro-life
 
@@ -2101,6 +2101,7 @@ sub proxy_methods_wrapped {
 
       set_method
       validate
+      validate_method
       validate_profile
 
       }
@@ -2879,6 +2880,44 @@ sub validate_params_specified {
 }
 
 
+sub validate_method {
+
+    my ($self, $context, $name, @args) = @_;
+
+    confess "Context object ($self->{package} class instance) required "
+      . "to perform validation"
+      unless $self->{package} eq ref $context;
+
+    return 0 unless $name;
+
+    $self->normalize();
+    $self->apply_filters('pre') if $self->filtering;
+
+    my $methspec = $self->methods->{$name};
+
+    my $input = $methspec->{input};
+
+    if ($input) {
+
+        if ("ARRAY" eq ref $input) {
+
+            return $self->validate(@{$input});
+
+        }
+
+        else {
+
+            return $self->validate_profile($context, $input, @args);
+
+        }
+
+    }
+
+    return 0;
+
+}
+
+
 sub validate_profile {
 
     my ($self, $context, $name, @args) = @_;
@@ -2914,7 +2953,7 @@ Validation::Class::Prototype - Prototype and Data Validation Engine for Validati
 
 =head1 VERSION
 
-version 7.74
+version 7.75
 
 =head1 SYNOPSIS
 
@@ -3654,6 +3693,23 @@ target fields with a plus or minus as follows:
     
     unless ($input->validate(@spec)){
         return $input->errors_to_string;
+    }
+
+=head2 validate_method
+
+The validate_method method is used to determine whether a self-validating method
+will be successful. It does so by validating the methods input specification.
+This is useful in circumstances where it is advantageous to know in-advance
+whether a self-validating method will pass or fail.
+
+    if ($self->validate_method('password_change')) {
+    
+        if ($self->password_change) {
+            
+            # ....
+            
+        }
+        
     }
 
 =head2 validate_profile

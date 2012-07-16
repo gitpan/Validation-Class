@@ -2,13 +2,13 @@
 
 package Validation::Class;
 {
-    $Validation::Class::VERSION = '7.74';
+    $Validation::Class::VERSION = '7.75';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.74';    # VERSION
+our $VERSION = '7.75';    # VERSION
 
 use Carp 'confess';
 use Exporter ();
@@ -935,7 +935,7 @@ Validation::Class - Self-Validating Object System and Data Validation Framework
 
 =head1 VERSION
 
-version 7.74
+version 7.75
 
 =head1 SYNOPSIS
 
@@ -1863,6 +1863,12 @@ See L<Validation::Class::Prototype/stash> for full documentation.
 
 See L<Validation::Class::Prototype/validate> for full documentation.
 
+=head2 validate_method
+
+    $self->validate_method;
+
+See L<Validation::Class::Prototype/validate_method> for full documentation.
+
 =head2 validate_profile
 
     $self->validate_profile;
@@ -1897,10 +1903,13 @@ documentation.
 
 =head1 SEE ALSO
 
-You might do well to look into L<Validate::Tiny> for simple use-cases, it has
-virtually no dependencies and solid test coverage. L<Data::Verifier> is a great
-approach to adding robust validation options to your existing Moose classes. I
-have also heard some good things about L<Data::FormValidator> as well.
+Additionally you may want to look elsewhere for your data validation needs so 
+the following is a list of recommended validation libraries/frameworks you
+might do well to look into. L<Validate::Tiny> is nice for simple use-cases, it
+has virtually no dependencies and solid test coverage. L<Data::Verifier> is a
+great approach towards adding robust validation options to your existing Moose
+classes. Also, I have also heard some good things about L<Data::FormValidator>
+as well.
 
 =head1 AUTHOR
 
