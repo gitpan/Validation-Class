@@ -2,13 +2,13 @@
 
 package Validation::Class;
 {
-    $Validation::Class::VERSION = '7.76';
+    $Validation::Class::VERSION = '7.77';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.76';    # VERSION
+our $VERSION = '7.77';    # VERSION
 
 use Carp 'confess';
 use Exporter ();
@@ -935,7 +935,7 @@ Validation::Class - Self-Validating Object System and Data Validation Framework
 
 =head1 VERSION
 
-version 7.76
+version 7.77
 
 =head1 SYNOPSIS
 
@@ -1188,8 +1188,6 @@ underscore.
     $self->login($new_value); # arrayrefs and hashrefs will be flattened
     
     $self->preference_send_reminders;
-    
-    $self->preference_send_reminders_text_0;
 
 Protip: Field directives are used to validate scalar and array data. Don't use
 fields to store and validate blessed objects. Please see the *has* keyword

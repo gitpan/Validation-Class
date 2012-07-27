@@ -2,13 +2,13 @@
 
 package Validation::Class::Prototype;
 {
-    $Validation::Class::Prototype::VERSION = '7.76';
+    $Validation::Class::Prototype::VERSION = '7.77';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.76';    # VERSION
+our $VERSION = '7.77';    # VERSION
 
 use base 'Validation::Class::Backwards';    # I'm pro-life
 
@@ -2640,6 +2640,43 @@ sub validate {
 
 }
 
+sub validate_field_routine {
+
+    my ($self, $field, @args) = @_;
+
+    if (defined $field->validation && $field->value) {
+
+        my $count  = $field->errors->count;
+        my $failed = !$field->validation->(@args) ? 1 : 0;
+        my $errors = $field->errors->count > $count ? 1 : 0;
+
+        if ($failed || $errors) {
+
+            # did the validation routine fail or set errors?
+
+            if ($failed && !$errors) {
+
+                if (defined $field->error) {
+
+                    $field->errors->add($field->error);
+
+                }
+
+                else {
+
+                    $field->errors->add(($field->{label} || $field->{name})
+                        . "could not be validated")
+
+                }
+
+            }
+
+        }
+
+    }
+
+}
+
 sub validate_fields_discovered {
 
     my ($self, $context) = @_;
@@ -2710,36 +2747,7 @@ sub validate_fields_specified {
 
         # custom validation
 
-        if (defined $field->{validation} && $field->{value}) {
-
-            my $count  = $field->errors->count;
-            my $result = $field->validation->(@args);
-
-            if (!$result || $field->errors->count > $count) {
-
-                # assuming the validation routine failed or issued an error
-
-                if (defined $field->{error}) {
-
-                    $field->{errors}->add($field->{error});
-
-                }
-
-                else {
-
-                    my $error_msg = join " ",
-
-                      ($field->{label} || $field->{name}),
-                      "could not be validated";
-
-                    $field->errors->add($error_msg)
-                      unless $field->errors->count > $count;
-
-                }
-
-            }
-
-        }
+        $self->validate_field_routine($field, @args);
 
     }
 
@@ -2776,38 +2784,9 @@ sub validate_params_discovered {
 
             $self->apply_validator($name, $field);
 
-            # execute custom/validation directive
+            # custom validation
 
-            if (defined $field->{validation} && $field->{value}) {
-
-                my $count  = $field->errors->count;
-                my $result = $field->validation->(@args);
-
-                if (!$result || $field->errors->count > $count) {
-
-                    # assuming the validation routine failed or issued an error
-
-                    if (defined $field->{error}) {
-
-                        $field->{errors}->add($field->{error});
-
-                    }
-
-                    else {
-
-                        my $error_msg = join " ",
-
-                          ($field->{label} || $field->{name}),
-                          "could not be validated";
-
-                        $field->errors->add($error_msg)
-                          unless $field->errors->count > $count;
-
-                    }
-
-                }
-
-            }
+            $self->validate_field_routine($field, @args);
 
         }
 
@@ -2844,36 +2823,7 @@ sub validate_params_specified {
 
         # custom validation
 
-        if (defined $field->{validation} && $field->{value}) {
-
-            my $count  = $field->errors->count;
-            my $result = $field->validation->(@args);
-
-            if (!$result || $field->errors->count > $count) {
-
-                # assuming the validation routine failed or issued an error
-
-                if (defined $field->{error}) {
-
-                    $field->{errors}->add($field->{error});
-
-                }
-
-                else {
-
-                    my $error_msg = join " ",
-
-                      ($field->{label} || $field->{name}),
-                      "could not be validated";
-
-                    $field->errors->add($error_msg)
-                      unless $field->errors->count > $count;
-
-                }
-
-            }
-
-        }
+        $self->validate_field_routine($field, @args);
 
     }
 
@@ -2953,7 +2903,7 @@ Validation::Class::Prototype - Prototype and Data Validation Engine for Validati
 
 =head1 VERSION
 
-version 7.76
+version 7.77
 
 =head1 SYNOPSIS
 
