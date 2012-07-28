@@ -1,7 +1,7 @@
 # PODNAME: Validation::Class::Intro
 # ABSTRACT: Getting Started with Validation::Class
 
-our $VERSION = '7.78'; # VERSION
+our $VERSION = '7.79'; # VERSION
 
 
 __END__
@@ -13,7 +13,7 @@ Validation::Class::Intro - Getting Started with Validation::Class
 
 =head1 VERSION
 
-version 7.78
+version 7.79
 
 =head1 OVERVIEW
 
@@ -601,11 +601,7 @@ classes. The following is an example of this:
             my @conn_str_parts =
                 ('dbi', 'mysql', $self->name, $self->host, $self->port);
             
-            return (
-                join(':', @conn_str_parts),
-                $self->user,
-                $self->pass
-            )
+            return (join(':', @conn_str_parts), $self->user, $self->pass)
             
         }
     };
