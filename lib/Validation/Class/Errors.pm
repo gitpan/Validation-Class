@@ -2,13 +2,13 @@
 
 package Validation::Class::Errors;
 {
-    $Validation::Class::Errors::VERSION = '7.77';
+    $Validation::Class::Errors::VERSION = '7.78';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.77';    # VERSION
+our $VERSION = '7.78';    # VERSION
 
 
 sub new {
@@ -31,7 +31,7 @@ sub add {
 
     my ($self, @error_messages) = @_;
 
-    return undef unless @error_messages;
+    return 0 unless @error_messages;
 
     my %seen = map { $_ => 1 } @{$self};
 
@@ -95,7 +95,7 @@ sub find {
 
     my ($self, $pattern) = @_;
 
-    return undef unless "REGEXP" eq uc ref $pattern;
+    return 0 unless "REGEXP" eq uc ref $pattern;
 
     return (grep { $_ =~ $pattern } $self->all);
 
@@ -148,7 +148,7 @@ Validation::Class::Errors - Error Handling Object for Fields and Classes
 
 =head1 VERSION
 
-version 7.77
+version 7.78
 
 =head1 SYNOPSIS
 

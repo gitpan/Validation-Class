@@ -2,13 +2,13 @@
 
 package Validation::Class::Collection;
 {
-    $Validation::Class::Collection::VERSION = '7.77';
+    $Validation::Class::Collection::VERSION = '7.78';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.77';    # VERSION
+our $VERSION = '7.78';    # VERSION
 
 use Carp 'confess';
 
@@ -90,7 +90,7 @@ sub find {
 
     my ($self, $pattern) = @_;
 
-    return undef unless "REGEXP" eq uc ref $pattern;
+    return 0 unless "REGEXP" eq uc ref $pattern;
 
     my %matches = ();
 
@@ -166,7 +166,7 @@ Validation::Class::Collection - Generic Container Class for Various Collections
 
 =head1 VERSION
 
-version 7.77
+version 7.78
 
 =head1 SYNOPSIS
 

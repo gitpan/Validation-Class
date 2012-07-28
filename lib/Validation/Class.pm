@@ -2,13 +2,13 @@
 
 package Validation::Class;
 {
-    $Validation::Class::VERSION = '7.77';
+    $Validation::Class::VERSION = '7.78';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.77';    # VERSION
+our $VERSION = '7.78';    # VERSION
 
 use Carp 'confess';
 use Exporter ();
@@ -113,7 +113,7 @@ use Validation::Class::Prototype;
 
         my $configuration_routine = pop;
 
-        return undef unless "CODE" eq ref $configuration_routine;
+        return 0 unless "CODE" eq ref $configuration_routine;
 
         no strict 'refs';
 
@@ -322,7 +322,7 @@ sub build {
 
     my ($code) = @_;
 
-    return undef unless ("CODE" eq ref $code);
+    return 0 unless ("CODE" eq ref $code);
 
     return configure_class_proto $package => sub {
 
@@ -345,7 +345,7 @@ sub directive {
 
     my ($name, $data) = @_;
 
-    return undef unless ($name && $data);
+    return 0 unless ($name && $data);
 
     return configure_class_proto $package => sub {
 
@@ -374,7 +374,7 @@ sub field {
 
     my ($name, $data) = @_;
 
-    return undef unless ($name && $data);
+    return 0 unless ($name && $data);
 
     confess "Error creating field $name, name is using unconventional naming"
       unless $name =~ /^[a-zA-Z_](([\w\.]+)?\w)$/ xor $name
@@ -410,11 +410,19 @@ sub field {
 
             my $proto  = $self->proto;
             my $fields = $proto->fields;
+
             my $result = undef;
 
             if (defined $data) {
 
-                $proto->set_params($name => $data);
+                if ("ARRAY" eq (ref($data) || "ARRAY")) {
+
+                    $proto->params->remove($name)
+                      if $proto->params->has($name);
+
+                    $proto->set_params($name => $data);
+
+                }
 
             }
 
@@ -439,7 +447,7 @@ sub filter {
 
     my ($name, $data) = @_;
 
-    return undef unless ($name && $data);
+    return 0 unless ($name && $data);
 
     return configure_class_proto $package => sub {
 
@@ -669,7 +677,7 @@ sub method {
 
     my ($name, $data) = @_;
 
-    return undef unless ($name && $data);
+    return 0 unless ($name && $data);
 
     return configure_class_proto $package => sub {
 
@@ -740,7 +748,7 @@ sub method {
                               . $self->errors_to_string
                               if !$self->ignore_failure;
 
-                            return undef;
+                            return 0;
 
                         }
 
@@ -779,7 +787,7 @@ sub method {
 
             }
 
-            return undef;
+            return 0;
 
         };
 
@@ -796,7 +804,7 @@ sub mixin {
 
     my ($name, $data) = @_;
 
-    return undef unless ($name && $data);
+    return 0 unless ($name && $data);
 
     return configure_class_proto $package => sub {
 
@@ -834,7 +842,7 @@ sub object {
 
     my ($name, $data) = @_;
 
-    return undef unless ($name && $data);
+    return 0 unless ($name && $data);
 
     return configure_class_proto $package => sub {
 
@@ -881,7 +889,7 @@ sub object {
 
             }
 
-            return undef;
+            return 0;
 
         };
 
@@ -898,7 +906,7 @@ sub profile {
 
     my ($name, $data) = @_;
 
-    return undef unless ($name && "CODE" eq ref $data);
+    return 0 unless ($name && "CODE" eq ref $data);
 
     return configure_class_proto $package => sub {
 
@@ -935,7 +943,7 @@ Validation::Class - Self-Validating Object System and Data Validation Framework
 
 =head1 VERSION
 
-version 7.77
+version 7.78
 
 =head1 SYNOPSIS
 
@@ -1179,19 +1187,15 @@ underscore.
         ...
     };
     
-    field 'preference.send_reminders.text:0' => {
-        ...
-    };
-    
     my $value = $self->login;
     
-    $self->login($new_value); # arrayrefs and hashrefs will be flattened
+    $self->login($new_value);
     
     $self->preference_send_reminders;
 
 Protip: Field directives are used to validate scalar and array data. Don't use
 fields to store and validate blessed objects. Please see the *has* keyword
-instead.
+instead or use an object system with type constraints like L<Moose>.
 
 =head2 filter
 
@@ -1748,13 +1752,6 @@ See L<Validation::Class::Prototype/fields> for full documentation.
     $self->filtering;
 
 See L<Validation::Class::Prototype/filtering> for full documentation.
-
-=head2 hash_inflator
-
-    $self->hash_inflator;
-
-See L<Validation::Class::Prototype/hash_inflator> for full 
-documentation.
 
 =head2 ignore_failure
 

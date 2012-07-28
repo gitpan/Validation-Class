@@ -81,6 +81,7 @@ t/regression/modules/MyVal/Plugin/Glade.pm
 t/regression/modules/MyVal/Staff.pm
 t/regression/modules/MyVal/Temp.pm
 t/regression/modules/MyVal/Ticket.pm
+t/regression/tmpORS_mt.html
 t/regression/validators/01-min_length.t
 t/regression/validators/02-max_length.t
 t/regression/validators/03-pattern.t

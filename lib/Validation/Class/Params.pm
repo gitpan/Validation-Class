@@ -2,20 +2,59 @@
 
 package Validation::Class::Params;
 {
-    $Validation::Class::Params::VERSION = '7.77';
+    $Validation::Class::Params::VERSION = '7.78';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.77';    # VERSION
+our $VERSION = '7.78';    # VERSION
 
 use Carp 'confess';
+use Hash::Flatten 'flatten';
 
 use base 'Validation::Class::Collection';
 
 
+sub add {
+
+    my $self = shift;
+
+    my $arguments = @_ % 2 ? $_[0] : {@_};
+
+    $arguments = flatten $arguments;
+
+    foreach my $code (sort keys %{$arguments}) {
+
+        my ($key, $index) = $code =~ /(.*):(\d+)$/;
+
+        if ($key && defined $index) {
+
+            my $value = delete $arguments->{$code};
+
+            $arguments->{$key} ||= [];
+            $arguments->{$key} = [] if "ARRAY" ne ref $arguments->{$key};
+
+            $arguments->{$key}->[$index] = $value;
+
+        }
+
+    }
+
+    while (my ($key, $value) = each(%{$arguments})) {
+
+        $key =~ s/[^\w\.]//g; # deceptively important, help flatten() play nice
+
+        $self->{$key} = $value;
+
+    }
+
+    return $self;
+
+}
+
 1;
+
 __END__
 
 =pod
@@ -26,7 +65,7 @@ Validation::Class::Params - Container Class for Data Input Parameters
 
 =head1 VERSION
 
-version 7.77
+version 7.78
 
 =head1 SYNOPSIS
 
