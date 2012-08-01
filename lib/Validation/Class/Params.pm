@@ -2,13 +2,13 @@
 
 package Validation::Class::Params;
 {
-    $Validation::Class::Params::VERSION = '7.79';
+    $Validation::Class::Params::VERSION = '7.80';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.79';    # VERSION
+our $VERSION = '7.80';    # VERSION
 
 use Carp 'confess';
 use Hash::Flatten 'flatten';
@@ -65,7 +65,7 @@ Validation::Class::Params - Container Class for Data Input Parameters
 
 =head1 VERSION
 
-version 7.79
+version 7.80
 
 =head1 SYNOPSIS
 

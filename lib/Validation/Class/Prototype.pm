@@ -2,13 +2,13 @@
 
 package Validation::Class::Prototype;
 {
-    $Validation::Class::Prototype::VERSION = '7.79';
+    $Validation::Class::Prototype::VERSION = '7.80';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.79';    # VERSION
+our $VERSION = '7.80';    # VERSION
 
 use base 'Validation::Class::Backwards';
 
@@ -2617,7 +2617,7 @@ sub validate_field_routine {
                 else {
 
                     $field->errors->add(($field->{label} || $field->{name})
-                        . "could not be validated")
+                        . " could not be validated")
 
                 }
 
@@ -2855,7 +2855,7 @@ Validation::Class::Prototype - Prototype and Data Validation Engine for Validati
 
 =head1 VERSION
 
-version 7.79
+version 7.80
 
 =head1 SYNOPSIS
 
