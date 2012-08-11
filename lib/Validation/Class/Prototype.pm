@@ -2,13 +2,13 @@
 
 package Validation::Class::Prototype;
 {
-    $Validation::Class::Prototype::VERSION = '7.80';
+    $Validation::Class::Prototype::VERSION = '7.81';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.80';    # VERSION
+our $VERSION = '7.81';    # VERSION
 
 use base 'Validation::Class::Backwards';
 
@@ -109,7 +109,24 @@ sub apply_filter {
                 my $code =
                   "CODE" eq ref $filter ? $filter : $self->filters->{$filter};
 
-                $self->set_value($field => $code->($self->params->{$field}));
+                my $filtered_value = $self->params->{$field};
+
+                if ("ARRAY" eq ref $filtered_value) {
+
+                    foreach my $value (@{$filtered_value}) {
+
+                        $value = $code->($value)
+
+                    }
+
+                }
+                else {
+
+                    $filtered_value = $code->($self->params->{$field});
+
+                }
+
+                $self->set_value($field => $filtered_value);
 
             }
 
@@ -2855,7 +2872,7 @@ Validation::Class::Prototype - Prototype and Data Validation Engine for Validati
 
 =head1 VERSION
 
-version 7.80
+version 7.81
 
 =head1 SYNOPSIS
 
