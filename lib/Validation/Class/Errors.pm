@@ -2,13 +2,13 @@
 
 package Validation::Class::Errors;
 {
-    $Validation::Class::Errors::VERSION = '7.81';
+    $Validation::Class::Errors::VERSION = '7.82';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.81';    # VERSION
+our $VERSION = '7.82';    # VERSION
 
 
 sub new {
@@ -148,7 +148,7 @@ Validation::Class::Errors - Error Handling Object for Fields and Classes
 
 =head1 VERSION
 
-version 7.81
+version 7.82
 
 =head1 SYNOPSIS
 
