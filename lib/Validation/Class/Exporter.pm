@@ -2,7 +2,7 @@
 
 package Validation::Class::Exporter;
 {
-    $Validation::Class::Exporter::VERSION = '7.83';
+    $Validation::Class::Exporter::VERSION = '7.831';
 }
 
 use 5.008001;
@@ -10,7 +10,7 @@ use 5.008001;
 use strict;
 use warnings;
 
-our $VERSION = '7.83';    # VERSION
+our $VERSION = '7.831';    # VERSION
 
 
 sub apply_spec {
@@ -66,7 +66,7 @@ Validation::Class::Exporter - Simple Exporter for Validation::Class Classes
 
 =head1 VERSION
 
-version 7.83
+version 7.831
 
 =head1 SYNOPSIS
 
