@@ -31,12 +31,16 @@ t/10-mixin-method.t
 t/10-object-method.t
 t/10-profile-method.t
 t/10-prototype-method.t
+t/11-inheritence.t
 t/90-dbi-via-object.t
 t/90-method-modifiers.t
 t/90-plugin-access.t
 t/90-rand-bugfixes.t
+t/myapp/lib/MyApp/Container.pm
 t/myapp/lib/MyApp/Introspect.pm
 t/myapp/lib/MyApp/Test.pm
+t/myapp/lib/MyApp/Test/Base.pm
+t/myapp/lib/MyApp/Test/Base/Email.pm
 t/regression/00-load.t
 t/regression/01-attributes.t
 t/regression/02-package-declaration.t

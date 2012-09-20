@@ -2,13 +2,13 @@
 
 package Validation::Class::Prototype;
 {
-    $Validation::Class::Prototype::VERSION = '7.831';
+    $Validation::Class::Prototype::VERSION = '7.84';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.831';    # VERSION
+our $VERSION = '7.84';    # VERSION
 
 use base 'Validation::Class::Backwards';
 
@@ -378,8 +378,7 @@ sub class {
     my $class =
       Class::Forward->new(namespace => $self->{package})->forward($name);
 
-    #return 0 unless defined $self->relatives->{$class};
-    return 0 unless $class;
+    return 0 unless defined $self->relatives->{$class};
 
     my @attrs = qw(
 
@@ -398,17 +397,19 @@ sub class {
 
     my %settings = %{merge \%args, \%defaults};
 
-    use_module $class;
+    my $class_name = $self->relatives->{$class};
+
+    use_module $class_name;
 
     for (keys %settings) {
 
-        delete $settings{$_} unless $class->can($_);
+        delete $settings{$_} unless $class_name->can($_);
 
     }
 
-    return unless $class->can('new');
+    return unless $class_name->can('new');
 
-    my $child = $class->new(%settings);
+    my $child = $class_name->new(%settings);
 
     {
 
@@ -2444,7 +2445,7 @@ sub validate {
                         # remove clone subject from the fields list
 
                         @fields = grep { $_ ne $name } @fields
-                          if @fields;    # ...
+                          if @fields;                      # ...
 
                     }
 
@@ -2822,6 +2823,7 @@ sub validate_profile {
 1;
 
 __END__
+
 =pod
 
 =head1 NAME
@@ -2830,7 +2832,7 @@ Validation::Class::Prototype - Prototype and Data Validation Engine for Validati
 
 =head1 VERSION
 
-version 7.831
+version 7.84
 
 =head1 SYNOPSIS
 

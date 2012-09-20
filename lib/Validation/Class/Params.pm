@@ -2,13 +2,13 @@
 
 package Validation::Class::Params;
 {
-    $Validation::Class::Params::VERSION = '7.831';
+    $Validation::Class::Params::VERSION = '7.84';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.831';    # VERSION
+our $VERSION = '7.84';    # VERSION
 
 use Carp 'confess';
 use Hash::Flatten 'flatten', 'unflatten';
@@ -32,7 +32,7 @@ sub add {
 
       if grep /\:\d+./, keys %{$arguments}
 
-      ;
+    ;
 
     foreach my $code (sort keys %{$arguments}) {
 
@@ -66,6 +66,7 @@ sub add {
 1;
 
 __END__
+
 =pod
 
 =head1 NAME
@@ -74,7 +75,7 @@ Validation::Class::Params - Container Class for Data Input Parameters
 
 =head1 VERSION
 
-version 7.831
+version 7.84
 
 =head1 SYNOPSIS
 
