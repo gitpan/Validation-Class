@@ -14,7 +14,7 @@ meta-spec:
 name: Validation-Class
 requires:
   Carp: 0
-  Class::Forward: 0.04
+  Class::Forward: 0.08
   Hash::Flatten: 0
   Hash::Merge: 0
   Module::Find: 0
@@ -24,4 +24,4 @@ resources:
   bugtracker: https://github.com/alnewkirk/Validation-Class/issues
   homepage: https://github.com/alnewkirk/Validation-Class
   repository: http://github.com/alnewkirk/Validation-Class.git
-version: 7.84
+version: 7.85
