@@ -2,13 +2,13 @@
 
 package Validation::Class::Prototype;
 {
-    $Validation::Class::Prototype::VERSION = '7.85';
+    $Validation::Class::Prototype::VERSION = '7.86';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.85';    # VERSION
+our $VERSION = '7.86';    # VERSION
 
 use base 'Validation::Class::Backwards';
 
@@ -2444,7 +2444,7 @@ sub validate {
                         # remove clone subject from the fields list
 
                         @fields = grep { $_ ne $name } @fields
-                          if @fields;                      # ...
+                          if @fields;    # ...
 
                     }
 
@@ -2822,7 +2822,6 @@ sub validate_profile {
 1;
 
 __END__
-
 =pod
 
 =head1 NAME
@@ -2831,7 +2830,7 @@ Validation::Class::Prototype - Prototype and Data Validation Engine for Validati
 
 =head1 VERSION
 
-version 7.85
+version 7.86
 
 =head1 SYNOPSIS
 

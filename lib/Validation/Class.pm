@@ -2,13 +2,13 @@
 
 package Validation::Class;
 {
-    $Validation::Class::VERSION = '7.85';
+    $Validation::Class::VERSION = '7.86';
 }
 
 use strict;
 use warnings;
 
-our $VERSION = '7.85';    # VERSION
+our $VERSION = '7.86';    # VERSION
 
 use Carp 'confess';
 use Exporter ();
@@ -204,8 +204,8 @@ sub initialize_validator {
 
         $self->$attr($value)
           if $config->{FIELDS}->{$attr}
-              || $config->{ATTRIBUTES}->{$attr}
-              || grep { $attr eq $_ } ($proto->proxy_attributes);
+          || $config->{ATTRIBUTES}->{$attr}
+          || grep { $attr eq $_ } ($proto->proxy_attributes);
 
     }
 
@@ -396,7 +396,7 @@ sub field {
 
     confess "Error creating field $name, name is using unconventional naming"
       unless $name =~ /^[a-zA-Z_](([\w\.]+)?\w)$/ xor $name
-          =~ /^[a-zA-Z_](([\w\.]+)?\w)\:\d+$/;
+      =~ /^[a-zA-Z_](([\w\.]+)?\w)\:\d+$/;
 
     return configure_class_proto $package => sub {
 
@@ -985,7 +985,6 @@ sub prototype {
 1;
 
 __END__
-
 =pod
 
 =head1 NAME
@@ -994,7 +993,7 @@ Validation::Class - Self-Validating Object System and Data Validation Framework
 
 =head1 VERSION
 
-version 7.85
+version 7.86
 
 =head1 SYNOPSIS
 

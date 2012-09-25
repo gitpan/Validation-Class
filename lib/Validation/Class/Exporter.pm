@@ -2,7 +2,7 @@
 
 package Validation::Class::Exporter;
 {
-    $Validation::Class::Exporter::VERSION = '7.85';
+    $Validation::Class::Exporter::VERSION = '7.86';
 }
 
 use 5.008001;
@@ -10,7 +10,7 @@ use 5.008001;
 use strict;
 use warnings;
 
-our $VERSION = '7.85';    # VERSION
+our $VERSION = '7.86';    # VERSION
 
 
 sub apply_spec {
@@ -31,9 +31,9 @@ sub apply_spec {
 
         my $child = caller(0);
 
-        *{"$child\::$_"} = *{"$parent\::$_"} for @keywords;
+        *{"$child\::$_"} = *{"$parent\::$_"} for @{$args{keywords}};
 
-        *{"$child\::$_"} = *{"$parent\::$_"} for @routines;
+        *{"$child\::$_"} = *{"$parent\::$_"} for @{$args{routines}};
 
         my $ISA = "$child\::ISA";
 
@@ -46,7 +46,7 @@ sub apply_spec {
         strict->import;
         warnings->import;
 
-        $child->load($settings) if $settings;
+        $child->load({@{$args{settings}}}) if $args{settings};
 
         return $child;
 
@@ -57,8 +57,8 @@ sub apply_spec {
 }
 
 1;
-__END__
 
+__END__
 =pod
 
 =head1 NAME
@@ -67,48 +67,48 @@ Validation::Class::Exporter - Simple Exporter for Validation::Class Classes
 
 =head1 VERSION
 
-version 7.85
+version 7.86
 
 =head1 SYNOPSIS
 
     package MyApp::Class;
-    
+
     use Validation::Class;
     use Validation::Class::Exporter;
-    
+
     Validation::Class::Exporter->apply_spec(
         routines => ['thing'], # export routines as is
         settings => [ ... ] # passed to the "load" method, see Validation::Class
     );
-    
+
     has foo => 0;
 
     bld sub {
-        
+
         shift->foo(1);
-        
+
     };
-    
+
     sub thing {
-        
+
         my $args = pop;
-        
+
         my $class = shift || caller;
-        
+
         # routine as a keyword
-        
+
         $class->{config}->{THING} = [$args];
-        
+
     };
-    
+
     package MyApp::Example;
-    
+
     use MyApp::Class;
-    
+
     thing ['this' => 'that'];
-    
+
     package main;
-    
+
     my $eg = MyApp::Example->new; # we have lift-off!!!
 
 =head1 DESCRIPTION
