@@ -99,7 +99,7 @@ Validation::Class::Simple - Simple Ad-Hoc Data Validation
 
 =head1 VERSION
 
-version 7.900000
+version 7.900001
 
 =head1 SYNOPSIS
 

@@ -1,4 +1,4 @@
-# Validation::Class Core Directives Registry
+# ABSTRACT: Validation::Class Core Directives Registry
 
 package Validation::Class::Directives;
 
@@ -15,6 +15,150 @@ use Carp 'confess';
 our $_registry = {map{$_=>$_->new}(usesub 'Validation::Class::Directive')};
 
 # VERSION
+
+
+sub new {
+
+    my $class = shift;
+
+    my $arguments = $class->build_args(@_);
+
+    $arguments = $_registry unless keys %{$arguments};
+
+    my $self = bless {}, $class;
+
+    $self->add($arguments);
+
+    return $self;
+
+}
+
+
+sub add {
+
+    my $self = shift;
+
+    my $arguments = $self->build_args(@_);
+
+    while (my ($key, $value) = each %{$arguments}) {
+
+        # never overwrite
+        unless (defined $self->{$key}) {
+            # is it a direct directive?
+            if ("Validation::Class::Directive" eq ref $value) {
+                $self->{$key} = $value;
+            }
+            # is it a directive sub-class
+            elsif (isa_classref($value)) {
+                if ($value->isa("Validation::Class::Directive")) {
+                    $self->{$key} = $value;
+                }
+            }
+            # is it a hashref
+            elsif (isa_hashref($value)) {
+                $self->{$key} = Validation::Class::Directive->new($value);
+            }
+        }
+
+    }
+
+    return $self;
+
+}
+
+sub resolve_dependencies {
+
+    my ($self, $type) = @_;
+
+    $type ||= 'validation';
+
+    my $dependencies = {};
+
+    foreach my $key ($self->keys) {
+
+        my $class      = $self->get($key);
+        my $name       = $class->name;
+        my $dependents = $class->dependencies->{$type};
+
+        # avoid invalid dependencies by excluding the unknown
+        $dependencies->{$name} = [grep { $self->has($_) } @{$dependents}];
+
+    }
+
+    my @ordered;
+    my %found;
+    my %track;
+
+    my @pending =  keys %$dependencies;
+    my $limit   =  scalar(keys %$dependencies);
+       $limit   += scalar(@{$_}) for values %$dependencies;
+
+    while (@pending) {
+
+        my $k = shift @pending;
+
+        if (grep { $_ eq $k } @{$dependencies->{$k}}) {
+
+            confess sprintf 'Direct circular dependency on event %s: %s -> %s',
+            $type, $k, $k;
+
+        }
+
+        elsif (grep { ! exists $found{$_} } @{$dependencies->{$k}}) {
+
+            confess sprintf 'Invalid dependency on event %s: %s -> %s',
+            $type, $k, join(',', @{$dependencies->{$k}})
+            if grep { ! exists $dependencies->{$_} } @{$dependencies->{$k}};
+
+            confess
+            sprintf 'Indirect circular dependency on event %s: %s -> %s ',
+            $type, $k, join(',', @{$dependencies->{$k}})
+            if $track{$k} && $track{$k} > $limit; # allowed circular iterations
+
+            $track{$k}++ if push @pending, $k;
+
+        }
+
+        else {
+
+            $found{$k} = 1;
+            push @ordered, $k;
+
+        }
+
+    }
+
+    my $charmap = join '', reverse @ordered;
+
+    foreach my $el (keys %$dependencies) {
+
+        for (@{$dependencies->{$el}}) {
+
+            confess sprintf
+            'Broken dependency chain; Faulty ordering on event %s: %s before %s',
+            $type, $el, $_
+            if index($charmap,$el) > index($charmap, $_);
+
+        }
+
+    }
+
+    return (@ordered);
+
+}
+
+1;
+
+__END__
+=pod
+
+=head1 NAME
+
+Validation::Class::Directives - Validation::Class Core Directives Registry
+
+=head1 VERSION
+
+version 7.900001
 
 =head1 DESCRIPTION
 
@@ -270,136 +414,16 @@ and hold the absolute value of the associated field.
 The zipcode directive is provided by L<Validation::Class::Directive::Zipcode>
 and handles postal-code validation for areas in the USA and North America.
 
+=head1 AUTHOR
+
+Al Newkirk <anewkirk@ana.io>
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2011 by Al Newkirk.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
 =cut
 
-sub new {
-
-    my $class = shift;
-
-    my $arguments = $class->build_args(@_);
-
-    $arguments = $_registry unless keys %{$arguments};
-
-    my $self = bless {}, $class;
-
-    $self->add($arguments);
-
-    return $self;
-
-}
-
-
-sub add {
-
-    my $self = shift;
-
-    my $arguments = $self->build_args(@_);
-
-    while (my ($key, $value) = each %{$arguments}) {
-
-        # never overwrite
-        unless (defined $self->{$key}) {
-            # is it a direct directive?
-            if ("Validation::Class::Directive" eq ref $value) {
-                $self->{$key} = $value;
-            }
-            # is it a directive sub-class
-            elsif (isa_classref($value)) {
-                if ($value->isa("Validation::Class::Directive")) {
-                    $self->{$key} = $value;
-                }
-            }
-            # is it a hashref
-            elsif (isa_hashref($value)) {
-                $self->{$key} = Validation::Class::Directive->new($value);
-            }
-        }
-
-    }
-
-    return $self;
-
-}
-
-sub resolve_dependencies {
-
-    my ($self, $type) = @_;
-
-    $type ||= 'validation';
-
-    my $dependencies = {};
-
-    foreach my $key ($self->keys) {
-
-        my $class      = $self->get($key);
-        my $name       = $class->name;
-        my $dependents = $class->dependencies->{$type};
-
-        # avoid invalid dependencies by excluding the unknown
-        $dependencies->{$name} = [grep { $self->has($_) } @{$dependents}];
-
-    }
-
-    my @ordered;
-    my %found;
-    my %track;
-
-    my @pending =  keys %$dependencies;
-    my $limit   =  scalar(keys %$dependencies);
-       $limit   += scalar(@{$_}) for values %$dependencies;
-
-    while (@pending) {
-
-        my $k = shift @pending;
-
-        if (grep { $_ eq $k } @{$dependencies->{$k}}) {
-
-            confess sprintf 'Direct circular dependency on event %s: %s -> %s',
-            $type, $k, $k;
-
-        }
-
-        elsif (grep { ! exists $found{$_} } @{$dependencies->{$k}}) {
-
-            confess sprintf 'Invalid dependency on event %s: %s -> %s',
-            $type, $k, join(',', @{$dependencies->{$k}})
-            if grep { ! exists $dependencies->{$_} } @{$dependencies->{$k}};
-
-            confess
-            sprintf 'Indirect circular dependency on event %s: %s -> %s ',
-            $type, $k, join(',', @{$dependencies->{$k}})
-            if $track{$k} && $track{$k} > $limit; # allowed circular iterations
-
-            $track{$k}++ if push @pending, $k;
-
-        }
-
-        else {
-
-            $found{$k} = 1;
-            push @ordered, $k;
-
-        }
-
-    }
-
-    my $charmap = join '', reverse @ordered;
-
-    foreach my $el (keys %$dependencies) {
-
-        for (@{$dependencies->{$el}}) {
-
-            confess sprintf
-            'Broken dependency chain; Faulty ordering on event %s: %s before %s',
-            $type, $el, $_
-            if index($charmap,$el) > index($charmap, $_);
-
-        }
-
-    }
-
-    return (@ordered);
-
-}
-
-1;

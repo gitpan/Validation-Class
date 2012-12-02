@@ -79,7 +79,7 @@ Validation::Class::Directive::Matches - Matches Directive for Validation Class F
 
 =head1 VERSION
 
-version 7.900000
+version 7.900001
 
 =head1 SYNOPSIS
 

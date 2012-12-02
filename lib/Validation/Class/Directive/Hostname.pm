@@ -48,7 +48,7 @@ Validation::Class::Directive::Hostname - Hostname Directive for Validation Class
 
 =head1 VERSION
 
-version 7.900000
+version 7.900001
 
 =head1 SYNOPSIS
 

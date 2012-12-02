@@ -521,7 +521,7 @@ Validation::Class - Powerful Data Validation Framework
 
 =head1 VERSION
 
-version 7.900000
+version 7.900001
 
 =head1 SYNOPSIS
 
@@ -552,7 +552,7 @@ version 7.900000
     # ... elsewhere in your application
     my $person = MyApp::Person->new(login => 'admin', password => 'secr3t');
 
-    unless ($person->validate) {
+    unless ($person->validates) {
         # handle the failures
     }
 
@@ -562,11 +562,9 @@ version 7.900000
 
 Validation::Class is a robust data validation framework which aims provide an
 extensible framework for developing clean yet sophisticated data validation
-objects.
-
-The core feature-set consist of self-validating methods, validation profiles,
-reusable validation rules and templates, pre and post input filtering, class
-inheritance, automatic array handling, and extensibility (e.g. overriding
+objects. The core feature-set consist of self-validating methods, validation
+profiles, reusable validation rules and templates, pre and post input filtering,
+class inheritance, automatic array handling, and extensibility (e.g. overriding
 default error messages, creating custom validators, creating custom input
 filters and much more).
 
@@ -595,10 +593,10 @@ minimalistic variant of what you may have encountered in other object systems.
 
     attribute 'first_name' => 'Peter';
     attribute 'last_name'  => 'Venkman';
-
     attribute 'full_name'  => sub {
 
         my ($self) = @_;
+
         return join ', ', $self->last_name, $self->first_name;
 
     };
@@ -632,7 +630,8 @@ class object.
 
 The directive keyword (or dir) registers custom validator directives to be used
 in your field definitions. It is a means of extending the core field directives
-before instantiation.
+before instantiation. Please see L<Validation::Class::Directive> for insight into
+creating your own installable directives.
 
     package MyApp::Directives;
 
@@ -642,7 +641,7 @@ before instantiation.
 
     directive 'isa_email_address' => sub {
 
-        my ($self, $prototype, $field, $param) = @_;
+        my ($self, $proto, $field, $param) = @_;
 
         my $validator = Data::Validate::Email->new;
 
@@ -796,7 +795,7 @@ accepts a constant or an arrayref of constants.
 
     use Validation::Class;
 
-    load roles => ['MyApp::User', MyApp::Visitor'];
+    load roles => ['MyApp::User', 'MyApp::Visitor'];
 
     1;
 
@@ -805,9 +804,8 @@ accepts a constant or an arrayref of constants.
 The message keyword (or msg) registers a class-level error message template that
 will be used in place of the error message defined in the corresponding directive
 class if defined. Error messages can also be overriden at the individual
-field-level as well. See the
-L<Validation::Class::Directive::Messages|"messages directive"> for instructions
-on how to override error messages at the field-level.
+field-level as well. See the L<Validation::Class::Directive::Messages> for
+instructions on how to override error messages at the field-level.
 
     package MyApp::Person;
 
@@ -830,7 +828,7 @@ on how to override error messages at the field-level.
 
 The message keyword takes two arguments, the name of the directive whose error
 message you wish to override and a string which will be used to as a template
-which is feed to `sprintf` to format the message.
+which is feed to sprintf to format the message.
 
 =head2 method
 
@@ -1004,18 +1002,6 @@ this method directly, see L<Validation::Class::Prototype>.
     my $person = MyApp::Person->new;
 
     my $prototype = $person->prototype;
-
-=head1 VALIDATION ENGINE BY PROXY
-
-Validation::Class mostly provides sugar functions for modeling your data
-validation requirements. Each class you create is associated with a *prototype*
-class which provides the data validation engine and keeps your class namespace
-free from pollution, please see L<Validation::Class::Prototype> for more
-information on specific methods and attributes.
-
-Validation::Class injects a few proxy methods into your class which are
-basically aliases to the corresponding prototype class methods, however it is
-possible to access the prototype directly using the proto/prototype methods.
 
 =head1 PROXY METHODS
 
@@ -1196,6 +1182,18 @@ See L<Validation::Class::Prototype/validate_method> for full documentation.
     $self->validate_profile;
 
 See L<Validation::Class::Prototype/validate_profile> for full documentation.
+
+=head1 VALIDATE BY PROXY
+
+Validation::Class mostly provides sugar functions for modeling your data
+validation requirements. Each class you create is associated with a *prototype*
+class which provides the data validation engine and keeps your class namespace
+free from pollution, please see L<Validation::Class::Prototype> for more
+information on specific methods and attributes.
+
+Validation::Class injects a few proxy methods into your class which are
+basically aliases to the corresponding prototype class methods, however it is
+possible to access the prototype directly using the proto/prototype methods.
 
 =head1 EXTENDING VALIDATION::CLASS
 
