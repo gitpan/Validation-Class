@@ -1,129 +1,138 @@
-# ABSTRACT: Self-Validating Object System and Data Validation Framework
+# ABSTRACT: Powerful Data Validation Framework
 
 package Validation::Class;
-{
-    $Validation::Class::VERSION = '7.86';
-}
 
 use strict;
 use warnings;
 
-our $VERSION = '7.86';    # VERSION
-
-use Carp 'confess';
-use Exporter ();
-use Hash::Merge 'merge';
 use Module::Find;
-use Module::Runtime 'use_module';
 
-use Validation::Class::Errors;
-use Validation::Class::Field;
-use Validation::Class::Fields;
-use Validation::Class::Params;
-use Validation::Class::Relatives;
+use Validation::Class::Util '!has';
+use Module::Runtime 'use_module';
+use Hash::Merge 'merge';
+use Exporter ();
 
 use Validation::Class::Prototype;
 
-{
+# VERSION
 
-    my %CLASSES = ();
+our @ISA    = qw(Exporter);
+our @EXPORT = qw(
 
-    sub return_class_proto {
+    attribute
+    bld
+    build
+    dir
+    directive
+    fld
+    field
+    flt
+    filter
+    has
+    load
+    msg
+    message
+    mth
+    method
+    mxn
+    mixin
+    obj
+    object
+    pro
+    profile
+    set
 
-        my $TARGET_CLASS = shift || caller(2);
+);
 
-        return $CLASSES{$TARGET_CLASS} ||= do {
+sub return_class_proto {
 
-            no strict 'refs';
+    my $class = shift || caller(2);
 
-            my $proto_class = 'Validation::Class::Prototype';
+    return prototype_registry->get($class) || do {
 
-            my $proto = {
-                package => $TARGET_CLASS,
-                config  => {}
-            };
+        # build new prototype class
 
-            # respect foreign constructors (as is $class->new) if found
-
-            my $new =
-              $TARGET_CLASS->can("new") ? "initialize_validator" : "new";
-
-            # injected into every derived class
-
-            *{"$TARGET_CLASS\::$new"}      = sub { goto \&$new };
-            *{"$TARGET_CLASS\::proto"}     = sub { goto \&prototype };
-            *{"$TARGET_CLASS\::prototype"} = sub { goto \&prototype };
-
-            # inject prototype class aliases unless exist
-
-            my @aliases = $proto_class->proxy_methods;
-
-            foreach my $alias (@aliases) {
-
-                # slight-of-hand
-
-                *{"$TARGET_CLASS\::$alias"} = sub {
-
-                    my $self = shift @_;
-
-                    my $proto =
-                      return_class_proto(ref $self);    # isn't recursive
-
-                    $proto->$alias(@_);
-
-                  }
-                  unless $TARGET_CLASS->can($alias);
-
-            }
-
-            # inject wrapped prototype class aliases unless exist
-
-            my @wrapped_aliases = $proto_class->proxy_methods_wrapped;
-
-            foreach my $alias (@wrapped_aliases) {
-
-                # slight-of-hand
-
-                *{"$TARGET_CLASS\::$alias"} = sub {
-
-                    my $self = shift @_;
-
-                    my $proto =
-                      return_class_proto(ref $self);    # isn't recursive
-
-                    $proto->$alias($self, @_);
-
-                  }
-                  unless $TARGET_CLASS->can($alias);
-
-            }
-
-            my $self = bless $proto, $proto_class;
-
-            $self->{config} = merge $proto_class->configuration,
-              $self->{config};
-
-            $self;    # return-once
-
-        };
-
-    }
-
-    sub configure_class_proto {
-
-        my $configuration_routine = pop;
-
-        return 0 unless "CODE" eq ref $configuration_routine;
+        my $proto = Validation::Class::Prototype->new(
+            package => $class
+        );
 
         no strict 'refs';
+        no warnings 'redefine';
 
-        my $proto = return_class_proto shift;
+        # respect foreign constructors (such as $class->new) if found
 
-        $configuration_routine->($proto);
+        my $new = $class->can("new") ?
+            "initialize_validator" : "new"
+        ;
 
-        return $proto;
+        # injected into every derived class (override if necessary)
 
-    }
+        *{"$class\::$new"}      = sub { goto \&$new };
+        *{"$class\::proto"}     = sub { goto \&prototype };
+        *{"$class\::prototype"} = sub { goto \&prototype };
+
+        # inject prototype class aliases unless exist
+
+        my @aliases = $proto->proxy_methods;
+
+        foreach my $alias (@aliases) {
+
+            next if $class->can($alias);
+
+            # slight-of-hand
+
+            $proto->set_method($alias, sub {
+
+                shift @_;
+
+                $proto->$alias(@_);
+
+            });
+
+        }
+
+        # inject wrapped prototype class aliases unless exist
+
+        my @wrapped_aliases = $proto->proxy_methods_wrapped;
+
+        foreach my $alias (@wrapped_aliases) {
+
+            next if $class->can($alias);
+
+            # slight-of-hand
+
+            $proto->set_method($alias, sub {
+
+                my $self = shift @_;
+
+                $proto->$alias($self, @_);
+
+            });
+
+        }
+
+        # cache prototype
+        prototype_registry->add($class => $proto);
+
+        $proto; # return-once
+
+    };
+
+}
+
+sub configure_class_proto {
+
+    my $configuration_routine = pop;
+
+    return unless "CODE" eq ref $configuration_routine;
+
+    no strict 'refs';
+
+    my $proto = return_class_proto shift;
+
+    $configuration_routine->($proto);
+
+    return $proto;
 
 }
 
@@ -136,100 +145,68 @@ sub import {
 
     __PACKAGE__->export_to_level(1, @_);
 
-    if ($caller) {
-
-        # if requested, inherit config naturally via @ISA
-
-        my $isa_string = "\@$caller\::ISA";
-        my @caller_isa = eval $isa_string;
-
-        @caller_isa = grep !/^$caller$/, @caller_isa;
-
-        if (@caller_isa) {
-
-            my $loader = $caller->can('set');
-            $loader = $caller->can('load') unless $loader;
-
-            if ($loader) {
-                $loader->($caller, {roles => [@caller_isa]});
-            }
-
-        }
-
-        return_class_proto $caller    # create prototype instance when used
-
-    }
+    return return_class_proto $caller # provision prototype when used
 
 }
 
 sub initialize_validator {
 
-    my $self = shift;
+    my $self   = shift;
+    my $proto  = $self->prototype;
 
-    my $proto = return_class_proto ref $self || $self;
+    my $arguments = $proto->build_args(@_);
 
-    my $config = $proto->{config};
+    # provision a validation class configuration
 
-    # clone config values
+    $proto->snapshot;
 
-    my @clonables = qw(fields filters methods mixins profiles relatives);
+    # override prototype attributes if requested
 
-    $proto->{$_} = merge $proto->{config}->{uc $_}, $proto->{$_}
-      for @clonables;
+    if (defined($arguments->{fields})) {
+        my $fields = delete $arguments->{fields};
+        $proto->fields->clear->add($fields);
+    }
 
-    my %ARGS = @_ ? @_ > 1 ? @_ : "HASH" eq ref $_[0] ? %{$_[0]} : () : ();
-
-    # bless special collections
-
-    $proto->{errors} = Validation::Class::Errors->new;
-
-    $proto->{params} = Validation::Class::Params->new;
-
-    $proto->{fields} = Validation::Class::Fields->new($proto->{fields});   #!!!
-
-    $proto->{relatives} =
-      Validation::Class::Relatives->new($proto->{relatives});
-
-    # process overridden attributes
-
-    my $fields = delete $ARGS{fields} if defined $ARGS{fields};
-    my $params = delete $ARGS{params} if defined $ARGS{params};
-
-    $proto->set_fields($fields) if $fields;
-    $proto->set_params($params) if $params;
+    if (defined($arguments->{params})) {
+        my $params = delete $arguments->{params};
+        $proto->params->clear->add($params);
+    }
 
     # process attribute assignments
 
-    while (my ($attr, $value) = each(%ARGS)) {
+    while (my($name, $value) = each (%{$arguments})) {
 
-        $self->$attr($value)
-          if $config->{FIELDS}->{$attr}
-          || $config->{ATTRIBUTES}->{$attr}
-          || grep { $attr eq $_ } ($proto->proxy_attributes);
+        my $ok = 0;
 
-    }
+        $ok++ if $proto->fields->has($name);
+        $ok++ if $proto->attributes->has($name);
+        $ok++ if grep { $name eq $_ } ($proto->proxy_methods);
 
-    # process plugins
-
-    foreach my $plugin (keys %{$config->{PLUGINS}}) {
-
-        $proto->plugins->{$plugin} = $plugin->new($self)
-          if $plugin->can('new');
+        $self->$name($value) if $self->can($name) && $ok;
 
     }
 
     # process builders
 
-    foreach my $builder (@{$config->{BUILDERS}}) {
+    foreach my $builder ($proto->builders->list) {
 
-        $builder->($self, %ARGS);
+        $builder->($self, $arguments);
 
     }
 
     # initialize prototype
 
     $proto->normalize;
-    $proto->apply_filters('pre') if $proto->filtering;
+
+    # process plugins
+
+    foreach my $plugin ($proto->plugins->keys) {
+
+        $proto->plugins->add($plugin => $plugin->new($proto))
+            if $plugin->can('new')
+        ;
+
+    }
 
     # ready-set-go !!!
 
@@ -237,251 +214,116 @@ sub initialize_validator {
 
 }
 
-our @ISA    = qw(Exporter);
-our @EXPORT = qw(
-
-  attribute
-  bld
-  build
-  dir
-  directive
-  fld
-  field
-  flt
-  filter
-  has
-  load
-  mth
-  method
-  mxn
-  mixin
-  obj
-  object
-  pro
-  profile
-  set
-
-);
 
 
-sub has { goto &attribute }
-
-sub attribute {
+sub has { goto &attribute } sub attribute {
 
     my $package = shift if @_ == 3;
 
-    my ($attrs, $default) = @_;
+    my ($attributes, $default) = @_;
 
-    return unless $attrs;
+    return unless $attributes;
 
-    confess "Error creating accessor, default must be a coderef or constant"
-      if ref $default && ref $default ne 'CODE';
+    $attributes = [$attributes] unless ref $attributes eq 'ARRAY';
 
-    $attrs = [$attrs] unless ref $attrs eq 'ARRAY';
+    return configure_class_proto $package => sub {
 
-    for my $attr (@$attrs) {
+        my ($proto) = @_;
 
-        confess "Error creating accessor '$attr', name has invalid characters"
-          unless $attr =~ /^[a-zA-Z_]\w*$/;
+        $proto->register_attribute($_ => $default) for @$attributes;
 
-        my $code;
+        return $proto;
 
-        if (defined $default) {
-
-            $code = sub {
-
-                if (@_ == 1) {
-                    return $_[0]->{$attr} if exists $_[0]->{$attr};
-                    return $_[0]->{$attr} =
-                      ref $default eq 'CODE' ? $default->($_[0]) : $default;
-                }
-                $_[0]->{$attr} = $_[1];
-                $_[0];
-
-            };
-
-        }
-
-        else {
-
-            $code = sub {
-
-                return $_[0]->{$attr} if @_ == 1;
-                $_[0]->{$attr} = $_[1];
-                $_[0];
-
-            };
-
-        }
-
-        return configure_class_proto $package => sub {
-
-            my ($proto) = @_;
-
-            my $accessors = $proto->{config}->{ATTRIBUTES} ||= {};
-
-            no strict 'refs';
-            no warnings 'redefine';
-
-            *{"$proto->{package}\::$attr"} = $accessors->{$attr} = $code;
-
-        };
-
-    }
+    };
 
 }
 
 
-sub bld { goto &build }
-
-sub build {
+sub bld { goto &build } sub build {
 
     my $package = shift if @_ == 2;
 
     my ($code) = @_;
 
-    return 0 unless ("CODE" eq ref $code);
+    return unless ("CODE" eq ref $code);
 
     return configure_class_proto $package => sub {
 
         my ($proto) = @_;
 
-        $proto->{config}->{BUILDERS} ||= [];
+        $proto->register_builder($code);
 
-        push @{$proto->{config}->{BUILDERS}}, $code;
+        return $proto;
 
     };
 
 }
 
 
-sub dir { goto &directive }
+sub dir { goto &directive } sub directive {
 
-sub directive {
+    my $package = shift if @_ == 3;
+
+    my ($name, $code) = @_;
+
+    return unless ($name && $code);
+
+    return configure_class_proto $package => sub {
+
+        my ($proto) = @_;
+
+        $proto->register_directive($name, $code);
+
+        return $proto;
+
+    };
+
+}
+
+
+sub fld { goto &field } sub field {
 
     my $package = shift if @_ == 3;
 
     my ($name, $data) = @_;
 
-    return 0 unless ($name && $data);
+    return unless ($name && $data);
 
     return configure_class_proto $package => sub {
 
         my ($proto) = @_;
 
-        $proto->{config}->{DIRECTIVES} ||= {};
+        $proto->register_field($name, $data);
 
-        $proto->{config}->{DIRECTIVES}->{$name} = {
-
-            mixin     => 1,
-            field     => 1,
-            validator => $data
-
-        };
+        return $proto;
 
     };
 
 }
 
 
-sub fld { goto &field }
-
-sub field {
+sub flt { goto &filter } sub filter {
 
     my $package = shift if @_ == 3;
 
-    my ($name, $data) = @_;
+    my ($name, $code) = @_;
 
-    return 0 unless ($name && $data);
-
-    confess "Error creating field $name, name is using unconventional naming"
-      unless $name =~ /^[a-zA-Z_](([\w\.]+)?\w)$/ xor $name
-      =~ /^[a-zA-Z_](([\w\.]+)?\w)\:\d+$/;
+    return unless ($name && $code);
 
     return configure_class_proto $package => sub {
 
         my ($proto) = @_;
 
-        $proto->{config}->{FIELDS} ||= {};
+        $proto->register_filter($name, $code);
 
-        confess "Error creating accessor $name on $proto->{package}, "
-          . "attribute collision"
-          if exists $proto->{config}->{FIELDS}->{$name};
-
-        confess "Error creating accessor $name on $proto->{package}, "
-          . "method collision"
-          if $proto->{package}->can($name);
-
-        $data->{name} = $name;
-
-        $proto->{config}->{FIELDS}->{$name} = $data;
-
-        no strict 'refs';
-
-        my $accessor = $name;
-
-        $accessor =~ s/[^a-zA-Z0-9_]/_/g;
-
-        my $accessor_routine = sub {
-
-            my ($self, $data) = @_;
-
-            my $proto  = $self->proto;
-            my $fields = $proto->fields;
-
-            my $result = undef;
-
-            if (defined $data) {
-
-                if ("ARRAY" eq (ref($data) || "ARRAY")) {
-
-                    $proto->params->remove($name)
-                      if $proto->params->has($name);
-
-                    $proto->set_params($name => $data);
-
-                }
-
-            }
-
-            $result = $proto->get_value($name);
-
-            return $result;
-
-        };
-
-        *{"$proto->{package}\::$accessor"} = $accessor_routine;
+        return $proto;
 
     };
 
 }
 
 
-sub flt { goto &filter }
-
-sub filter {
-
-    my $package = shift if @_ == 3;
-
-    my ($name, $data) = @_;
-
-    return 0 unless ($name && $data);
-
-    return configure_class_proto $package => sub {
-
-        my ($proto) = @_;
-
-        $proto->{config}->{FILTERS} ||= {};
-
-        $proto->{config}->{FILTERS}->{$name} = $data;
-
-    };
-
-}
-
-sub set { goto &load }
-
-sub load {
+sub set { goto &load } sub load {
 
     my $package;
     my $data;
@@ -551,285 +393,72 @@ sub load {
 
         my ($proto) = @_;
 
-        my $name = $proto->{package};
+        $proto->register_settings($data);
 
-        $proto->{config}->{BUILDERS} ||= [];
-
-        if ($data->{classes}) {
-
-            my @parents;
-
-            if (!ref $data->{classes} && $data->{classes} == 1) {
-
-                push @parents, $name;
-
-            }
-
-            else {
-
-                push @parents,
-                  "ARRAY" eq ref $data->{classes}
-                  ? @{$data->{classes}}
-                  : $data->{classes};
-
-            }
-
-            foreach my $parent (@parents) {
-
-                # load class children and create relationship map (hash)
-
-                foreach my $child (findallmod $parent) {
-
-                    my $nickname = $child;
-                    $nickname =~ s/^$parent\:://;
-
-                    $proto->{config}->{RELATIVES} ||= {};
-                    $proto->{config}->{RELATIVES}->{$nickname} = $child;
-
-                }
-
-            }
-
-        }
-
-        if ($data->{plugins}) {
-
-            my @plugins;
-
-            push @plugins,
-              "ARRAY" eq ref $data->{plugins}
-              ? @{$data->{plugins}}
-              : $data->{plugins};
-
-            foreach my $plugin (@plugins) {
-
-                if ($plugin !~ /^\+/) {
-
-                    $plugin = "Validation::Class::Plugin::$plugin";
-
-                }
-
-                $plugin =~ s/^\+//;
-
-                eval { use_module $plugin };
-
-            }
-
-            $proto->{config}->{PLUGINS}->{$_} = undef for @plugins;
-
-        }
-
-        # attach roles
-
-        if (grep { $data->{$_} } qw/base bases role roles/) {
-
-            my @roles;
-
-            my $alias =
-                 $data->{base}
-              || $data->{role}
-              || $data->{roles}
-              || $data->{bases};    # backwards compat
-
-            if ($alias) {
-
-                push @roles, "ARRAY" eq ref $alias ? @{$alias} : $alias;
-
-            }
-
-            if (@roles) {
-
-                foreach my $role (@roles) {
-
-                    eval { use_module $role };
-
-                    no strict 'refs';
-
-                    my @routines = grep { defined &{"$role\::$_"} }
-                      keys %{"$role\::"};
-
-                    if (@routines) {
-
-                        # copy methods
-
-                        foreach my $routine (@routines) {
-
-                            eval {
-
-                                *{"$proto->{package}\::$routine"} =
-                                  *{"$role\::$routine"}
-
-                            } unless $proto->{package}->can($routine);
-
-                        }
-
-                        my $role_proto = return_class_proto $role;
-
-                        $proto->{config}      ||= {};    # good measure
-                        $role_proto->{config} ||= {};    # good measure
-
-                        # merge configs
-
-                        $proto->{config} = merge $proto->{config},
-                          $role_proto->{config};
-
-                    }
-
-                }
-
-            }
-
-        }
+        return $proto;
 
     };
 
 }
 
 
-sub mth { goto &method }
-
-sub method {
+sub msg { goto &message } sub message {
 
     my $package = shift if @_ == 3;
 
-    my ($name, $data) = @_;
+    my ($name, $template) = @_;
 
-    return 0 unless ($name && $data);
+    return unless ($name && $template);
 
     return configure_class_proto $package => sub {
 
         my ($proto) = @_;
 
-        $proto->{config}->{METHODS}    ||= {};
-        $proto->{config}->{ATTRIBUTES} ||= {};
+        $proto->register_message($name, $template);
 
-        confess "Error creating method $name on $proto->{package}, "
-          . "collides with attribute $name"
-          if exists $proto->{config}->{ATTRIBUTES}->{$name};
-
-        confess "Error creating method $name on $proto->{package}, "
-          . "collides with method $name"
-          if $proto->{package}->can($name);
-
-        # create method
-
-        confess
-          "Error creating method $name, requires 'input' and 'using' options"
-          unless $data->{input} && $data->{using};
-
-        $proto->{config}->{METHODS}->{$name} = $data;
-
-        no strict 'refs';
-
-        *{"$proto->{package}\::$name"} = sub {
-
-            my $self = shift;
-            my @args = @_;
-
-            my $validator;
-
-            my $input  = $data->{'input'};
-            my $using  = $data->{'using'};
-            my $output = $data->{'output'};
-
-            if ($input) {
-
-                $validator = "ARRAY" eq ref $input
-                  ?
-
-                  # validate fields
-                  sub { $self->validate(@{$input}) }
-                  :
-
-                  # validate profile
-                  sub { $self->validate_profile($input, @args) };
-
-            }
-
-            if ($using) {
-
-                if ("CODE" eq ref $using) {
-
-                    my $error = "Method $name failed to validate";
-
-                    # run input validation
-                    if ("CODE" eq ref $validator) {
-
-                        unless ($validator->(@args)) {
-
-                            unshift @{$self->errors}, $error
-                              if $self->report_failure;
-
-                            confess $error
-                              . " input, "
-                              . $self->errors_to_string
-                              if !$self->ignore_failure;
-
-                            return 0;
-
-                        }
-
-                    }
-
-                    # execute routine
-                    my $return = $data->{using}->($self, @args);
-
-                    # run output validation
-                    if ($output) {
-
-                        $validator = "ARRAY" eq ref $output
-                          ?
-
-                          # validate fields
-                          sub { $self->validate(@{$output}) }
-                          :
-
-                          # validate profile
-                          sub { $self->validate_profile($output, @args) };
-
-                        confess $error. " output, " . $self->errors_to_string
-                          unless $validator->(@args);
-
-                    }
-
-                    return $return;
-
-                }
-
-                else {
-
-                    confess "Error executing $name, no associated coderef";
-
-                }
-
-            }
-
-            return 0;
-
-        };
+        return $proto;
 
     };
 
 }
 
 
-sub mxn { goto &mixin }
-
-sub mixin {
+sub mth { goto &method } sub method {
 
     my $package = shift if @_ == 3;
 
     my ($name, $data) = @_;
 
-    return 0 unless ($name && $data);
+    return unless ($name && $data);
 
     return configure_class_proto $package => sub {
 
-        my $proto = shift;
+        my ($proto) = @_;
 
-        $proto->{config}->{MIXINS} ||= {};
+        $proto->register_method($name, $data);
 
-        $proto->{config}->{MIXINS}->{$name} = $data;
+        return $proto;
+
+    };
+
+}
+
+
+sub mxn { goto &mixin } sub mixin {
+
+    my $package = shift if @_ == 3;
+
+    my ($name, $data) = @_;
+
+    return unless ($name && $data);
+
+    return configure_class_proto $package => sub {
+
+        my ($proto) = @_;
+
+        $proto->register_mixin($name, $data);
+
+        return $proto;
 
     };
 
@@ -842,7 +471,7 @@ sub new {
 
     my $proto = return_class_proto $class;
 
-    my $self = bless {}, $class;
+    my $self  = bless {},  $class;
 
     initialize_validator $self, @_;
 
@@ -850,134 +479,33 @@ sub new {
 
 }
 
-sub obj { goto &object }
 
-sub object {
+sub pro { goto &profile } sub profile {
 
     my $package = shift if @_ == 3;
 
-    my ($name, $data) = @_;
+    my ($name, $code) = @_;
 
-    return 0 unless ($name && $data);
+    return unless ($name && $code);
 
     return configure_class_proto $package => sub {
 
         my ($proto) = @_;
 
-        $proto->{config}->{OBJECTS}    ||= {};
-        $proto->{config}->{ATTRIBUTES} ||= {};
+        $proto->register_profile($name, $code);
 
-        confess "Error creating method $name on $proto->{package}, "
-          . "collides with attribute $name"
-          if exists $proto->{config}->{ATTRIBUTES}->{$name};
-
-        confess "Error creating method $name on $proto->{package}, "
-          . "collides with method $name"
-          if $proto->{package}->can($name);
-
-        # create method
-
-        confess "Error creating method $name, requires a 'type' option"
-          unless $data->{type};
-
-        $proto->{config}->{OBJECTS}->{$name} = $data;
-
-        no strict 'refs';
-
-        *{"$proto->{package}\::$name"} = sub {
-
-            my $self = shift;
-            my @args = @_;
-
-            my $validator;
-
-            my $type = $data->{'type'};
-            my $args = $data->{'args'};
-            my $init = $data->{'init'} ||= 'new';
-            my $list = $data->{'list'} ||= 'list';
-
-            my @params = ();
-
-            if ("CODE" eq ref $args) {
-
-                @params = ($args->($self));
-
-            }
-
-            else {
-
-                my $params = {};
-
-                my $fields =
-                  "ARRAY" eq ref $args
-                  ? $args
-                  : [$proto->fields->keys];
-
-                foreach my $field (@{$fields}) {
-
-                    $params->{$field} = $proto->get_value($field);
-
-                }
-
-                if ($list eq 'hash') {
-
-                    push @params, $params;
-
-                }
-
-                else {
-
-                    push @params, %{$params};
-
-                }
-
-            }
-
-            if (my $instance = $type->$init(@params)) {
-
-                return $instance;
-
-            }
-
-            return 0;
-
-        };
+        return $proto;
 
     };
 
 }
 
 
-sub pro { goto &profile }
-
-sub profile {
-
-    my $package = shift if @_ == 3;
-
-    my ($name, $data) = @_;
-
-    return 0 unless ($name && "CODE" eq ref $data);
-
-    return configure_class_proto $package => sub {
-
-        my ($proto) = @_;
-
-        $proto->{config}->{PROFILES} ||= {};
-
-        $proto->{config}->{PROFILES}->{$name} = $data;
-
-    };
-
-}
-
-
-sub proto { goto &prototype }
-
-sub prototype {
+sub proto { goto &prototype } sub prototype {
 
     my ($self) = pop @_;
 
-    return_class_proto ref $self || $self;
+    return return_class_proto ref $self || $self;
 
 }
 
@@ -989,114 +517,89 @@ __END__
 
 =head1 NAME
 
-Validation::Class - Self-Validating Object System and Data Validation Framework
+Validation::Class - Powerful Data Validation Framework
 
 =head1 VERSION
 
-version 7.86
+version 7.900000
 
 =head1 SYNOPSIS
 
-    package MyApp::User;
+    package MyApp::Person;
 
     use Validation::Class;
 
+    # a data validation template
     mixin basic     => {
         required    => 1,
         max_length  => 255,
         filters     => [qw/trim strip/]
     };
 
+    # data validation rules for the login parameter
     field login     => {
         mixin       => 'basic',
         min_length  => 5
     };
 
+    # data validation rules for the password parameter
     field password  => {
         mixin       => 'basic',
         min_length  => 5,
         min_symbols => 1
     };
 
-    package main;
+    # ... elsewhere in your application
+    my $person = MyApp::Person->new(login => 'admin', password => 'secr3t');
 
-    my $user = MyApp::User->new(login => 'admin', password => 'secr3t');
-
-    unless ($user->validate('login', 'password')) {
-
-        # do something with the errors,
-        # e.g. print $user->errors_to_string
-
+    unless ($person->validate) {
+        # handle the failures
     }
 
     1;
 
-Validation::Class is a data validation framework and simple object system. It
-allows you to model data and construct objects with focus on structure,
-reusability and data validation. It expects user input errors (without dying),
-validation only occurs when you ask it to. Validation::Class classes are designed
-to ensure consistency and promote reuse of data validation rules.
-
-L<Validation::Class::Intro> will help you better understand the framework's
-rationale and typical use-cases while L<Validation::Class::Prototype> will help
-you discover all the bells-and-whistles included in the framework.
-
 =head1 DESCRIPTION
 
-Validation::Class is much more than a robust data validation framework, in-fact
-it is more of a data modeling framework and can be used as an alternative to
-minimalistic object systems such as L<Moo>, L<Mo>, etc. Validation::Class aims
-to provide the building blocks for easily definable self-validating data models.
-For more information on the validation class object system, review
-L<"the object system"|/"THE OBJECT SYSTEM"> section.
+Validation::Class is a robust data validation framework which aims provide an
+extensible framework for developing clean yet sophisticated data validation
+objects.
 
-Validation classes are typically defined using the following keywords:
+The core feature-set consist of self-validating methods, validation profiles,
+reusable validation rules and templates, pre and post input filtering, class
+inheritance, automatic array handling, and extensibility (e.g. overriding
+default error messages, creating custom validators, creating custom input
+filters and much more).
 
-    * field     - a field is a data validation rule
-    * mixin     - a field template
-    * directive - a field/mixin rule attribute
-    * filter    - a directive which transforms the field parameter value
-    * method    - a self-validating sub-routine
-    * object    - a simple object builder
+=head1 QUICKSTART
 
-To keep your class namespace clean and free from pollution, all inherited
-functionality is configured on your class' prototype (a cached class
-configuration object) which leaves you free to create and overwrite method names
-in your class without breaking the Validation::Class framework, this all happens
-much in the same way L<Moose> uses it's MOP (meta-object-protocol) having most
-of the framework functionality residing in the Moose::Meta namespace. For more
-information on the validation class prototype, review
-L<"the prototype class"|/"THE PROTOTYPE CLASS"> section.
+If you are looking for a simple in-line data validation module built using the
+same tenets and principles as Validation::Class, please review
+L<Validation::Class::Simple>.
 
-One very important (and intentional) difference between Moose/Moose-like systems
-and Validation::Class classes is in the handling of errors. There are generally
-two types of errors that occur in an application, user-errors which are expected
-and should be handled and reported, and system-errors which are unexpected and
-should cause the application to terminate or otherwise handle the exception. It
-is not always desired and/or appropriate to crash from a failure to validate a
-particular parameter. In Validation::Class, the application is not terminated or
-validate automatically unless you configure it to.
+=head1 RATIONALE
 
-Additionally, please review the L<Validation::Class::Intro> for a more in-depth
-understanding of how to leverage Validation::Class.
+If you are new to Validation::Class, or would like more information on the
+underpinnings of this library and how it views and approaches data validation,
+please review L<Validation::Class::Whitepaper>.
 
 =head1 KEYWORDS
 
 =head2 attribute
 
-The attribute keyword (or has) creates a class attribute. This is only a
-minimalistic variant of what you may have encountered in other object systems
-such as L<Moose>, L<Mouse>, L<Moo>, L<Mo>, etc.
+The attribute keyword (or has) registers a class attribute. This is only a
+minimalistic variant of what you may have encountered in other object systems.
 
-    package MyApp::User;
+    package MyApp::Person;
 
     use Validate::Class;
 
-    attribute 'bothered' => 1;
+    attribute 'first_name' => 'Peter';
+    attribute 'last_name'  => 'Venkman';
 
-    attribute 'attitude' => sub {
+    attribute 'full_name'  => sub {
 
-        return $self->bothered ? 1 : 0
+        my ($self) = @_;
+        return join ', ', $self->last_name, $self->first_name;
 
     };
 
@@ -1108,36 +611,17 @@ coderef that will be used as its default value.
 =head2 build
 
 The build keyword (or bld) registers a coderef to be run at instantiation much
-in the same way the common BUILD routine is used in modern-day OO systems.
+in the same way the common BUILD routine is used in modern OO frameworks.
 
-    package MyApp::User;
+    package MyApp::Person;
 
     use Validation::Class;
 
     build sub {
 
-        my ($self, %args) = @_;
+        my ($self, $args) = @_;
 
-        # ... do something
-
-    };
-
-    # die like a Moose
-
-    use Carp;
-
-    build sub {
-
-        my ($self, %args) = @_;
-
-        my @attributes = qw();
-
-        foreach my $attribute (@attributes) {
-
-            confess "Attribute ($attribute) is required"
-                unless $self->$attribute;
-
-        }
+        # run after instantiation in the order declared
 
     };
 
@@ -1146,27 +630,27 @@ class object.
 
 =head2 directive
 
-The directive keyword (or dir) creates custom validator directives to be used in
-your field definitions. It is a means of extending the pre-existing directives
-table before runtime and is ideal for creating custom directive extension
-packages to be used in all your classes.
+The directive keyword (or dir) registers custom validator directives to be used
+in your field definitions. It is a means of extending the core field directives
+before instantiation.
 
     package MyApp::Directives;
 
-    use Validation::Class;
+    use Validation::Class 'directive';
+
     use Data::Validate::Email;
 
-    directive 'is_email' => sub {
+    directive 'isa_email_address' => sub {
 
-        my ($dir, $value, $field, $self) = @_;
+        my ($self, $prototype, $field, $param) = @_;
 
         my $validator = Data::Validate::Email->new;
 
-        unless ($validator->is_email($value)) {
+        unless ($validator->is_email($param)) {
 
-            my $handle = $field->{label} || $field->{name};
+            my $handle = $field->label || $field->name;
 
-            $field->{errors}->add("$handle must be a valid email address");
+            $field->errors->add("$handle must be a valid email address");
 
             return 0;
 
@@ -1176,44 +660,39 @@ packages to be used in all your classes.
 
     };
 
-    package MyApp::User;
+    package MyApp::Person;
 
     use Validate::Class;
+
     use MyApp::Directives;
 
-    field 'email' => {
-        is_email => 1,
-        ...
+    field 'email_address' => {
+        isa_email_address => 1
     };
 
     1;
 
 The directive keyword takes two arguments, the name of the directive and a
 coderef which will be used to validate the associated field. The coderef is
-passed four ordered parameters, the value of directive, the value of the
-field (parameter value), the field object (hashref), and the instantiated class
-object. The validator MUST return true or false.
-
-Additionally, if you only desire to extend the list of acceptable directives,
-you can create a no-op by simply returning true, e.g.:
-
-    directive 'new_addition' => sub {1};
+passed four ordered parameters; a directive object, the class prototype object,
+the current field object, and the matching parameter's value. The validator
+(coderef) is evaluated by its return value as well as whether it altered any
+error containers.
 
 =head2 field
 
-The field keyword (or fld) creates a data validation rule for reuse and validation
-in code. The field name should correspond with the parameter name expected to
-be passed to your validation class.
+The field keyword (or fld) registers a data validation rule for reuse and
+validation in code. The field name should correspond with the parameter name
+expected to be passed to your validation class.
 
-    package MyApp::User;
+    package MyApp::Person;
 
     use Validation::Class;
 
     field 'login' => {
         required   => 1,
         min_length => 1,
-        max_length => 255,
-        ...
+        max_length => 255
     };
 
 The field keyword takes two arguments, the field name and a hashref of
@@ -1224,24 +703,10 @@ field's corresponding parameter value(s). Accessors will be created using the
 field's name as a label having any special characters replaced with an
 underscore.
 
-    field 'login' => {
-        required   => 1,
-        min_length => 1,
-        max_length => 255,
-        ...
+    # accessor will be created as send_reminders
+    field 'send-reminders' => {
+        length   => 1
     };
-
-    field 'preference.send_reminders' => {
-        required   => 1,
-        max_length => 1,
-        ...
-    };
-
-    my $value = $self->login;
-
-    $self->login($new_value);
-
-    $self->preference_send_reminders;
 
 Protip: Field directives are used to validate scalar and array data. Don't use
 fields to store and validate objects. Please see the *has* keyword instead or
@@ -1249,10 +714,10 @@ use an object system with type constraints like L<Moose>.
 
 =head2 filter
 
-The filter keyword (or flt) creates custom filters to be used in your field
-definitions. It is a means of extending the pre-existing filters table before
-runtime and is ideal for creating custom directive extension packages to be used
-in all your classes.
+The filter keyword (or flt) registers custom filters to be used in your field
+definitions. It is a means of extending the pre-existing filters declared by
+the L<Validation::Class::Directive::Filters|"filters directive"> before
+instantiation.
 
     package MyApp::Directives;
 
@@ -1261,18 +726,18 @@ in all your classes.
     filter 'flatten' => sub {
 
         $_[0] =~ s/[\t\r\n]+/ /g;
-        $_[0] # return
+        return $_[0];
 
     };
 
-    package MyApp::User;
+    package MyApp::Person;
 
     use Validate::Class;
+
     use MyApp::Directives;
 
-    field 'description' => {
-        filters => ['trim', 'flatten'],
-        ...
+    field 'biography' => {
+        filters => ['trim', 'flatten']
     };
 
     1;
@@ -1282,26 +747,111 @@ coderef which will be used to filter the value the associated field. The coderef
 is passed the value of the field and that value MUST be operated on directly.
 The coderef should also return the transformed value.
 
+=head2 load
+
+The load keyword (or set), which can also be used as a class method, provides
+options for extending the current class by declaring roles, plugins, etc.
+
+The process of applying roles to the current class mainly involves copying the
+subject's methods and prototype configuration.
+
+    package MyApp::Person;
+
+    use Validation::Class;
+
+    load role => 'MyApp::User';
+
+    1;
+
+The `classes` (or class) option, can be a constant or arrayref and uses
+L<Module::Find> to load all child classes (in-all-subdirectories) for convenient
+access through the L<Validation::Class::Prototype/class> method.
+
+Existing parameters and configuration options are passed to the child class
+constructor. All attributes can be easily overwritten using the attribute's
+accessors on the child class. These child classes are often referred to as
+relatives. This option accepts a constant or an arrayref of constants.
+
+    package MyApp;
+
+    use Validation::Class;
+
+    # load all child classes
+    load classes => [__PACKAGE__];
+
+    package main;
+
+    my $app = MyApp->new;
+
+    my $person = $app->class('person'); # return a new MyApp::Person object
+
+    1;
+
+The `roles` (or role) option is used to load and inherit functionality from
+other validation classes. These classes should be used and thought-of as roles
+although they can also be fully-functioning validation classes. This option
+accepts a constant or an arrayref of constants.
+
+    package MyApp::Person;
+
+    use Validation::Class;
+
+    load roles => ['MyApp::User', MyApp::Visitor'];
+
+    1;
+
+=head2 message
+
+The message keyword (or msg) registers a class-level error message template that
+will be used in place of the error message defined in the corresponding directive
+class if defined. Error messages can also be overriden at the individual
+field-level as well. See the
+L<Validation::Class::Directive::Messages|"messages directive"> for instructions
+on how to override error messages at the field-level.
+
+    package MyApp::Person;
+
+    use Validation::Class;
+
+    field email_address => {
+        required   => 1,
+        min_length => 3,
+        messages   => {
+            # field-level error message override
+            min_length => '%s is not even close to being a valid email address'
+        }
+    };
+
+    # class-level error message overrides
+    message required   => '%s is needed to proceed';
+    message min_length => '%s needs more characters';
+
+    1;
+
+The message keyword takes two arguments, the name of the directive whose error
+message you wish to override and a string which will be used to as a template
+which is feed to `sprintf` to format the message.
+
 =head2 method
 
-The method keyword (or mth) is used to create an auto-validating method. Similar
-to method signatures, an auto-validating method can leverage pre-existing
+The method keyword (or mth) is used to register an auto-validating method.
+Similar to method signatures, an auto-validating method can leverage pre-existing
 validation rules and profiles to ensure a method has the required data necessary
-to proceed.
+for execution.
 
-    package MyApp::User;
+    package MyApp::Person;
 
     use Validation::Class;
 
     method 'register' => {
 
-        input  => ['name', '+email', 'login', '+password'],
+        input  => ['name', '+email', 'login', '+password', '+password2'],
         output => ['+id'], # optional output validation, dies on failure
         using  => sub {
 
             my ($self, @args) = @_;
 
-            # .... do something registrationy
+            # do something registrationy
 
             $self->id(...); # set the ID field for output validation
 
@@ -1313,55 +863,57 @@ to proceed.
 
     package main;
 
-    my $user = MyApp::User->new(params => $params);
+    my $person = MyApp::Person->new(params => $params);
 
-    if ($user->register) {
-        ...
+    if ($person->register) {
+
+        # handle the successful registration
+
     }
 
     1;
 
 The method keyword takes two arguments, the name of the method to be created
-and a hashref of required key/value pairs. The hashref must have an "input"
-variable whose value is either an arrayref of fields to be validated,
-or a constant value which matches a validation profile name. The hashref must
-also have a "using" variable whose value is a coderef which will be executed upon
-successfully validating the input. Whether and what the method returns is yours
-to decide.
+and a hashref of required key/value pairs. The hashref must have an `input`
+key whose value is either an arrayref of fields to be validated, or a constant
+value which matches a validation profile name. The hashref must also have a
+`using` key whose value is a coderef which will be executed upon successfully
+validating the input. Whether and what the method returns is yours to decide.
 
-Optionally the required hashref can have an "output" variable whose value is
-either an arrayref of fields to be validated, or a constant value which matches
+Optionally the required hashref can have an `output` key whose value is either
+an arrayref of fields to be validated, or a constant value which matches
 a validation profile name which will be used to perform data validation B<after>
-the coderef has been executed. Please note that output validation failure will
-cause the program to die, the premise behind this decision is based on the
-assumption that given successfully validated input a routine's output should be
-predictable and if an error occurs it is most-likely a program error as opposed
-to a user error.
+the aforementioned coderef has been executed.
+
+Please note that output validation failure will cause the program to die,
+the premise behind this decision is based on the assumption that given
+successfully validated input a routine's output should be predictable and if an
+error occurs it is most-likely a program error as opposed to a user error.
 
 See the ignore_failure and report_failure switch to control how method input
 validation failures are handled.
 
 =head2 mixin
 
-The mixin keyword (or mxn) creates a validation rules template that can be
-applied to any field using the mixin directive. Mixin directives are processed
-first so existing field directives will override the mixed-in directives.
+The mixin keyword (or mxn) registers a validation rule template that can be
+applied (or "mixed-in") to any field by specifying the mixin directive. Mixin
+directives are processed first so existing field directives will override any
+directives created by the mixin directive.
 
-    package MyApp::User;
+    package MyApp::Person;
 
     use Validation::Class;
 
-    mixin 'constrain' => {
+    mixin 'boilerplate' => {
         required   => 1,
         min_length => 1,
-        max_length => 255,
-        ...
+        max_length => 255
     };
 
-    # e.g.
+    # min_length, max_length, but not required
     field 'login' => {
-        mixin => 'constrain',
-        ...
+        mixin    => 'boilerplate',
+        required => 0
     };
 
 The mixin keyword takes two arguments, the mixin name and a hashref of key/values
@@ -1369,39 +921,34 @@ pairs known as directives.
 
 =head2 profile
 
-The profile keyword (or pro) stores a validation profile (coderef) which as in
-the traditional use of the term is a sequence of validation routines that validate
-data relevant to a specific action.
+The profile keyword (or pro) registers a validation profile (coderef) which as
+in the traditional use of the term is a sequence of validation routines that
+validates data relevant to a specific action.
 
-    package MyApp::User;
+    package MyApp::Person;
 
     use Validation::Class;
 
-    profile 'signup' => sub {
+    profile 'check_email' => sub {
 
         my ($self, @args) = @_;
 
-        # ... do other stuff
+        if ($self->email_exists) {
+            my $email = $self->fields->get('email');
+            $email->errors->add('Email already exists');
+            return 0;
+        }
 
-        return $self->validate(qw(
-            +name
-            +email
-            +email_confirmation
-            -login
-            +password
-            +password_confirmation
-        ));
+        return 1;
 
     };
 
     package main;
 
-    my $user = MyApp::User->new(params => $params);
+    my $user = MyApp::Person->new(params => $params);
 
-    unless ($user->validate_profile('signup')) {
-
-        die $user->errors_to_string;
-
+    unless ($user->validate_profile('check_email')) {
+        # handle failures
     }
 
 The profile keyword takes two arguments, a profile name and coderef which will
@@ -1413,157 +960,64 @@ be used to execute a sequence of actions for validation purposes.
 
 The new method instantiates a new class object, it performs a series of actions
 (magic) required for the class function properly, and for that reason, this
-method should never be overridden. Use the build keyword to hooking into the
+method should never be overridden. Use the build keyword for hooking into the
 instantiation process.
 
-    package MyApp;
+In the event a foreign `new` method is detected, an `initialize_validator`
+method will be injected into the class containing the code (magic) necessary to
+normalize your environment.
+
+    package MyApp::Person;
 
     use Validation::Class;
 
-    # optionally
-
+    # hook
     build sub {
 
-        my ($self, @args) = @_; # is instantiated
+        my ($self, @args) = @_; # on instantiation
 
     };
 
-    package main;
+    sub new {
 
-    my $app = MyApp->new;
+        # rolled my own
+        my $self = bless {}, shift;
 
-    ...
+        # execute magic
+        $self->initialize_validator;
+
+    }
 
 =head2 prototype
 
 The prototype method (or proto) returns an instance of the associated class
 prototype. The class prototype is responsible for manipulating and validating
 the data model (the class). It is not likely that you'll need to access
-this method directly, see L<Validation::Class/"THE PROTOTYPE CLASS">.
+this method directly, see L<Validation::Class::Prototype>.
 
-    package MyApp;
-
-    use Validation::Class;
-
-    package main;
-
-    my $app = MyApp->new;
-
-    my $prototype = $app->prototype;
-
-    ...
-
-=head1 THE PROTOTYPE CLASS
-
-This module provides mechanisms (sugar functions to model your data) which allow
-you to define self-validating classes. Each class you create is associated with
-a *prototype* class which provides data validation functionality and keeps your
-class' namespace free from pollution, please see L<Validation::Class::Prototype>
-for more information on specific methods, and attributes.
-
-All derived classes will have a prototype-class attached to it which does all
-the heavy lifting (regarding validation and error handling). The prototype
-injects a few proxy methods into your class which are basically aliases to your
-prototype class methods, however it is possible to access the prototype directly
-using the proto/prototype methods.
-
-    package MyApp::User;
+    package MyApp::Person;
 
     use Validation::Class;
 
     package main;
 
-    my $user  = MyApp::User->new;
-    my $proto = $user->prototype;
+    my $person = MyApp::Person->new;
 
-    $proto->error_count # same as calling $self->error_count
+    my $prototype = $person->prototype;
 
-=head1 THE OBJECT SYSTEM
+=head1 VALIDATION ENGINE BY PROXY
 
-All derived classes will benefit from the light-weight, straight-forward and
-simple object system Validation::Class provides. The conventional constructor
-C<new> should be used to instantiate a new object, and the C<bld>/C<build>
-keywords can be used to hook into the instantiation process. Your classes can
-be configured to cooperate with an existing design or modern OO framework like
-L<Moose>, L<Mouse>, L<Moo>, etc. The following example explains how to setup a
-Validation::Class class in cooperation with Moose (while this example focuses
-on Moose, the approach is the same regardless of the existing system):
+Validation::Class mostly provides sugar functions for modeling your data
+validation requirements. Each class you create is associated with a *prototype*
+class which provides the data validation engine and keeps your class namespace
+free from pollution, please see L<Validation::Class::Prototype> for more
+information on specific methods and attributes.
 
-    # USING MOOSE AS YOUR PRIMARY OO SYSTEM
+Validation::Class injects a few proxy methods into your class which are
+basically aliases to the corresponding prototype class methods, however it is
+possible to access the prototype directly using the proto/prototype methods.
 
-    package MyApp;
-
-    use Moose;
-    use Validation::Class '!has'; # in cooperative mode, dont export has()
-
-    # you must run initialization routines yourself ...
-    # specifying it in a BUILD routine will run it automatically
-
-    sub BUILD {
-
-        my ($self, $args) = @_;
-
-        $self->initialize_validator(
-            params => $args->{params}
-        );
-
-    }
-
-    field login     => {
-        min_length  => 5
-        max_length  => 50
-    };
-
-    field password  => {
-        min_length  => 8,
-        min_symbols => 1
-        max_length  => 50
-    };
-
-    # USING MOOSE AS YOUR SECONDARY/BACKUP OO SYSTEM
-
-    package MyApp;
-
-    use Validation::Class '!has'; # avoids has() keyword clash
-    use Moose;
-
-    field login     => {
-        min_length  => 5
-        max_length  => 50
-    };
-
-    field password  => {
-        min_length  => 8,
-        min_symbols => 1
-        max_length  => 50
-    };
-
-    has database => (
-        is  => 'rw',
-        isa => 'DBI::db',
-        ...
-    );
-
-    1;
-
-This cooperation works by simply detecting the existence of a method named C<new>,
-the name traditionally reserved for a class constructor which if detected signals
-Validation::Class to install a method named C<initialize> as opposed to installing
-its own constructor. The installed method, C<initialize>, encapsulates the
-functionality which prepares the class for interaction with its corresponding
-prototype class, this function must be called before using the Validation::Class
-features provided. If this concept isn't clear to you you needn't worry as this
-is very low-level, all you need you understand is that Validation::Class
-will install a constructor or a method named initialize if a constructor already
-exists, either way, the installed method should be called before executing
-methods on the class.
-
-As previously stated, Validation::Class injects a few proxy methods into your
-class which are basically aliases to your prototype class methods. You can
-find additional information on the prototype class and its method at
-L<Validation::Class::Prototype>. The following is a list of *proxy* methods,
-methods which are injected into your class as shorthand to methods defined in
-the prototype class (these methods are overridden):
+=head1 PROXY METHODS
 
 =head2 class
 
@@ -1658,12 +1112,6 @@ See L<Validation::Class::Prototype/param> for full documentation.
 
 See L<Validation::Class::Prototype/params> for full documentation.
 
-=head2 plugin
-
-    $self->plugin;
-
-See L<Validation::Class::Prototype/plugin> for full documentation.
-
 =head2 queue
 
     $self->queue;
@@ -1751,39 +1199,63 @@ See L<Validation::Class::Prototype/validate_profile> for full documentation.
 
 =head1 EXTENDING VALIDATION::CLASS
 
-Validation::Class does NOT provide
-method modifiers but can be easily extended with L<Class::Method::Modifiers>.
+Validation::Class does NOT provide method modifiers but can be easily extended
+with L<Class::Method::Modifiers>.
 
 =head2 before
 
- before foo => sub { ... };
+    before foo => sub { ... };
 
 See L<< Class::Method::Modifiers/before method(s) => sub { ... } >> for full
 documentation.
 
 =head2 around
 
- around foo => sub { ... };
+    around foo => sub { ... };
 
 See L<< Class::Method::Modifiers/around method(s) => sub { ... } >> for full
 documentation.
 
 =head2 after
 
- after foo => sub { ... };
+    after foo => sub { ... };
 
 See L<< Class::Method::Modifiers/after method(s) => sub { ... } >> for full
 documentation.
 
 =head1 SEE ALSO
 
+B<If you have simple data validation needs, please review:>
+
+=over
+
+=item L<Validation::Class::Simple>
+
+=back
+
 Additionally you may want to look elsewhere for your data validation needs so
-the following is a list of recommended validation libraries/frameworks you
-might do well to look into. L<Validate::Tiny> is nice for simple use-cases, it
-has virtually no dependencies and solid test coverage. L<Data::Verifier> is a
-great approach towards adding robust validation options to your existing Moose
-classes. Also, I have also heard some good things about L<Data::FormValidator>
-as well.
+the following is a list of other validation libraries/frameworks you might be
+interested in. If I've missed a really cool new validation library please let
+me know.
+
+=over
+
+=item L<HTML::FormHandler>
+
+This library seems to be the defacto standard for designing Moose classes with
+HTML-centric data validation rules.
+
+=item L<Data::Verifier>
+
+This library is a great approach towards adding robust validation logic to
+your existing Moose-based codebase.
+
+=item L<Validate::Tiny>
+
+This library is nice for simple use-cases, it has virtually no dependencies
+and solid test coverage.
+
+=back
 
 =head1 AUTHOR
 

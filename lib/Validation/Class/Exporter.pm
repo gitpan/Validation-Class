@@ -1,16 +1,13 @@
 # ABSTRACT: Simple Exporter for Validation::Class Classes
 
 package Validation::Class::Exporter;
-{
-    $Validation::Class::Exporter::VERSION = '7.86';
-}
 
 use 5.008001;
 
 use strict;
 use warnings;
 
-our $VERSION = '7.86';    # VERSION
+# VERSION
 
 
 sub apply_spec {
@@ -67,27 +64,24 @@ Validation::Class::Exporter - Simple Exporter for Validation::Class Classes
 
 =head1 VERSION
 
-version 7.86
+version 7.900000
 
 =head1 SYNOPSIS
 
-    package MyApp::Class;
+    package MyApp::Validator;
 
     use Validation::Class;
     use Validation::Class::Exporter;
 
-    Validation::Class::Exporter->apply_spec(
-        routines => ['thing'], # export routines as is
-        settings => [ ... ] # passed to the "load" method, see Validation::Class
+    my @plugins = qw(
+        Validation::Class::Plugin::FormFields
+        Validation::Class::Plugin::Objectify
     );
 
-    has foo => 0;
-
-    bld sub {
-
-        shift->foo(1);
-
-    };
+    Validation::Class::Exporter->apply_spec(
+        routines => ['thing'], # export additional routines as is
+        settings => [@plugins] # passed to the `set` method in Validation::Class
+    );
 
     sub thing {
 
@@ -97,19 +91,23 @@ version 7.86
 
         # routine as a keyword
 
-        $class->{config}->{THING} = [$args];
+        # ... do some thing
 
     };
 
-    package MyApp::Example;
+... in your application class:
 
-    use MyApp::Class;
+    package MyApp;
 
-    thing ['this' => 'that'];
+    use MyApp::Validator;
+
+    thing ['a', 'b'];
+
+... in your application:
 
     package main;
 
-    my $eg = MyApp::Example->new; # we have lift-off!!!
+    my $app = MyApp->new;
 
 =head1 DESCRIPTION
 

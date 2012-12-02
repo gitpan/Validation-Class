@@ -1,37 +1,52 @@
-# ABSTRACT: Container Class for Validation::Class::Field Objects
+# Container Class for Validation::Class::Field Objects
+
+# Validation::Class::Fields is a container class for L<Validation::Class::Field>
+# objects and is derived from the L<Validation::Class::Mapping> class.
 
 package Validation::Class::Fields;
-{
-    $Validation::Class::Fields::VERSION = '7.86';
-}
 
 use strict;
 use warnings;
 
-our $VERSION = '7.86';    # VERSION
-
+use Validation::Class::Util '!has';
+use Hash::Flatten ();
 use Carp 'confess';
 
-use base 'Validation::Class::Collection';
+# VERSION
 
+use base 'Validation::Class::Mapping';
+
+use Validation::Class::Mapping;
 use Validation::Class::Field;
-
 
 sub add {
 
     my $self = shift;
 
-    my %arguments = @_ % 2 ? %{$_[0]} : @_;
+    my $arguments = $self->build_args(@_);
+    my @suspects  = sort keys %{$arguments};
 
-    while (my ($key, $object) = each %arguments) {
+    confess
 
-        $object->{name} = $key
-          unless defined $object->{name};
+        "Illegal field names detected, possible attempt to define validation " .
+        "rules for a parameter containing an array of nested structures on " .
+        "the following fields: " . join ", ", @suspects
 
-        $object = Validation::Class::Field->new($object)
-          unless "Validation::Class::Field" eq ref $object;
+        if grep /(:.*:|:\d+.)/, @suspects
 
-        $self->{$key} = $object;
+    ;
+
+    while (my ($key, $value) = each %{$arguments}) {
+
+        # never overwrite
+        unless (defined $self->{$key}) {
+            if (isa_hashref($value)) {
+                $value->{name} = $key;
+            }
+            $self->{$key} = $value; # accept an object as a value
+            $self->{$key} = Validation::Class::Field->new($value) unless
+                "Validation::Class::Field" eq ref $self->{$key}; # unless obj
+        }
 
     }
 
@@ -39,43 +54,14 @@ sub add {
 
 }
 
-sub clear {
+sub flatten {
 
-    #noop - fields can't be deleted this way
+    my ($self) = @_;
+
+    return Validation::Class::Mapping->new(
+        Hash::Flatten::flatten($self->hash)
+    );
 
 }
 
 1;
-__END__
-=pod
-
-=head1 NAME
-
-Validation::Class::Fields - Container Class for Validation::Class::Field Objects
-
-=head1 VERSION
-
-version 7.86
-
-=head1 SYNOPSIS
-
-    ...
-
-=head1 DESCRIPTION
-
-Validation::Class::Fields is a container class for L<Validation::Class::Field>
-objects and is derived from the L<Validation::Class::Collection> class.
-
-=head1 AUTHOR
-
-Al Newkirk <anewkirk@ana.io>
-
-=head1 COPYRIGHT AND LICENSE
-
-This software is copyright (c) 2011 by Al Newkirk.
-
-This is free software; you can redistribute it and/or modify it under
-the same terms as the Perl 5 programming language system itself.
-
-=cut
-
