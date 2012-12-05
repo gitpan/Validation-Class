@@ -99,7 +99,7 @@ Validation::Class::Simple - Simple Ad-Hoc Data Validation
 
 =head1 VERSION
 
-version 7.900001
+version 7.900002
 
 =head1 SYNOPSIS
 
@@ -136,6 +136,13 @@ keywords, etc).
 It can be useful in an environment where you wouldn't care to create a
 validation class and instead would simply like to pass rules to a validation
 engine in an ad-hoc fashion.
+
+=head1 QUICKSTART
+
+If you are looking for a data validation module with an even lower learning curve
+built using the same tenets and principles as Validation::Class which is as
+simple and even lazier than this module, please review the tested but
+experimental L<Validation::Class::Simple::Streamer>.
 
 =head1 RATIONALE
 

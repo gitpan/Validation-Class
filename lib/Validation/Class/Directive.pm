@@ -122,7 +122,7 @@ Validation::Class::Directive - Base Class for Validation Class Directives
 
 =head1 VERSION
 
-version 7.900001
+version 7.900002
 
 =head1 SYNOPSIS
 
@@ -130,6 +130,7 @@ version 7.900001
 
     use base 'Validation::Class::Directive';
     use Validation::Class::Util;
+    use File::Slurp;
 
     has 'mixin'     => 0;
     has 'field'     => 1;

@@ -521,7 +521,7 @@ Validation::Class - Powerful Data Validation Framework
 
 =head1 VERSION
 
-version 7.900001
+version 7.900002
 
 =head1 SYNOPSIS
 

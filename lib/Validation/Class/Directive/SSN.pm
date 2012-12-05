@@ -47,7 +47,7 @@ Validation::Class::Directive::SSN - SSN Directive for Validation Class Field Def
 
 =head1 VERSION
 
-version 7.900001
+version 7.900002
 
 =head1 SYNOPSIS
 

@@ -66,12 +66,14 @@ lib/Validation/Class/Mixins.pm
 lib/Validation/Class/Params.pm
 lib/Validation/Class/Prototype.pm
 lib/Validation/Class/Simple.pm
+lib/Validation/Class/Simple/Streamer.pm
 lib/Validation/Class/Util.pm
 lib/Validation/Class/Whitepaper.pod
 t/00-load-simple.t
 t/00-load.t
 t/01-access.t
 t/02-integrity.t
+t/03-streaming.t
 t/legacy/10-attribute-method.t
 t/legacy/10-build-method.t
 t/legacy/10-directive-method.t

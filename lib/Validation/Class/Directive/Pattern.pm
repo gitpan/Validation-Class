@@ -61,7 +61,7 @@ Validation::Class::Directive::Pattern - Pattern Directive for Validation Class F
 
 =head1 VERSION
 
-version 7.900001
+version 7.900002
 
 =head1 SYNOPSIS
 
