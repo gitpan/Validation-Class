@@ -126,7 +126,7 @@ Validation::Class::Directive::State - State Directive for Validation Class Field
 
 =head1 VERSION
 
-version 7.900002
+version 7.900003
 
 =head1 SYNOPSIS
 

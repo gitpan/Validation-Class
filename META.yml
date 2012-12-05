@@ -24,6 +24,6 @@ requires:
   utf8: 0
 resources:
   bugtracker: https://github.com/alnewkirk/Validation-Class/issues
-  homepage: http://search.cpan.org/dist/Validation-Class/
+  homepage: https://metacpan.org/module/Validation::Class
   repository: git://github.com/alnewkirk/Validation-Class.git
-version: 7.900002
+version: 7.900003

@@ -1939,7 +1939,7 @@ Validation::Class::Prototype - Data Validation Engine for Validation::Class Clas
 
 =head1 VERSION
 
-version 7.900002
+version 7.900003
 
 =head1 DESCRIPTION
 

@@ -44,7 +44,7 @@ Validation::Class::Directive::Filtering - Filtering Directive for Validation Cla
 
 =head1 VERSION
 
-version 7.900002
+version 7.900003
 
 =head1 SYNOPSIS
 

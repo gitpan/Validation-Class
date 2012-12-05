@@ -87,7 +87,7 @@ Validation::Class::Directive::Toggle - Toggle Directive for Validation Class Fie
 
 =head1 VERSION
 
-version 7.900002
+version 7.900003
 
 =head1 DESCRIPTION
 

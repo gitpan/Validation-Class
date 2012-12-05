@@ -27,7 +27,7 @@ Validation::Class::Directive::Name - Name Directive for Validation Class Field D
 
 =head1 VERSION
 
-version 7.900002
+version 7.900003
 
 =head1 DESCRIPTION
 

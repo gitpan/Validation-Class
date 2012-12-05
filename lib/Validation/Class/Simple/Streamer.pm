@@ -198,7 +198,7 @@ Validation::Class::Simple::Streamer - Simple Streaming Data Validation
 
 =head1 VERSION
 
-version 7.900002
+version 7.900003
 
 =head1 SYNOPSIS
 
@@ -206,31 +206,29 @@ version 7.900002
 
     my $params = Validation::Class::Simple::Streamer->new($parameters);
 
-    $params->check($_)->filters('trim, strip') for qw(login password);
+    # the point here is expressiveness
 
-    unless ($params->check('email_address')->length(3)->email) {
-        # validated login, password and email_address
+    unless ($params->check('user_cc')->creditcard(['visa', 'mastercard'])) {
+        # credit card is valid
     }
 
-    unless ($params->check('home_phone')->telephone) {
-        # validated login, password, email_address and home_phone
+    unless ($params->check('email_address')->min_length(3)->email) {
+        # email address is valid
     }
 
+    # prepare password for validation
     $params->check('password');
 
-    # be as expressive as you like
-    # validates login, password, email_address and home_phone
-    ok() if
-        $params->max_length(15) &&
-        $params->min_symbols(1) &&
-        $params->matches('password2')
-    ;
+    die "Password is not valid"
+        unless $params->min_symbols(1) && $params->matches('password2');
 
     # are you of legal age?
     if ($params->check('user_age')->between('18-75')) {
         # access to explicit content approved
-        # validated login, password, email_address, home_phone and user_age
     }
+
+    # print any errors
+    print "$params\n";
 
     # validate like a boss
     # THE END
