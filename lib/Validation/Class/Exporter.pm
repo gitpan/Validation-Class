@@ -64,7 +64,7 @@ Validation::Class::Exporter - Simple Exporter for Validation::Class Classes
 
 =head1 VERSION
 
-version 7.900003
+version 7.900004
 
 =head1 SYNOPSIS
 

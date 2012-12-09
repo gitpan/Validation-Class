@@ -26,4 +26,4 @@ resources:
   bugtracker: https://github.com/alnewkirk/Validation-Class/issues
   homepage: https://metacpan.org/module/Validation::Class
   repository: git://github.com/alnewkirk/Validation-Class.git
-version: 7.900003
+version: 7.900004

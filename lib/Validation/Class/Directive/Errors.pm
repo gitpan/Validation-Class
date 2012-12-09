@@ -27,7 +27,7 @@ Validation::Class::Directive::Errors - Errors Directive for Validation Class Fie
 
 =head1 VERSION
 
-version 7.900003
+version 7.900004
 
 =head1 DESCRIPTION
 

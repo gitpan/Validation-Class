@@ -215,7 +215,7 @@ Validation::Class::Directive::Filters - Filters Directive for Validation Class F
 
 =head1 VERSION
 
-version 7.900003
+version 7.900004
 
 =head1 SYNOPSIS
 
