@@ -198,7 +198,7 @@ Validation::Class::Simple::Streamer - Simple Streaming Data Validation
 
 =head1 VERSION
 
-version 7.900004
+version 7.900005
 
 =head1 SYNOPSIS
 

@@ -158,7 +158,7 @@ Validation::Class::Directives - Validation::Class Core Directives Registry
 
 =head1 VERSION
 
-version 7.900004
+version 7.900005
 
 =head1 DESCRIPTION
 

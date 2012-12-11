@@ -47,7 +47,7 @@ Validation::Class::Directive::Zipcode - Zipcode Directive for Validation Class F
 
 =head1 VERSION
 
-version 7.900004
+version 7.900005
 
 =head1 SYNOPSIS
 

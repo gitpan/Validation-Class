@@ -81,7 +81,7 @@ Validation::Class::Directive::Date - Date Directive for Validation Class Field D
 
 =head1 VERSION
 
-version 7.900004
+version 7.900005
 
 =head1 SYNOPSIS
 

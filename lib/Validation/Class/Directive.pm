@@ -122,7 +122,7 @@ Validation::Class::Directive - Base Class for Validation Class Directives
 
 =head1 VERSION
 
-version 7.900004
+version 7.900005
 
 =head1 SYNOPSIS
 

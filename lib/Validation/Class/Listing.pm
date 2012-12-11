@@ -273,7 +273,7 @@ Validation::Class::Listing - Generic Container Class for an Array Reference
 
 =head1 VERSION
 
-version 7.900004
+version 7.900005
 
 =head1 SYNOPSIS
 

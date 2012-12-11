@@ -27,7 +27,7 @@ Validation::Class::Directive::Messages - Messages Directive for Validation Class
 
 =head1 VERSION
 
-version 7.900004
+version 7.900005
 
 =head1 SYNOPSIS
 

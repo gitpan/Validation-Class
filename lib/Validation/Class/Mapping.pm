@@ -174,7 +174,7 @@ sub keys {
 
     my ($self) = @_;
 
-    return (keys($self->hash));
+    return (keys(%{$self->hash}));
 
 }
 
@@ -280,7 +280,7 @@ sub values {
 
     my ($self) = @_;
 
-    return (values($self->hash));
+    return (values(%{$self->hash}));
 
 }
 
@@ -295,7 +295,7 @@ Validation::Class::Mapping - Generic Container Class for a Hash Reference
 
 =head1 VERSION
 
-version 7.900004
+version 7.900005
 
 =head1 SYNOPSIS
 
