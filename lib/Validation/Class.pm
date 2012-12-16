@@ -15,7 +15,7 @@ use Exporter ();
 
 use Validation::Class::Prototype;
 
-our $VERSION = '7.900008'; # VERSION
+our $VERSION = '7.900009'; # VERSION
 
 our @ISA    = qw(Exporter);
 our @EXPORT = qw(
@@ -522,7 +522,7 @@ Validation::Class - Powerful Data Validation Framework
 
 =head1 VERSION
 
-version 7.900008
+version 7.900009
 
 =head1 SYNOPSIS
 
@@ -530,11 +530,10 @@ version 7.900008
 
     my $input = Validation::Class::Simple::Streamer->new($params);
 
-    $input->check('login')->min_length(5);
+    $input->check('username')->min_length(5);
     $input->check('password')->min_length(5)->min_symbols(1);
-
     $input->check($_)->required->max_length(255)->filters([qw/trim strip/])
-        for qw/login password/
+        for qw/username password/
     ;
 
     unless ($input) {
@@ -577,8 +576,8 @@ of Validation::Class:
         filters     => [qw/trim strip/]
     };
 
-    # data validation rule for the login parameter
-    field login     => {
+    # data validation rule for the username parameter
+    field username  => {
         mixin       => 'basic',
         min_length  => 5
     };
@@ -591,7 +590,7 @@ of Validation::Class:
     };
 
     # elsewhere in your application
-    my $person = MyApp::Person->new(login => 'admin', password => 'secr3t');
+    my $person = MyApp::Person->new(username => 'admin', password => 'secr3t');
 
     # validate rules on the person object
     unless ($person->validates) {
@@ -721,7 +720,7 @@ expected to be passed to your validation class or validated against.
 
     use Validation::Class;
 
-    field 'login' => {
+    field 'username' => {
         required   => 1,
         min_length => 1,
         max_length => 255
@@ -876,7 +875,7 @@ for execution.
 
     method 'register' => {
 
-        input  => ['name', '+email', 'login', '+password', '+password2'],
+        input  => ['name', '+email', 'username', '+password', '+password2'],
         output => ['+id'], # optional output validation, dies on failure
         using  => sub {
 
@@ -906,23 +905,26 @@ for execution.
 
 The method keyword takes two arguments, the name of the method to be created
 and a hashref of required key/value pairs. The hashref must have an `input`
-key whose value is either an arrayref of fields to be validated, or a constant
-value which matches a validation profile name. The hashref must also have a
-`using` key whose value is a coderef which will be executed upon successfully
-validating the input. Whether and what the method returns is yours to decide.
+key whose value is either an arrayref of fields to be validated, or a scalar
+value which matches (a validation profile or auto-validating method name). The
+hashref must also have a `using` key whose value is a coderef which will be
+executed upon successfully validating the input. The `using` key/coderef can be
+omitted when a sub-routine of the same name prefixed with an underscore is
+present. Whether and what the method returns is yours to decide. The method will
+return 0 if validation fails.
 
 Optionally the required hashref can have an `output` key whose value is either
-an arrayref of fields to be validated, or a constant value which matches
-a validation profile name which will be used to perform data validation B<after>
-the aforementioned coderef has been executed.
+an arrayref of fields to be validated, or a scalar value which matches
+(a validation profile or auto-validating method name) which will be used to
+perform data validation B<after> the aforementioned coderef has been executed.
 
 Please note that output validation failure will cause the program to die,
 the premise behind this decision is based on the assumption that given
 successfully validated input a routine's output should be predictable and if an
 error occurs it is most-likely a program error as opposed to a user error.
 
-See the ignore_failure and report_failure switch to control how method input
-validation failures are handled.
+See the ignore_failure and report_failure attributes on the prototype to control
+how method input validation failures are handled.
 
 =head2 mixin
 
@@ -941,8 +943,8 @@ directives created by the mixin directive.
         max_length => 255
     };
 
-    # min_length, max_length, but not required
-    field 'login' => {
+    field 'username' => {
+        # min_length, max_length, but not required
         mixin    => 'boilerplate',
         required => 0
     };

@@ -9,7 +9,7 @@ use base 'Validation::Class::Directive';
 
 use Validation::Class::Util;
 
-our $VERSION = '7.900008'; # VERSION
+our $VERSION = '7.900009'; # VERSION
 
 
 has 'mixin'     => 1;
@@ -56,7 +56,7 @@ Validation::Class::Directive::MaxDigits - MaxDigits Directive for Validation Cla
 
 =head1 VERSION
 
-version 7.900008
+version 7.900009
 
 =head1 SYNOPSIS
 

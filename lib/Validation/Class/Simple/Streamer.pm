@@ -15,7 +15,7 @@ use overload
 use Validation::Class::Simple;
 use Validation::Class::Util;
 
-our $VERSION = '7.900008'; # VERSION
+our $VERSION = '7.900009'; # VERSION
 
 
 sub new {
@@ -198,7 +198,7 @@ Validation::Class::Simple::Streamer - Simple Streaming Data Validation
 
 =head1 VERSION
 
-version 7.900008
+version 7.900009
 
 =head1 SYNOPSIS
 
