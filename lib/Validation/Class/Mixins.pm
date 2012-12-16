@@ -10,7 +10,7 @@ use warnings;
 
 use Validation::Class::Util '!has';
 
-# VERSION
+our $VERSION = '7.900006'; # VERSION
 
 use base 'Validation::Class::Mapping';
 

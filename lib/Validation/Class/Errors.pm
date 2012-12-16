@@ -11,7 +11,7 @@ use warnings;
 
 use Validation::Class::Util '!has', '!hold';
 
-# VERSION
+our $VERSION = '7.900006'; # VERSION
 
 use base 'Validation::Class::Listing';
 

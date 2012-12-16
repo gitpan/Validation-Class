@@ -14,7 +14,7 @@ use Validation::Class::Fields;
 use Validation::Class::Errors;
 use Validation::Class::Util;
 
-# VERSION
+our $VERSION = '7.900006'; # VERSION
 
 use Hash::Flatten 'flatten', 'unflatten';
 use Module::Runtime 'use_module';
@@ -541,6 +541,22 @@ sub errors_to_string {
     $errors->add($_->errors->list) for ($self->fields->values);
 
     return $errors->to_string(@_);
+
+}
+
+sub flatten_params {
+
+    my ($self, $hash) = @_;
+
+    if ($hash) {
+
+        $hash = Hash::Flatten::flatten($hash);
+
+        $self->params->add($hash);
+
+    }
+
+    return $self->params->flatten->hash || {};
 
 }
 
@@ -1106,7 +1122,7 @@ sub register_field {
 
     my $package = $self->package;
 
-    confess "Error creating field $name, name is using unconventional naming"
+    confess "Error creating field $name, name is not properly formatted"
         unless $name =~ /^[a-zA-Z_](([\w\.]+)?\w)$/
         xor    $name =~ /^[a-zA-Z_](([\w\.]+)?\w)\:\d+$/;
 
@@ -1703,11 +1719,9 @@ sub trigger_event {
 
 sub unflatten_params {
 
-    my ($self, $hash) = @_;
+    my ($self) = @_;
 
-    $hash ||= $self->params->hash;
-
-    return unflatten($hash) || {};
+    return $self->params->unflatten->hash || {};
 
 }
 
@@ -1939,7 +1953,7 @@ Validation::Class::Prototype - Data Validation Engine for Validation::Class Clas
 
 =head1 VERSION
 
-version 7.900005
+version 7.900006
 
 =head1 DESCRIPTION
 
