@@ -14,7 +14,7 @@ use Carp 'confess';
 
 our $_registry = {map{$_=>$_->new}(usesub 'Validation::Class::Directive')};
 
-our $VERSION = '7.900009'; # VERSION
+our $VERSION = '7.900010'; # VERSION
 
 
 sub new {
@@ -51,7 +51,7 @@ sub add {
             # is it a directive sub-class
             elsif (isa_classref($value)) {
                 if ($value->isa("Validation::Class::Directive")) {
-                    $self->{$key} = $value;
+                    $self->{$value->name} = $value;
                 }
             }
             # is it a hashref
@@ -158,7 +158,7 @@ Validation::Class::Directives - Validation::Class Core Directives Registry
 
 =head1 VERSION
 
-version 7.900009
+version 7.900010
 
 =head1 DESCRIPTION
 

@@ -10,9 +10,9 @@ use warnings;
 
 use Validation::Class::Util '!has';
 use Hash::Flatten ();
-use Carp 'confess';
+use Carp;
 
-our $VERSION = '7.900009'; # VERSION
+our $VERSION = '7.900010'; # VERSION
 
 use base 'Validation::Class::Mapping';
 
@@ -53,5 +53,27 @@ sub add {
     return $self;
 
 }
+
+sub AUTOLOAD {
+
+    (my $routine = $Validation::Class::Fields::AUTOLOAD) =~ s/.*:://;
+
+    my ($self) = @_;
+
+    if ($routine) {
+
+        if ($self->has($routine)) {
+            return $self->get($routine);
+        }
+
+    }
+
+    croak sprintf q(Can't locate object method "%s" via package "%s"),
+        $routine, ((ref $_[0] || $_[0]) || 'main')
+    ;
+
+}
+
+sub DESTROY {}
 
 1;

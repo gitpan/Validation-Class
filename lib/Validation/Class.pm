@@ -15,7 +15,7 @@ use Exporter ();
 
 use Validation::Class::Prototype;
 
-our $VERSION = '7.900009'; # VERSION
+our $VERSION = '7.900010'; # VERSION
 
 our @ISA    = qw(Exporter);
 our @EXPORT = qw(
@@ -522,7 +522,7 @@ Validation::Class - Powerful Data Validation Framework
 
 =head1 VERSION
 
-version 7.900009
+version 7.900010
 
 =head1 SYNOPSIS
 
@@ -530,11 +530,11 @@ version 7.900009
 
     my $input = Validation::Class::Simple::Streamer->new($params);
 
-    $input->check('username')->min_length(5);
-    $input->check('password')->min_length(5)->min_symbols(1);
-    $input->check($_)->required->max_length(255)->filters([qw/trim strip/])
+    $input->check($_)->required->length('5-255')->filters([qw/trim strip/])
         for qw/username password/
     ;
+
+    $input->check('password')->min_symbols(1);
 
     unless ($input) {
         # handle the failures
@@ -553,17 +553,14 @@ reuse are primary concerns.
 Validation::Class provides an extensible framework for defining reusable data
 validation rules. It ships with a complete set of pre-defined validations and
 filters referred to as L<"directives"|Validation::Class::Directives/DIRECTIVES>.
-
 The core feature-set consist of self-validating methods, validation profiles,
 reusable validation rules and templates, pre and post input filtering, class
 inheritance, automatic array handling, and extensibility (e.g. overriding
 default error messages, creating custom validators, creating custom input
-filters and much more).
-
-Validation::Class promotes DRY (don't repeat yourself) code. The main benefit in
-using Validation::Class is that the architecture is designed to increase the
-consistency of data input handling. The following is a more traditional usage
-of Validation::Class:
+filters and much more). Validation::Class promotes DRY (don't repeat yourself)
+code. The main benefit in using Validation::Class is that the architecture is
+designed to increase the consistency of data input handling. The following is
+a more traditional usage of Validation::Class:
 
     package MyApp::Person;
 

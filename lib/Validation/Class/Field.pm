@@ -15,7 +15,7 @@ use Validation::Class::Errors;
 use Validation::Class::Util '!has';
 use Carp 'confess';
 
-our $VERSION = '7.900009'; # VERSION
+our $VERSION = '7.900010'; # VERSION
 
 use base 'Validation::Class::Mapping';
 
@@ -24,6 +24,7 @@ my $directives = Validation::Class::Directives->new;
 foreach my $directive ($directives->values) {
 
     # create accessors from default configuration (once)
+    # ugly hack but it works so it stay .. for now
 
     if ($directive->field) {
 
