@@ -9,7 +9,7 @@ use base 'Validation::Class::Directive';
 
 use Validation::Class::Util;
 
-our $VERSION = '7.900010'; # VERSION
+our $VERSION = '7.900011'; # VERSION
 
 
 has 'mixin'   => 1;
@@ -21,9 +21,9 @@ sub validate {
 
     my ($self, $proto, $field, $param) = @_;
 
-    if (defined $field->{telephone}) {
+    if (defined $field->{telephone} && defined $param) {
 
-        if (defined $param) {
+        if ($field->{required} || $param) {
 
             my $tre = qr/^(?:\+?1)?[-. ]?\(?[2-9][0-8][0-9]\)?[-. ]?[2-9][0-9]{2}[-. ]?[0-9]{4}$/;
 
@@ -48,7 +48,7 @@ Validation::Class::Directive::Telephone - Telephone Directive for Validation Cla
 
 =head1 VERSION
 
-version 7.900010
+version 7.900011
 
 =head1 SYNOPSIS
 

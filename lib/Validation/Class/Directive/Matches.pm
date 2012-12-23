@@ -9,7 +9,7 @@ use base 'Validation::Class::Directive';
 
 use Validation::Class::Util;
 
-our $VERSION = '7.900010'; # VERSION
+our $VERSION = '7.900011'; # VERSION
 
 
 has 'mixin'   => 1;
@@ -23,11 +23,11 @@ sub validate {
 
     my ($proto, $field, $param) = @_;
 
-    if (defined $field->{matches}) {
+    if (defined $field->{matches} && defined $param) {
 
         my $specification = $field->{matches};
 
-        if (defined $param) {
+        if ($field->{required} || $param) {
 
             my $dependents = isa_arrayref($specification) ?
                 $specification : [$specification]
@@ -79,7 +79,7 @@ Validation::Class::Directive::Matches - Matches Directive for Validation Class F
 
 =head1 VERSION
 
-version 7.900010
+version 7.900011
 
 =head1 SYNOPSIS
 

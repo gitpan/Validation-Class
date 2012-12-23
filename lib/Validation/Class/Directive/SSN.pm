@@ -9,7 +9,7 @@ use base 'Validation::Class::Directive';
 
 use Validation::Class::Util;
 
-our $VERSION = '7.900010'; # VERSION
+our $VERSION = '7.900011'; # VERSION
 
 
 has 'mixin'   => 1;
@@ -21,9 +21,9 @@ sub validate {
 
     my ($self, $proto, $field, $param) = @_;
 
-    if (defined $field->{ssn}) {
+    if (defined $field->{ssn} && defined $param) {
 
-        if (defined $param) {
+        if ($field->{required} || $param) {
 
             my $ssnre = qr/\A\b(?!000)[0-9]{3}-[0-9]{2}-[0-9]{4}\b\z/i;
             $self->error($proto, $field) unless $param =~ $ssnre;
@@ -47,7 +47,7 @@ Validation::Class::Directive::SSN - SSN Directive for Validation Class Field Def
 
 =head1 VERSION
 
-version 7.900010
+version 7.900011
 
 =head1 SYNOPSIS
 

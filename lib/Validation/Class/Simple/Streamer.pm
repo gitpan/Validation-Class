@@ -15,7 +15,7 @@ use overload
 use Validation::Class::Simple;
 use Validation::Class::Util;
 
-our $VERSION = '7.900010'; # VERSION
+our $VERSION = '7.900011'; # VERSION
 
 
 sub new {
@@ -198,7 +198,7 @@ Validation::Class::Simple::Streamer - Simple Streaming Data Validation
 
 =head1 VERSION
 
-version 7.900010
+version 7.900011
 
 =head1 SYNOPSIS
 
@@ -227,8 +227,8 @@ version 7.900010
         # access to explicit content approved
     }
 
-    # print any errors
-    print "$params\n";
+    # print errors if any
+    print "$params\n" unless $params->validate;
 
     # validate like a boss
     # THE END

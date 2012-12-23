@@ -9,7 +9,7 @@ use base 'Validation::Class::Directive';
 
 use Validation::Class::Util;
 
-our $VERSION = '7.900010'; # VERSION
+our $VERSION = '7.900011'; # VERSION
 
 
 has 'mixin'   => 1;
@@ -21,7 +21,7 @@ sub validate {
 
     my ($self, $proto, $field, $param) = @_;
 
-    if (defined $field->{date}) {
+    if (defined $field->{date} && defined $param) {
 
         my $dtre = {
             # options:
@@ -43,7 +43,7 @@ sub validate {
 
         my $type = $field->{date};
 
-        if (defined $param) {
+        if ($field->{required} || $param) {
 
             my $is_valid = 0;
 
@@ -81,7 +81,7 @@ Validation::Class::Directive::Date - Date Directive for Validation Class Field D
 
 =head1 VERSION
 
-version 7.900010
+version 7.900011
 
 =head1 SYNOPSIS
 

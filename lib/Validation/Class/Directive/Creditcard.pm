@@ -9,7 +9,7 @@ use base 'Validation::Class::Directive';
 
 use Validation::Class::Util;
 
-our $VERSION = '7.900010'; # VERSION
+our $VERSION = '7.900011'; # VERSION
 
 
 has 'mixin'   => 1;
@@ -21,7 +21,7 @@ sub validate {
 
     my ($self, $proto, $field, $param) = @_;
 
-    if (defined $field->{creditcard}) {
+    if (defined $field->{creditcard} && defined $param) {
 
         my $ccre = {
             'amex'       => qr/^3[4|7]\d{13}$/,
@@ -43,7 +43,7 @@ sub validate {
 
         my $type = $field->{creditcard};
 
-        if (defined $param) {
+        if ($field->{required} || $param) {
 
             my $is_valid = 0;
 
@@ -79,7 +79,7 @@ Validation::Class::Directive::Creditcard - Creditcard Directive for Validation C
 
 =head1 VERSION
 
-version 7.900010
+version 7.900011
 
 =head1 SYNOPSIS
 

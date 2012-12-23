@@ -9,7 +9,7 @@ use base 'Validation::Class::Directive';
 
 use Validation::Class::Util;
 
-our $VERSION = '7.900010'; # VERSION
+our $VERSION = '7.900011'; # VERSION
 
 
 has 'mixin'   => 1;
@@ -21,9 +21,9 @@ sub validate {
 
     my ($self, $proto, $field, $param) = @_;
 
-    if (defined $field->{time}) {
+    if (defined $field->{time} && defined $param) {
 
-        if (defined $param) {
+        if ($field->{required} || $param) {
 
             # determines if the param is a valid time
             # validates time as 24hr (HH:MM) or am/pm ([H]H:MM[a|p]m)
@@ -52,7 +52,7 @@ Validation::Class::Directive::Time - Time Directive for Validation Class Field D
 
 =head1 VERSION
 
-version 7.900010
+version 7.900011
 
 =head1 SYNOPSIS
 
