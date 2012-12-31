@@ -10,7 +10,7 @@ use Validation::Class::Prototype;
 
 use Validation::Class::Util ('prototype_registry');
 
-our $VERSION = '7.900011'; # VERSION
+our $VERSION = '7.900012'; # VERSION
 
 
 sub new {
@@ -88,6 +88,7 @@ sub DESTROY {
 
 }
 
+
 1;
 
 __END__
@@ -99,7 +100,7 @@ Validation::Class::Simple - Simple Ad-Hoc Data Validation
 
 =head1 VERSION
 
-version 7.900011
+version 7.900012
 
 =head1 SYNOPSIS
 
@@ -149,6 +150,196 @@ experimental L<Validation::Class::Simple::Streamer>.
 If you are new to Validation::Class, or would like more information on the
 underpinnings of this library and how it views and approaches data validation,
 please review L<Validation::Class::Whitepaper>.
+
+=head1 PROXY METHODS
+
+Each instance of Validation::Class::Simple is associated with a *prototype*
+class which provides the data validation engine and keeps the class namespace
+free from pollution and collisions, please see L<Validation::Class::Prototype>
+for more information on specific methods and attributes.
+
+Validation::Class::Simple is injected with a few proxy methods which are
+basically aliases to the corresponding prototype (engine) class methods, however
+it is possible to access the prototype directly using the proto/prototype
+methods.
+
+=head2 class
+
+    $self->class;
+
+See L<Validation::Class::Prototype/class> for full documentation.
+
+=head2 clear_queue
+
+    $self->clear_queue;
+
+See L<Validation::Class::Prototype/clear_queue> for full documentation.
+
+=head2 error_count
+
+    $self->error_count;
+
+See L<Validation::Class::Prototype/error_count> for full documentation.
+
+=head2 error_fields
+
+    $self->error_fields;
+
+See L<Validation::Class::Prototype/error_fields> for full documentation.
+
+=head2 errors
+
+    $self->errors;
+
+See L<Validation::Class::Prototype/errors> for full documentation.
+
+head2 errors_to_string
+
+    $self->errors_to_string;
+
+See L<Validation::Class::Prototype/errors_to_string> for full
+documentation.
+
+=head2 get_errors
+
+    $self->get_errors;
+
+See L<Validation::Class::Prototype/get_errors> for full documentation.
+
+=head2 get_fields
+
+    $self->get_fields;
+
+See L<Validation::Class::Prototype/get_fields> for full documentation.
+
+=head2 get_params
+
+    $self->get_params;
+
+See L<Validation::Class::Prototype/get_params> for full documentation.
+
+=head2 fields
+
+    $self->fields;
+
+See L<Validation::Class::Prototype/fields> for full documentation.
+
+=head2 filtering
+
+    $self->filtering;
+
+See L<Validation::Class::Prototype/filtering> for full documentation.
+
+=head2 ignore_failure
+
+    $self->ignore_failure;
+
+See L<Validation::Class::Prototype/ignore_failure> for full
+documentation.
+
+=head2 ignore_unknown
+
+    $self->ignore_unknown;
+
+See L<Validation::Class::Prototype/ignore_unknown> for full
+documentation.
+
+=head2 param
+
+    $self->param;
+
+See L<Validation::Class::Prototype/param> for full documentation.
+
+=head2 params
+
+    $self->params;
+
+See L<Validation::Class::Prototype/params> for full documentation.
+
+=head2 queue
+
+    $self->queue;
+
+See L<Validation::Class::Prototype/queue> for full documentation.
+
+=head2 report_failure
+
+    $self->report_failure;
+
+See L<Validation::Class::Prototype/report_failure> for full
+documentation.
+
+=head2 report_unknown
+
+    $self->report_unknown;
+
+See L<Validation::Class::Prototype/report_unknown> for full documentation.
+
+=head2 reset_errors
+
+    $self->reset_errors;
+
+See L<Validation::Class::Prototype/reset_errors> for full documentation.
+
+=head2 reset_fields
+
+    $self->reset_fields;
+
+See L<Validation::Class::Prototype/reset_fields> for full documentation.
+
+=head2 reset_params
+
+    $self->reset_params;
+
+See L<Validation::Class::Prototype/reset_params> for full documentation.
+
+=head2 set_errors
+
+    $self->set_errors;
+
+See L<Validation::Class::Prototype/set_errors> for full documentation.
+
+=head2 set_fields
+
+    $self->set_fields;
+
+See L<Validation::Class::Prototype/set_fields> for full documentation.
+
+=head2 set_params
+
+    $self->set_params;
+
+See L<Validation::Class::Prototype/set_params> for full documentation.
+
+=head2 set_method
+
+    $self->set_method;
+
+See L<Validation::Class::Prototype/set_method> for full documentation.
+
+=head2 stash
+
+    $self->stash;
+
+See L<Validation::Class::Prototype/stash> for full documentation.
+
+=head2 validate
+
+    $self->validate;
+
+See L<Validation::Class::Prototype/validate> for full documentation.
+
+=head2 validate_method
+
+    $self->validate_method;
+
+See L<Validation::Class::Prototype/validate_method> for full documentation.
+
+=head2 validate_profile
+
+    $self->validate_profile;
+
+See L<Validation::Class::Prototype/validate_profile> for full documentation.
 
 =head1 GUIDED TOUR
 
@@ -452,6 +643,32 @@ Here are a few examples and explanations of using the validate method:
         # map user and pass parameters to the appropriate fields as aliases
         # and validate login and password fields using the aliases
     }
+
+=head1 EXTENSIBILITY
+
+Validation::Class does NOT provide method modifiers but can be easily extended
+with L<Class::Method::Modifiers>.
+
+=head2 before
+
+    before foo => sub { ... };
+
+See L<< Class::Method::Modifiers/before method(s) => sub { ... } >> for full
+documentation.
+
+=head2 around
+
+    around foo => sub { ... };
+
+See L<< Class::Method::Modifiers/around method(s) => sub { ... } >> for full
+documentation.
+
+=head2 after
+
+    after foo => sub { ... };
+
+See L<< Class::Method::Modifiers/after method(s) => sub { ... } >> for full
+documentation.
 
 =head1 AUTHOR
 

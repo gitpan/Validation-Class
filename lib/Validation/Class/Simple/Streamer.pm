@@ -15,7 +15,7 @@ use overload
 use Validation::Class::Simple;
 use Validation::Class::Util;
 
-our $VERSION = '7.900011'; # VERSION
+our $VERSION = '7.900012'; # VERSION
 
 
 sub new {
@@ -198,7 +198,7 @@ Validation::Class::Simple::Streamer - Simple Streaming Data Validation
 
 =head1 VERSION
 
-version 7.900011
+version 7.900012
 
 =head1 SYNOPSIS
 
@@ -209,7 +209,7 @@ version 7.900011
     # the point here is expressiveness
 
     unless ($params->check('user_cc')->creditcard(['visa', 'mastercard'])) {
-        # credit card is valid
+        # credit card is a valid visa/mastercard
     }
 
     unless ($params->check('email_address')->min_length(3)->email) {
@@ -227,8 +227,11 @@ version 7.900011
         # access to explicit content approved
     }
 
+    # get all fields with errors
+    my $fields = $params->validator->error_fields;
+
     # print errors if any
-    print "$params\n" unless $params->validate;
+    print $params->messages unless $params->validate;
 
     # validate like a boss
     # THE END
@@ -287,7 +290,7 @@ implicitly whenever the object is used in boolean context, e.g. in a conditional
 =head2 validator
 
 The validator method gives you access to the object's validation class which is
-a L<Validation::Class::Simple> object.
+a L<Validation::Class::Simple> object by default.
 
     $validator = $self->validator;
 
