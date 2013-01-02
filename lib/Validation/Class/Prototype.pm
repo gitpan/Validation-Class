@@ -14,7 +14,7 @@ use Validation::Class::Fields;
 use Validation::Class::Errors;
 use Validation::Class::Util;
 
-our $VERSION = '7.900012'; # VERSION
+our $VERSION = '7.900013'; # VERSION
 
 use Hash::Flatten 'flatten', 'unflatten';
 use Module::Runtime 'use_module';
@@ -379,7 +379,7 @@ sub class {
 
     return unless $name;
 
-    my $class = Class::Forward->new(namespace=>$self->{package})->forward($name);
+    my $class=Class::Forward->new(namespace=>$self->{package})->forward($name);
 
     return unless $class;
 
@@ -408,6 +408,7 @@ sub class {
     }
 
     return unless $class->can('new');
+    return unless $self->registry->has($class); # isa validation class
 
     my $child = $class->new(%settings);
 
@@ -973,7 +974,9 @@ sub plugin {
 
     $class = $lookup->forward($class);
 
-    return $self->plugins->get($class);
+    eval { use_module $class };
+
+    return $class->new($self);
 
 }
 
@@ -1968,7 +1971,7 @@ Validation::Class::Prototype - Data Validation Engine for Validation::Class Clas
 
 =head1 VERSION
 
-version 7.900012
+version 7.900013
 
 =head1 DESCRIPTION
 
@@ -2385,22 +2388,18 @@ value assigned or undefined if the parameter does not exist.
 
 =head2 plugin
 
-The plugin method returns the instantiated plugin object attached to the current
-class. Note: This functionality is still experimental.
+The plugin method returns an instantiated plugin object which is passed the
+current prototype object. Note: This functionality is somewhat experimental.
 
     package Class;
 
     use Validation::Class;
 
-    set plugin => 'telephone_format';
-
     package main;
 
     my $input = Class->new(params => $params);
 
-    # currently the plugin method will always return the same object instance
-    # ... for Validation::Class::Plugin::TelephoneFormat;
-
+    # returns a Validation::Class::Plugin::TelephoneFormat object
     my $formatter = $input->plugin('telephone_format');
 
 =head2 queue

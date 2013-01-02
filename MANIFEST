@@ -22,6 +22,7 @@ lib/Validation/Class/Directive/Error.pm
 lib/Validation/Class/Directive/Errors.pm
 lib/Validation/Class/Directive/Filtering.pm
 lib/Validation/Class/Directive/Filters.pm
+lib/Validation/Class/Directive/Help.pm
 lib/Validation/Class/Directive/Hostname.pm
 lib/Validation/Class/Directive/Label.pm
 lib/Validation/Class/Directive/Length.pm
@@ -64,6 +65,7 @@ lib/Validation/Class/Mapping.pm
 lib/Validation/Class/Mixin.pm
 lib/Validation/Class/Mixins.pm
 lib/Validation/Class/Params.pm
+lib/Validation/Class/Plugin/FormFields.pm
 lib/Validation/Class/Prototype.pm
 lib/Validation/Class/Simple.pm
 lib/Validation/Class/Simple/Streamer.pm
@@ -112,8 +114,6 @@ t/legacy/regression/15-toggling.t
 t/legacy/regression/16-cascading.t
 t/legacy/regression/17-pattern-matching.t
 t/legacy/regression/18-cloning.t
-t/legacy/regression/20-new-setup.t
-t/legacy/regression/20-plugins.t
 t/legacy/regression/21-filtering-behavior.t
 t/legacy/regression/22-filtering-behavior.t
 t/legacy/regression/42-inheritence.t

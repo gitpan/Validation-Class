@@ -9,7 +9,7 @@ use base 'Validation::Class::Directive';
 
 use Validation::Class::Util;
 
-our $VERSION = '7.900012'; # VERSION
+our $VERSION = '7.900013'; # VERSION
 
 
 has 'mixin'     => 1;
@@ -33,7 +33,16 @@ sub validate {
                 @{$options} : split /(?:\s{1,})?[,\-]{1,}(?:\s{1,})?/, $options
             ;
 
-            unless (grep { $param =~ /^$_$/ } @options) {
+            foreach my $option (@options) {
+                if ($option =~ /^([^\|]+)\|(.*)/) {
+                    $option = $0;
+                }
+                elsif (isa_arrayref($option)) {
+                    $option = $option->[0];
+                }
+            }
+
+            unless (grep { $param eq $_ } @options) {
 
                 if (my @o = @options) {
 
@@ -64,7 +73,7 @@ Validation::Class::Directive::Options - Options Directive for Validation Class F
 
 =head1 VERSION
 
-version 7.900012
+version 7.900013
 
 =head1 SYNOPSIS
 
@@ -101,6 +110,33 @@ This directive can be passed a single value or an array of values:
     fields => {
         user_role => {
             options => ['Client', 'Employee', 'Administrator']
+        }
+    }
+
+    # the following examples are useful for plugins (and other code)
+    # that may want to otherwise identify option values
+
+    fields => {
+        user_role => {
+            options => [
+                '1|Client',
+                '2|Employee',
+                '3|Administrator'
+            ]
+        }
+    }
+
+    # please note:
+    # declaring options as "keyed-options" will cause the validation of
+    # the option's key and NOT the option's value
+
+    fields => {
+        user_role => {
+            options => [
+                [ 1 => 'Client' ],
+                [ 2 => 'Employee' ],
+                [ 3 => 'Administrator' ]
+            ]
         }
     }
 

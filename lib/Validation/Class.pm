@@ -15,7 +15,7 @@ use Exporter ();
 
 use Validation::Class::Prototype;
 
-our $VERSION = '7.900012'; # VERSION
+our $VERSION = '7.900013'; # VERSION
 
 our @ISA    = qw(Exporter);
 our @EXPORT = qw(
@@ -198,16 +198,6 @@ sub initialize_validator {
     # initialize prototype
 
     $proto->normalize;
-
-    # process plugins
-
-    foreach my $plugin ($proto->plugins->keys) {
-
-        $proto->plugins->add($plugin => $plugin->new($proto))
-            if $plugin->can('new')
-        ;
-
-    }
 
     # ready-set-go !!!
 
@@ -522,7 +512,7 @@ Validation::Class - Powerful Data Validation Framework
 
 =head1 VERSION
 
-version 7.900012
+version 7.900013
 
 =head1 SYNOPSIS
 
@@ -531,17 +521,12 @@ version 7.900012
     my $input = Validation::Class::Simple::Streamer->new($parameters);
 
     # data validation rules for the username parameter
-    $input->check('username');
-        $input->required;
-        $input->between('5-255');
-        $input->filters([qw/trim strip/]);
+    $input->check('username')->required->between('5-255');
+    $input->filters([qw/trim strip/]);
 
     # data validation rule for the password parameter
-    $input->check('password');
-        $input->required;
-        $input->min_symbols(1);
-        $input->between('5-255');
-        $input->filters([qw/trim strip/]);
+    $input->check('password')->required->between('5-255')->min_symbols(1);
+    $input->filters([qw/trim strip/]);
 
     # perform validation
     unless ($input) {
@@ -799,34 +784,10 @@ subject's methods and prototype configuration.
 
     1;
 
-The `classes` (or class) option, can be a constant or arrayref and uses
-L<Module::Find> to load all child classes (in-all-subdirectories) for convenient
-access through the L<Validation::Class::Prototype/class> method.
-
-Existing parameters and configuration options are passed to the child class
-constructor. All attributes can be easily overwritten using the attribute's
-accessors on the child class. These child classes are often referred to as
-relatives. This option accepts a constant or an arrayref of constants.
-
-    package MyApp;
-
-    use Validation::Class;
-
-    # load all child classes
-    load classes => [__PACKAGE__];
-
-    package main;
-
-    my $app = MyApp->new;
-
-    my $person = $app->class('person'); # return a new MyApp::Person object
-
-    1;
-
 The `roles` (or role) option is used to load and inherit functionality from
 other validation classes. These classes should be used and thought-of as roles
 although they can also be fully-functioning validation classes. This option
-accepts a constant or an arrayref of constants.
+accepts an arrayref or single argument.
 
     package MyApp::Person;
 
