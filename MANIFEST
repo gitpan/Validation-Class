@@ -65,7 +65,6 @@ lib/Validation/Class/Mapping.pm
 lib/Validation/Class/Mixin.pm
 lib/Validation/Class/Mixins.pm
 lib/Validation/Class/Params.pm
-lib/Validation/Class/Plugin/FormFields.pm
 lib/Validation/Class/Prototype.pm
 lib/Validation/Class/Simple.pm
 lib/Validation/Class/Simple/Streamer.pm
