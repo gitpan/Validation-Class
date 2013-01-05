@@ -9,7 +9,7 @@ use base 'Validation::Class::Directive';
 
 use Validation::Class::Util;
 
-our $VERSION = '7.900014'; # VERSION
+our $VERSION = '7.900015'; # VERSION
 
 
 has 'mixin' => 0;
@@ -46,7 +46,7 @@ Validation::Class::Directive::Help - Help Directive for Validation Class Field D
 
 =head1 VERSION
 
-version 7.900014
+version 7.900015
 
 =head1 SYNOPSIS
 
@@ -55,9 +55,9 @@ version 7.900014
     my $rules = Validation::Class::Simple->new(
         fields => {
             username => {
-                help => 'A username was automatically generated for you
+                help => q/A username was automatically generated for you
                 at the time you registered your account. Check your email
-                client for additional instructions.'
+                client for additional instructions./
             }
         }
     );

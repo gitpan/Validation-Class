@@ -11,7 +11,7 @@ use Carp;
 use Validation::Class::Simple;
 use Validation::Class::Util;
 
-our $VERSION = '7.900014'; # VERSION
+our $VERSION = '7.900015'; # VERSION
 
 
 sub new {
@@ -194,7 +194,7 @@ Validation::Class::Simple::Streamer - Simple Streaming Data Validation
 
 =head1 VERSION
 
-version 7.900014
+version 7.900015
 
 =head1 SYNOPSIS
 

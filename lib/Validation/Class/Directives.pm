@@ -17,7 +17,7 @@ use List::MoreUtils;
 
 our $_registry = {map{$_=>$_->new}(usesub 'Validation::Class::Directive')};
 
-our $VERSION = '7.900014'; # VERSION
+our $VERSION = '7.900015'; # VERSION
 
 
 sub new {
@@ -165,7 +165,7 @@ Validation::Class::Directives - Validation::Class Core Directives Registry
 
 =head1 VERSION
 
-version 7.900014
+version 7.900015
 
 =head1 DESCRIPTION
 

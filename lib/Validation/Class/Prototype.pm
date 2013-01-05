@@ -14,7 +14,7 @@ use Validation::Class::Fields;
 use Validation::Class::Errors;
 use Validation::Class::Util;
 
-our $VERSION = '7.900014'; # VERSION
+our $VERSION = '7.900015'; # VERSION
 
 use Hash::Flatten 'flatten', 'unflatten';
 use Module::Runtime 'use_module';
@@ -1744,7 +1744,7 @@ sub unflatten_params {
 }
 
 
-sub validates { goto &validate } sub validate {
+sub has_valid { goto &validate } sub validates { goto &validate } sub validate {
 
     my ($self, $context, @fields) = @_;
 
@@ -1971,7 +1971,7 @@ Validation::Class::Prototype - Data Validation Engine for Validation::Class Clas
 
 =head1 VERSION
 
-version 7.900014
+version 7.900015
 
 =head1 DESCRIPTION
 
@@ -2507,8 +2507,8 @@ into context/instance specific operations.
 
 =head2 validate
 
-The validate method returns true/false depending on whether all specified fields
-passed validation checks.
+The validate method (or has_valid, or validates) returns true/false depending on
+whether all specified fields passed validation checks.
 
     use MyApp::Person;
 
@@ -2571,11 +2571,12 @@ minus respectively as follows:
 
 =head2 validate_method
 
-The validate_method method is used to determine whether a self-validating method
-will be successful. It does so by validating the methods input specification.
-This is useful in circumstances where it is advantageous to know in-advance
-whether a self-validating method will pass or fail. It effectively allows you
-to use the methods input specification as a validation profile.
+The validate_method method (or method_validates) is used to determine whether a
+self-validating method will be successful. It does so by validating the methods
+input specification. This is useful in circumstances where it is advantageous to
+know in-advance whether a self-validating method will pass or fail. It
+effectively allows you to use the methods input specification as a validation
+profile.
 
     if ($self->validate_method('password_change')) {
 

@@ -15,7 +15,7 @@ use Exporter ();
 
 use Validation::Class::Prototype;
 
-our $VERSION = '7.900014'; # VERSION
+our $VERSION = '7.900015'; # VERSION
 
 our @ISA    = qw(Exporter);
 our @EXPORT = qw(
@@ -512,7 +512,7 @@ Validation::Class - Powerful Data Validation Framework
 
 =head1 VERSION
 
-version 7.900014
+version 7.900015
 
 =head1 SYNOPSIS
 
@@ -910,9 +910,31 @@ directives created by the mixin directive.
     };
 
     field 'username' => {
-        # min_length, max_length, but not required
+        # min_length, max_length, .. required will be overridden
         mixin    => 'boilerplate',
         required => 0
+    };
+
+Since version 7.900015, all classes are automatically configured with the following
+default mixins for the sake of convenience:
+
+    mixin ':flg' => {
+        required   => 1,
+        min_length => 1,
+        filters    => [qw/trim strip numeric/],
+        between    => [0, 1]
+    };
+
+    mixin ':num' => {
+        required   => 1,
+        min_length => 1,
+        filters    => [qw/trim strip numeric/]
+    };
+
+    mixin ':str' => {
+        required   => 1,
+        min_length => 1,
+        filters    => [qw/trim strip/]
     };
 
 The mixin keyword takes two arguments, the mixin name and a hashref of key/values
