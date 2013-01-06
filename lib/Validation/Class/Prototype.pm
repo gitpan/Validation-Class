@@ -14,7 +14,7 @@ use Validation::Class::Fields;
 use Validation::Class::Errors;
 use Validation::Class::Util;
 
-our $VERSION = '7.900016'; # VERSION
+our $VERSION = '7.900017'; # VERSION
 
 use Hash::Flatten 'flatten', 'unflatten';
 use Module::Runtime 'use_module';
@@ -612,7 +612,7 @@ sub get_hash {
 
     my ($self) = @_;
 
-    return { map { $_ => $self->get_value($_) } $self->fields->keys };
+    return { map { $_ => $self->get_values($_) } $self->fields->keys };
 
 }
 
@@ -1983,7 +1983,7 @@ Validation::Class::Prototype - Data Validation Engine for Validation::Class Clas
 
 =head1 VERSION
 
-version 7.900016
+version 7.900017
 
 =head1 DESCRIPTION
 
