@@ -75,6 +75,8 @@ t/00-load.t
 t/01-access.t
 t/02-integrity.t
 t/03-streaming.t
+t/04-attribute-assignments.t
+t/04-proxy-methods.t
 t/legacy/01-fields-access.t
 t/legacy/10-attribute-method.t
 t/legacy/10-build-method.t

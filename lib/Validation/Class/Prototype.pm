@@ -14,7 +14,7 @@ use Validation::Class::Fields;
 use Validation::Class::Errors;
 use Validation::Class::Util;
 
-our $VERSION = '7.900015'; # VERSION
+our $VERSION = '7.900016'; # VERSION
 
 use Hash::Flatten 'flatten', 'unflatten';
 use Module::Runtime 'use_module';
@@ -608,6 +608,15 @@ sub get_fields {
 }
 
 
+sub get_hash {
+
+    my ($self) = @_;
+
+    return { map { $_ => $self->get_value($_) } $self->fields->keys };
+
+}
+
+
 sub get_params {
 
     my ($self, @params) = @_;
@@ -993,7 +1002,9 @@ sub proxy_methods {
         errors_to_string
         get_errors
         get_fields
+        get_hash
         get_params
+        get_values
         fields
         filtering
         ignore_failure
@@ -1630,6 +1641,7 @@ sub snapshot {
     if (my $config = $self->configuration->configure_profile) {
 
         my @clonable_configuration_settings = qw(
+            attributes
             directives
             events
             fields
@@ -1971,7 +1983,7 @@ Validation::Class::Prototype - Data Validation Engine for Validation::Class Clas
 
 =head1 VERSION
 
-version 7.900015
+version 7.900016
 
 =head1 DESCRIPTION
 
@@ -2296,6 +2308,14 @@ field does not match the name specified it will return undefined.
 
     my ($a, $b) = $self->get_fields('field_a', 'field_b');
 
+=head2 get_hash
+
+The get_hash method returns a hashref consisting of all fields with their
+absolute values (i.e. default value or matching parameter value). If a
+field does not have an absolute value its value will be undefined.
+
+    my $hash = $self->get_hash;
+
 =head2 get_params
 
 The get_params method returns the values of the parameters specified (as a list,
@@ -2354,7 +2374,7 @@ method otherwise returns undefined.
     my $value;
 
     if ($field->{readonly} || $field->{default}) {
-        $value = $field->{default} || '';
+        $value = $field->{default} || undef;
     }
     else {
         $value = $param;
