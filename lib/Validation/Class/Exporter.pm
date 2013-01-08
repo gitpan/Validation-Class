@@ -7,7 +7,7 @@ use 5.008001;
 use strict;
 use warnings;
 
-our $VERSION = '7.900018'; # VERSION
+our $VERSION = '7.900019'; # VERSION
 
 
 sub apply_spec {
@@ -64,7 +64,7 @@ Validation::Class::Exporter - Simple Exporter for Validation::Class Classes
 
 =head1 VERSION
 
-version 7.900018
+version 7.900019
 
 =head1 SYNOPSIS
 
