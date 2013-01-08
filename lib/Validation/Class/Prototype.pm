@@ -14,7 +14,7 @@ use Validation::Class::Fields;
 use Validation::Class::Errors;
 use Validation::Class::Util;
 
-our $VERSION = '7.900017'; # VERSION
+our $VERSION = '7.900018'; # VERSION
 
 use Hash::Flatten 'flatten', 'unflatten';
 use Module::Runtime 'use_module';
@@ -1155,8 +1155,12 @@ sub register_field {
         my $self = shift @_;
 
         my $proto  = $self->proto;
+        my $field  = $proto->fields->get($name);
 
-        $proto->params->add($name, $_[0]) if @_ == 1;
+        if (@_ == 1) {
+            $proto->params->add($name, $_[0]);
+            $field->value($_[0]);
+        }
 
         return $proto->params->get($name);
 
@@ -1983,7 +1987,7 @@ Validation::Class::Prototype - Data Validation Engine for Validation::Class Clas
 
 =head1 VERSION
 
-version 7.900017
+version 7.900018
 
 =head1 DESCRIPTION
 
