@@ -14,7 +14,7 @@ use Validation::Class::Fields;
 use Validation::Class::Errors;
 use Validation::Class::Util;
 
-our $VERSION = '7.900019'; # VERSION
+our $VERSION = '7.900020'; # VERSION
 
 use Hash::Flatten 'flatten', 'unflatten';
 use Module::Runtime 'use_module';
@@ -1473,9 +1473,37 @@ sub register_settings {
 
                     # merge configurations
 
-                    $self->configuration->profile->merge(
-                        $role_proto->configuration->profile->hash
-                    );
+                    my $spro = $self->configuration->profile;
+                    my $rpro = $role_proto->configuration->profile;
+
+                    # to be removed
+                    #$self->configuration->profile->merge(
+                    #    $role_proto->configuration->profile->hash
+                    #);
+
+                    # manually merge configuration profiles
+                    # ... because hash-based objects don't merge, duh, obviously
+                    foreach my $attr ($spro->keys) {
+
+                        my $lst = 'Validation::Class::Listing';
+                        my $map = 'Validation::Class::Mapping';
+
+                        my $sproo = $spro->{$attr};
+                        my $rproo = $rpro->{$attr};
+
+                        if (ref($rproo) and $rproo->isa($map)) {
+                            $sproo->add($rproo->hash);
+                        }
+
+                        elsif (ref($rproo) and $rproo->isa($lst)) {
+                            $sproo->add($rproo->list);
+                        }
+
+                        else {
+                            $sproo->merge({$attr => $rproo});
+                        }
+
+                    }
 
                 }
 
@@ -1994,7 +2022,7 @@ Validation::Class::Prototype - Data Validation Engine for Validation::Class Clas
 
 =head1 VERSION
 
-version 7.900019
+version 7.900020
 
 =head1 DESCRIPTION
 
