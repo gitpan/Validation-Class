@@ -7,7 +7,7 @@ use 5.008001;
 use strict;
 use warnings;
 
-our $VERSION = '7.900020'; # VERSION
+our $VERSION = '7.900021'; # VERSION
 
 
 sub apply_spec {
@@ -64,7 +64,7 @@ Validation::Class::Exporter - Simple Exporter for Validation::Class Classes
 
 =head1 VERSION
 
-version 7.900020
+version 7.900021
 
 =head1 SYNOPSIS
 
@@ -73,14 +73,16 @@ version 7.900020
     use Validation::Class;
     use Validation::Class::Exporter;
 
-    my @plugins = qw(
-        Validation::Class::Plugin::FormFields
-        Validation::Class::Plugin::Objectify
+    my @settings = (
+        classes => [
+            MyApp::Validator::DomainAlpha
+            MyApp::Validator::DomainBeta
+        ]
     );
 
     Validation::Class::Exporter->apply_spec(
         routines => ['thing'], # export additional routines as is
-        settings => [@plugins] # passed to the `set` method in Validation::Class
+        settings => [@settings] # passed to the `load` keyword in V::C
     );
 
     sub thing {

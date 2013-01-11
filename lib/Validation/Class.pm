@@ -15,7 +15,7 @@ use Exporter ();
 
 use Validation::Class::Prototype;
 
-our $VERSION = '7.900020'; # VERSION
+our $VERSION = '7.900021'; # VERSION
 
 our @ISA    = qw(Exporter);
 our @EXPORT = qw(
@@ -37,8 +37,6 @@ our @EXPORT = qw(
     method
     mxn
     mixin
-    obj
-    object
     pro
     profile
     set
@@ -514,7 +512,7 @@ Validation::Class - Powerful Data Validation Framework
 
 =head1 VERSION
 
-version 7.900020
+version 7.900021
 
 =head1 SYNOPSIS
 
@@ -773,31 +771,11 @@ The coderef should also return the transformed value.
 =head2 load
 
 The load keyword (or set), which can also be used as a class method, provides
-options for extending the current class by declaring roles, plugins, etc.
+options for extending the current class by declaring roles, requirements, etc.
 
-The process of applying roles to the current class mainly involves copying the
-subject's methods and prototype configuration.
-
-    package MyApp::Person;
-
-    use Validation::Class;
-
-    load role => 'MyApp::User';
-
-    1;
-
-The `roles` (or role) option is used to load and inherit functionality from
-other validation classes. These classes should be used and thought-of as roles
-although they can also be fully-functioning validation classes. This option
-accepts an arrayref or single argument.
-
-    package MyApp::Person;
-
-    use Validation::Class;
-
-    load roles => ['MyApp::User', 'MyApp::Visitor'];
-
-    1;
+The process of applying roles, requirement, and other settings to the current
+class mainly involves introspecting the namespace's methods and merging relevant
+parts of the prototype configuration.
 
 =head2 message
 
@@ -1229,6 +1207,29 @@ See L<Validation::Class::Prototype/validate_method> for full documentation.
     $self->validate_profile;
 
 See L<Validation::Class::Prototype/validate_profile> for full documentation.
+
+=head2 keyword:roles
+
+    package MyApp::Person;
+
+    use Validation::Class;
+
+    load role => 'MyApp::User';
+
+    1;
+
+The `roles` (or role) option is used to load and inherit functionality from
+other validation classes. These classes should be used and thought-of as roles
+although they can also be fully-functioning validation classes. This option
+accepts an arrayref or single argument.
+
+    package MyApp::Person;
+
+    use Validation::Class;
+
+    load roles => ['MyApp::User', 'MyApp::Visitor'];
+
+    1;
 
 =head1 EXTENSIBILITY
 
