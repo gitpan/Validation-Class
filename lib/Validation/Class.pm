@@ -15,7 +15,7 @@ use Exporter ();
 
 use Validation::Class::Prototype;
 
-our $VERSION = '7.900021'; # VERSION
+our $VERSION = '7.900022'; # VERSION
 
 our @ISA    = qw(Exporter);
 our @EXPORT = qw(
@@ -460,6 +460,8 @@ sub new {
 
     my $class = shift;
 
+    $class = ref $class || $class;
+
     my $proto = return_class_proto $class;
 
     my $self  = bless {},  $class;
@@ -512,7 +514,7 @@ Validation::Class - Powerful Data Validation Framework
 
 =head1 VERSION
 
-version 7.900021
+version 7.900022
 
 =head1 SYNOPSIS
 
@@ -605,27 +607,24 @@ please review L<Validation::Class::Whitepaper>.
 
 =head2 attribute
 
-The attribute keyword (or has) registers a class attribute. This is only a
-minimalistic variant of what you may have encountered in other object systems.
+The attribute keyword (or has) registers a class attribute, i.e. it creates an
+accessor (getter and setter) on the class. Attribute declaration is flexible and
+only requires an attribute name to be configured. Additionally, the attribute
+keyword can takes two arguments, the attribute's name and a scalar or coderef to
+be used as it's default value.
 
     package MyApp::Person;
 
     use Validate::Class;
 
-    attribute 'first_name' => 'Peter';
-    attribute 'last_name'  => 'Venkman';
-    attribute 'full_name'  => sub {
+    has 'first_name' => 'Peter';
+    has 'last_name'  => 'Venkman';
 
-        my ($self) = @_;
+    has 'full_name'  => sub { join ', ', $_[0]->last_name, $_[0]->first_name };
 
-        return join ', ', $self->last_name, $self->first_name;
-
-    };
+    has 'email_address';
 
     1;
-
-The attribute keyword takes two arguments, the attribute name and a constant or
-coderef that will be used as its default value.
 
 =head2 build
 
@@ -776,6 +775,80 @@ options for extending the current class by declaring roles, requirements, etc.
 The process of applying roles, requirement, and other settings to the current
 class mainly involves introspecting the namespace's methods and merging relevant
 parts of the prototype configuration.
+
+=head2 load:classes
+
+The `classes` (or class) option uses L<Module::Find> to load all child classes
+(in-all-subdirectories) for convenient access through the
+L<Validation::Class::Prototype/class> method, and when introspecting a larger
+application. This option accepts an arrayref or single argument.
+
+    package MyApp;
+
+    use Validation::Class;
+
+    load classes => 1;
+
+    package main;
+
+    my $app = MyApp->new;
+
+    my $person = $app->class('person'); # return a new MyApp::Person object
+
+    1;
+
+=head2 load:requirements
+
+    package MyApp::User;
+
+    use Validate::Class;
+
+    load required => 'activate';
+
+    package MyApp::Person;
+
+    use Validation::Class;
+
+    load role => 'MyApp::User';
+
+    sub activate {}
+
+    1;
+
+The `requirements` (or required) option is used to ensure that if/when the class
+is used as a role the calling class has specific pre-existing methods. This
+option accepts an arrayref or single argument.
+
+    package MyApp::User;
+
+    use Validate::Class;
+
+    load required => ['activate', 'deactivate'];
+
+    1;
+
+=head2 load:roles
+
+    package MyApp::Person;
+
+    use Validation::Class;
+
+    load role => 'MyApp::User';
+
+    1;
+
+The `roles` (or role) option is used to load and inherit functionality from
+other validation classes. These classes should be used and thought-of as roles
+although they can also be fully-functioning validation classes. This option
+accepts an arrayref or single argument.
+
+    package MyApp::Person;
+
+    use Validation::Class;
+
+    load roles => ['MyApp::User', 'MyApp::Visitor'];
+
+    1;
 
 =head2 message
 
@@ -960,13 +1033,13 @@ be used to execute a sequence of actions for validation purposes.
 =head2 new
 
 The new method instantiates a new class object, it performs a series of actions
-(magic) required for the class function properly, and for that reason, this
+(magic) required for the class to function properly, and for that reason, this
 method should never be overridden. Use the build keyword for hooking into the
 instantiation process.
 
-In the event a foreign `new` method is detected, an `initialize_validator`
-method will be injected into the class containing the code (magic) necessary to
-normalize your environment.
+In the event a foreign (pre-existing) `new` method is detected, an
+`initialize_validator` method will be injected into the class containing the
+code (magic) necessary to normalize your environment.
 
     package MyApp::Person;
 
@@ -1207,29 +1280,6 @@ See L<Validation::Class::Prototype/validate_method> for full documentation.
     $self->validate_profile;
 
 See L<Validation::Class::Prototype/validate_profile> for full documentation.
-
-=head2 keyword:roles
-
-    package MyApp::Person;
-
-    use Validation::Class;
-
-    load role => 'MyApp::User';
-
-    1;
-
-The `roles` (or role) option is used to load and inherit functionality from
-other validation classes. These classes should be used and thought-of as roles
-although they can also be fully-functioning validation classes. This option
-accepts an arrayref or single argument.
-
-    package MyApp::Person;
-
-    use Validation::Class;
-
-    load roles => ['MyApp::User', 'MyApp::Visitor'];
-
-    1;
 
 =head1 EXTENSIBILITY
 
