@@ -14,7 +14,7 @@ use Validation::Class::Fields;
 use Validation::Class::Errors;
 use Validation::Class::Util;
 
-our $VERSION = '7.900022'; # VERSION
+our $VERSION = '7.900023'; # VERSION
 
 use Hash::Flatten 'flatten', 'unflatten';
 use Module::Runtime 'use_module';
@@ -1131,10 +1131,27 @@ sub register_field {
     my ($self, $name, $data) = @_;
 
     my $package = $self->package;
+    my $merge   = 0;
+
+    $merge   = 2 if $name =~ s/^\+{2}//;
+    $merge   = 1 if $name =~ s/^\+{1}//;
 
     confess "Error creating field $name, name is not properly formatted"
         unless $name =~ /^[a-zA-Z_](([\w\.]+)?\w)$/
         xor    $name =~ /^[a-zA-Z_](([\w\.]+)?\w)\:\d+$/;
+
+    if ($merge) {
+        if ($self->configuration->fields->has($name) && $merge == 2) {
+            $self->configuration->fields->get($name)->merge($data);
+            return $self;
+        }
+
+        if ($self->configuration->fields->has($name) && $merge == 1) {
+            $self->configuration->fields->delete($name);
+            $self->configuration->fields->add($name, $data);
+            return $self;
+        }
+    }
 
     confess "Error creating accessor $name on $package: attribute collision"
         if $self->fields->has($name);
@@ -1327,9 +1344,26 @@ sub register_mixin {
 
     my ($self, $name, $data) = @_;
 
+    my $mixins = $self->configuration->mixins;
+    my $merge  = 0;
+
+    $merge     = 2 if $name =~ s/^\+{2}//;
+    $merge     = 1 if $name =~ s/^\+{1}//;
+
     $data->{name} = $name;
 
-    $self->configuration->mixins->add($name, $data);
+    if ($mixins->has($name) && $merge == 2) {
+        $mixins->get($name)->merge($data);
+        return $self;
+    }
+
+    if ($mixins->has($name) && $merge == 1) {
+        $mixins->delete($name);
+        $mixins->add($name, $data);
+        return $self;
+    }
+
+    $mixins->add($name, $data);
 
     return $self;
 
@@ -2037,7 +2071,7 @@ Validation::Class::Prototype - Data Validation Engine for Validation::Class Clas
 
 =head1 VERSION
 
-version 7.900022
+version 7.900023
 
 =head1 DESCRIPTION
 
