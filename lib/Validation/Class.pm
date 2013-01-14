@@ -15,7 +15,7 @@ use Exporter ();
 
 use Validation::Class::Prototype;
 
-our $VERSION = '7.900023'; # VERSION
+our $VERSION = '7.900024'; # VERSION
 
 our @ISA    = qw(Exporter);
 our @EXPORT = qw(
@@ -514,7 +514,7 @@ Validation::Class - Powerful Data Validation Framework
 
 =head1 VERSION
 
-version 7.900023
+version 7.900024
 
 =head1 SYNOPSIS
 
@@ -724,7 +724,8 @@ field's corresponding parameter value(s). Accessors will be created using the
 field's name as a label having any special characters replaced with an
 underscore.
 
-    field 'send-reminders' => { # accessor will be created as send_reminders
+    # accessor will be created as send_reminders
+    field 'send-reminders' => {
         length   => 1
     };
 
@@ -740,7 +741,13 @@ pre-existing declarations.
 
     set role => 'MyApp::User';
 
-    mixin '++email_address' => {
+    # overwrite and append existing field
+    field '++email_address' => {
+        required => 1
+    };
+
+    # redefine existing field
+    field '+login' => {
         required => 1
     };
 
@@ -1009,14 +1016,20 @@ declarations within the same scope (e.g. mixins imported via loading roles),
 whereas prefixing mixin names with a single plus-symbol instructs the register
 to overwrite any pre-existing declarations.
 
-    package MyApp::Person;
+    package MyApp::Moderator;
 
     use Validation::Class;
 
-    set role => 'MyApp::User';
+    set role => 'MyApp::Person';
 
+    # overwrite and append existing field
     mixin '++boilerplate' => {
-        filters => ['autocase']
+        min_symbols => 1
+    };
+
+    # redefine existing field
+    mixin '+username' => {
+        required => 1
     };
 
 The mixin keyword takes two arguments, the mixin name and a hashref of key/values
