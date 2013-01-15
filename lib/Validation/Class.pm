@@ -15,7 +15,7 @@ use Exporter ();
 
 use Validation::Class::Prototype;
 
-our $VERSION = '7.900024'; # VERSION
+our $VERSION = '7.900025'; # VERSION
 
 our @ISA    = qw(Exporter);
 our @EXPORT = qw(
@@ -514,7 +514,7 @@ Validation::Class - Powerful Data Validation Framework
 
 =head1 VERSION
 
-version 7.900024
+version 7.900025
 
 =head1 SYNOPSIS
 
@@ -1022,12 +1022,12 @@ to overwrite any pre-existing declarations.
 
     set role => 'MyApp::Person';
 
-    # overwrite and append existing field
+    # overwrite and append existing mixin
     mixin '++boilerplate' => {
         min_symbols => 1
     };
 
-    # redefine existing field
+    # redefine existing mixin
     mixin '+username' => {
         required => 1
     };
