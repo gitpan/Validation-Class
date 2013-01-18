@@ -8,7 +8,7 @@ use warnings;
 use Validation::Class::Util '!has', '!hold';
 use Hash::Merge ();
 
-our $VERSION = '7.900026'; # VERSION
+our $VERSION = '7.900027'; # VERSION
 
 
 
@@ -198,6 +198,7 @@ sub merge {
 
     # eval bug in Hash::Merge (v0.12 line 100) will likely never be fixed
     # https://rt.cpan.org/Public/Bug/Display.html?id=55978
+    # something is hijacking $SIG{__DIE__}
     eval { $self->add($merger->merge($arguments, $self->hash)) };
 
     return $self;
@@ -239,7 +240,10 @@ sub rmerge {
 
     my $merger = Hash::Merge->new('RIGHT_PRECEDENT');
 
-    $self->add($merger->merge($arguments, $self->hash));
+    # eval bug in Hash::Merge (v0.12 line 100) will likely never be fixed
+    # https://rt.cpan.org/Public/Bug/Display.html?id=55978
+    # something is hijacking $SIG{__DIE__}
+    eval { $self->add($merger->merge($arguments, $self->hash)) };
 
     return $self;
 
@@ -297,7 +301,7 @@ Validation::Class::Mapping - Generic Container Class for a Hash Reference
 
 =head1 VERSION
 
-version 7.900026
+version 7.900027
 
 =head1 SYNOPSIS
 
