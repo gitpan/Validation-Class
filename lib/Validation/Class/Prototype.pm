@@ -14,7 +14,7 @@ use Validation::Class::Fields;
 use Validation::Class::Errors;
 use Validation::Class::Util;
 
-our $VERSION = '7.900025'; # VERSION
+our $VERSION = '7.900026'; # VERSION
 
 use Hash::Flatten 'flatten', 'unflatten';
 use Module::Runtime 'use_module';
@@ -1383,6 +1383,8 @@ sub register_settings {
 
     my ($self, $data) = @_;
 
+    my @keys;
+
     my $name = $self->package;
 
     # grab configuration settings, not instance settings
@@ -1390,8 +1392,8 @@ sub register_settings {
     my $settings = $self->configuration->settings;
 
     # attach classes
-
-    if (my $alias = firstval { exists $data->{$_} } qw(class classes)) {
+    @keys = qw(class classes);
+    if (my $alias = firstval { exists $data->{$_} } @keys) {
 
         $alias = $data->{$alias};
 
@@ -1429,8 +1431,8 @@ sub register_settings {
     }
 
     # attach requirements
-
-    if (my $alias = firstval { exists $data->{$_} } qw(required requirements)) {
+    @keys = qw(requires required requirement requirements);
+    if (my $alias = firstval { exists $data->{$_} } @keys) {
 
         $alias = $data->{$alias};
 
@@ -1447,8 +1449,8 @@ sub register_settings {
     }
 
     # attach roles
-
-    if (my $alias = firstval { exists $data->{$_} } qw(base role roles bases)) {
+    @keys = qw(base role roles bases);
+    if (my $alias = firstval { exists $data->{$_} } @keys) {
 
         $alias = $data->{$alias};
 
@@ -2071,7 +2073,7 @@ Validation::Class::Prototype - Data Validation Engine for Validation::Class Clas
 
 =head1 VERSION
 
-version 7.900025
+version 7.900026
 
 =head1 DESCRIPTION
 

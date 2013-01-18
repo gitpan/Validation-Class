@@ -15,9 +15,15 @@ use Carp 'confess';
 
 use List::MoreUtils;
 
-our $_registry = {map{$_=>$_->new}(usesub 'Validation::Class::Directive')};
+our $_registry = {};
 
-our $VERSION = '7.900025'; # VERSION
+foreach my $module (usesub 'Validation::Class::Directive') {
+    $_registry->{$module} = $module->new
+        if $module->isa('Validation::Class::Directive')
+    ;
+}
+
+our $VERSION = '7.900026'; # VERSION
 
 
 sub new {
@@ -165,7 +171,7 @@ Validation::Class::Directives - Validation::Class Core Directives Registry
 
 =head1 VERSION
 
-version 7.900025
+version 7.900026
 
 =head1 DESCRIPTION
 

@@ -9,7 +9,7 @@ use Validation::Class::Util;
 
 use Carp 'confess';
 
-our $VERSION = '7.900025'; # VERSION
+our $VERSION = '7.900026'; # VERSION
 
 
 # defaults
@@ -28,7 +28,7 @@ has 'name'          => sub {
 
     my $regexp = qr/Validation::Class::Directive::(.*)$/;
 
-    ($name) = $name =~ $regexp;
+    $name = $1 if $name =~ $regexp;
 
     $name =~ s/([a-z])([A-Z])/$1_$2/g;
     $name =~ s/\W/_/g;
@@ -122,7 +122,7 @@ Validation::Class::Directive - Base Class for Validation Class Directives
 
 =head1 VERSION
 
-version 7.900025
+version 7.900026
 
 =head1 SYNOPSIS
 

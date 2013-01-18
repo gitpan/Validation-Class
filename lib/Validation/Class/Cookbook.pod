@@ -13,7 +13,7 @@ Validation::Class::Cookbook - Recipes for Validation::Class
 
 =head1 VERSION
 
-version 7.900025
+version 7.900026
 
 =head1 BUILDING CLASSES
 
@@ -397,7 +397,9 @@ introspection design template that will work in most cases:
 
         my ($self, $code) = @_;
 
-        while (my($parent, $children) =  each(%{$self->proto->{relatives}})) {
+        my %relatives = %{$self->proto->settings->{relatives}};
+
+        while (my($parent, $children) =  each(%relatives)) {
 
             while (my($nickname, $namespace) = each(%{$children})) {
 
