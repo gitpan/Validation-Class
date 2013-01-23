@@ -9,7 +9,7 @@ use base 'Validation::Class::Directive';
 
 use Validation::Class::Util;
 
-our $VERSION = '7.900027'; # VERSION
+our $VERSION = '7.900028'; # VERSION
 
 
 has 'mixin'     => 1;
@@ -54,7 +54,7 @@ Validation::Class::Directive::MinLength - MinLength Directive for Validation Cla
 
 =head1 VERSION
 
-version 7.900027
+version 7.900028
 
 =head1 SYNOPSIS
 

@@ -14,7 +14,7 @@ use Validation::Class::Fields;
 use Validation::Class::Errors;
 use Validation::Class::Util;
 
-our $VERSION = '7.900027'; # VERSION
+our $VERSION = '7.900028'; # VERSION
 
 use Hash::Flatten 'flatten', 'unflatten';
 use Module::Runtime 'use_module';
@@ -484,6 +484,17 @@ sub clone_field {
     $self->apply_mixin_field($new_field, $field);
 
     return $self;
+
+}
+
+
+sub does {
+
+    my ($self, $role) = @_;
+
+    my $roles = $self->settings->get('roles');
+
+    return $roles ? (firstval { $_ eq $role } @{$roles}) ? 1 : 0 : 0;
 
 }
 
@@ -2073,7 +2084,7 @@ Validation::Class::Prototype - Data Validation Engine for Validation::Class Clas
 
 =head1 VERSION
 
-version 7.900027
+version 7.900028
 
 =head1 DESCRIPTION
 
@@ -2336,6 +2347,23 @@ validated that can share existing validation rules.
     $self->validate(qw/phone phone2 phone3 phone4/);
 
     1;
+
+=head2 does
+
+The does method is used to determine whether the current prototype is composed
+using the role specified. Return true if so, false if not.
+
+    package Class;
+
+    use Validation::Class;
+
+    set role => 'Class::Root';
+
+    package main;
+
+    my $self = Class->new(params => $params);
+
+    return 1 if $self->proto->does('Class::Root');
 
 =head2 error_count
 

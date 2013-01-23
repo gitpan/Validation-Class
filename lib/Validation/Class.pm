@@ -13,7 +13,7 @@ use Exporter ();
 
 use Validation::Class::Prototype;
 
-our $VERSION = '7.900027'; # VERSION
+our $VERSION = '7.900028'; # VERSION
 
 our @ISA    = qw(Exporter);
 our @EXPORT = qw(
@@ -276,6 +276,8 @@ sub fld { goto &field } sub field {
 
     my ($name, $data) = @_;
 
+    $data ||= {};
+
     return unless ($name && $data);
 
     return configure_class_proto $package => sub {
@@ -439,6 +441,8 @@ sub mxn { goto &mixin } sub mixin {
 
     my ($name, $data) = @_;
 
+    $data ||= {};
+
     return unless ($name && $data);
 
     return configure_class_proto $package => sub {
@@ -512,7 +516,7 @@ Validation::Class - Powerful Data Validation Framework
 
 =head1 VERSION
 
-version 7.900027
+version 7.900028
 
 =head1 SYNOPSIS
 
@@ -662,13 +666,21 @@ CPAN installable directives.
         my ($self, $field, $param) = @_;
 
         if (defined $field->{blacklisted} && defined $param) {
+
             if ($field->{required} || $param) {
+
                 if (exists_in_blacklist($field->{blacklisted}, $param)) {
+
                     my $handle = $field->label || $field->name;
+
                     $field->errors->add("$handle has been blacklisted");
+
                     return 0;
+
                 }
+
             }
+
         }
 
         return 1;
