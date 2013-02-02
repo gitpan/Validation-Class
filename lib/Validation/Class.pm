@@ -13,7 +13,7 @@ use Exporter ();
 
 use Validation::Class::Prototype;
 
-our $VERSION = '7.900028'; # VERSION
+our $VERSION = '7.900029'; # VERSION
 
 our @ISA    = qw(Exporter);
 our @EXPORT = qw(
@@ -516,7 +516,7 @@ Validation::Class - Powerful Data Validation Framework
 
 =head1 VERSION
 
-version 7.900028
+version 7.900029
 
 =head1 SYNOPSIS
 
@@ -622,7 +622,6 @@ be used as it's default value.
 
     has 'first_name' => 'Peter';
     has 'last_name'  => 'Venkman';
-
     has 'full_name'  => sub { join ', ', $_[0]->last_name, $_[0]->first_name };
 
     has 'email_address';
@@ -950,9 +949,22 @@ key whose value is either an arrayref of fields to be validated, or a scalar
 value which matches (a validation profile or auto-validating method name). The
 hashref must also have a `using` key whose value is a coderef which will be
 executed upon successfully validating the input. The `using` key/coderef can be
-omitted when a sub-routine of the same name prefixed with an underscore is
-present. Whether and what the method returns is yours to decide. The method will
-return 0 if validation fails.
+omitted when a sub-routine of the same name prefixed with an underscore
+(or underscore + process + underscore) is present. Whether and what the method
+returns is yours to decide. The method will return 0 if validation fails.
+
+    # alternate usage
+
+    method 'registration' => {
+        input  => ['name', '+email', 'username', '+password', '+password2'],
+        output => ['+id'], # optional output validation, dies on failure
+    };
+
+    sub _process_registration {
+        my ($self, @args) = @_;
+            $self->id(...); # set the ID field for output validation
+        return $self;
+    }
 
 Optionally the required hashref can have an `output` key whose value is either
 an arrayref of fields to be validated, or a scalar value which matches
