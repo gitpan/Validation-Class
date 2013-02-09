@@ -13,7 +13,7 @@ use Exporter ();
 
 use Validation::Class::Prototype;
 
-our $VERSION = '7.900029'; # VERSION
+our $VERSION = '7.900030'; # VERSION
 
 our @ISA    = qw(Exporter);
 our @EXPORT = qw(
@@ -516,7 +516,7 @@ Validation::Class - Powerful Data Validation Framework
 
 =head1 VERSION
 
-version 7.900029
+version 7.900030
 
 =head1 SYNOPSIS
 
@@ -1182,8 +1182,7 @@ head2 errors_to_string
 
     $self->errors_to_string;
 
-See L<Validation::Class::Prototype/errors_to_string> for full
-documentation.
+See L<Validation::Class::Prototype/errors_to_string> for full documentation.
 
 =head2 get_errors
 
@@ -1231,15 +1230,19 @@ See L<Validation::Class::Prototype/filtering> for full documentation.
 
     $self->ignore_failure;
 
-See L<Validation::Class::Prototype/ignore_failure> for full
-documentation.
+See L<Validation::Class::Prototype/ignore_failure> for full documentation.
 
 =head2 ignore_unknown
 
     $self->ignore_unknown;
 
-See L<Validation::Class::Prototype/ignore_unknown> for full
-documentation.
+See L<Validation::Class::Prototype/ignore_unknown> for full documentation.
+
+=head2 is_valid
+
+    $self->is_valid;
+
+See L<Validation::Class::Prototype/is_valid> for full documentation.
 
 =head2 param
 

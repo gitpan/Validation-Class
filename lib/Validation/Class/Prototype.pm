@@ -14,7 +14,7 @@ use Validation::Class::Fields;
 use Validation::Class::Errors;
 use Validation::Class::Util;
 
-our $VERSION = '7.900029'; # VERSION
+our $VERSION = '7.900030'; # VERSION
 
 use Hash::Flatten 'flatten', 'unflatten';
 use Module::Runtime 'use_module';
@@ -526,7 +526,7 @@ sub error_fields {
 
         if ($field->{errors}->count) {
 
-            $failed->{$name} = $field->{errors}->list;
+            $failed->{$name} = [$field->{errors}->list];
 
         }
 
@@ -1069,6 +1069,8 @@ sub register_attribute {
 
     my ($self, $attribute, $default) = @_;
 
+    my $settings;
+
     no strict 'refs';
     no warnings 'redefine';
 
@@ -1078,7 +1080,18 @@ sub register_attribute {
     confess "Error creating accessor, default must be a coderef or constant"
         if ref $default && ref $default ne 'CODE';
 
+    $default = ($settings = $default)->{default} if isa_hashref($default);
+
+    my $check;
     my $code;
+
+    if ($settings) {
+        if (defined $settings->{isa}) {
+            $settings->{isa} = 'rw'
+                unless defined $settings->{isa} and $settings->{isa} eq 'ro'
+            ;
+        }
+    }
 
     if (defined $default) {
 
@@ -1488,9 +1501,9 @@ sub register_settings {
                 # is the role a validation class?
 
                 unless ($self->registry->has($role)) {
-                    confess sprintf "Can't apply the role %s to the " .
-                        "class %s unless the role subclasses " .
-                        "Validation::Class",
+                    confess sprintf
+                        "Can't apply the role %s to the " .
+                        "class %s unless the role uses Validation::Class",
                             $role,
                             $self->package
                     ;
@@ -1515,7 +1528,8 @@ sub register_settings {
                     }
 
                     if (@failures) {
-                        confess sprintf "Can't use the class %s as a role for ".
+                        confess sprintf
+                            "Can't use the class %s as a role for ".
                             "use with the class %s while missing method(s): %s",
                                 $role,
                                 $self->package,
@@ -1559,7 +1573,31 @@ sub register_settings {
                         my $rp_attr = $role_profile->{$attr};
 
                         if (ref($rp_attr) and $rp_attr->isa($map)) {
-                            $sp_attr->add($rp_attr->hash);
+                            $sp_attr->merge($rp_attr->hash);
+                            # thank god for unit tests which makes releasing
+                            # this necessary change easier although I'm still
+                            # not sure I am making the right decision ...
+
+                            # I realized while working on an app in production
+                            # that V::C doesn't handle role inheritance properly
+                            # which lead to an investigation which turned into a
+                            # witch-hunt ...
+
+                            # short-story-long, this code -> $sp_attr->add($rp_attr->hash);
+                            # was overwriting the $self prototype profile SETTINGS hash
+                            # with the $role prototype SETTINGS hash which meant that
+                            # at runtime, not all roles were stored, also causing the
+                            # does() method to break which leads me to my next fail ...
+
+                            # the does() method in VC, unlike the isa() method in UNIVERSAL,
+                            # does not traverse the inheritance-tree because all roles are
+                            # bubbled-up into calling class when the SETTINGS hash is copied
+                            # ... and thats the thing I'm not sure about, but for now, this
+                            # code work and doesn't break anything else (i think)
+
+                            # alternatively I could not merge the SETTINGS hash at-all
+                            # and refactor the does() method to traverse ...
+                            # e.g. $sp_attr->add($rp_attr->hash) unless $attr eq 'SETTINGS';
                         }
 
                         elsif (ref($rp_attr) and $rp_attr->isa($lst)) {
@@ -2088,7 +2126,7 @@ Validation::Class::Prototype - Data Validation Engine for Validation::Class Clas
 
 =head1 VERSION
 
-version 7.900029
+version 7.900030
 
 =head1 DESCRIPTION
 
