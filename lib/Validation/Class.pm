@@ -13,7 +13,7 @@ use Exporter ();
 
 use Validation::Class::Prototype;
 
-our $VERSION = '7.900030'; # VERSION
+our $VERSION = '7.900031'; # VERSION
 
 our @ISA    = qw(Exporter);
 our @EXPORT = qw(
@@ -516,7 +516,7 @@ Validation::Class - Powerful Data Validation Framework
 
 =head1 VERSION
 
-version 7.900030
+version 7.900031
 
 =head1 SYNOPSIS
 

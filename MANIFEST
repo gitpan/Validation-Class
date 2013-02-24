@@ -76,9 +76,11 @@ t/01-access.t
 t/02-integrity.t
 t/03-streaming.t
 t/04-attribute-assignments.t
+t/04-dot-notation.t
 t/04-proxy-methods.t
 t/05-foreign-directive.t
 t/05-heirarchal-role-handling.t
+t/05-method-syntax.t
 t/05-role-requirements.t
 t/legacy/01-fields-access.t
 t/legacy/10-attribute-method.t

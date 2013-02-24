@@ -14,7 +14,7 @@ use Validation::Class::Fields;
 use Validation::Class::Errors;
 use Validation::Class::Util;
 
-our $VERSION = '7.900030'; # VERSION
+our $VERSION = '7.900031'; # VERSION
 
 use Hash::Flatten 'flatten', 'unflatten';
 use Module::Runtime 'use_module';
@@ -1252,7 +1252,11 @@ sub register_method {
 
     confess
         "Error creating method $name, requires 'input' and 'using' options"
-        unless $data->{input} && ($data->{using} || $package->can("_$name"))
+        unless $data->{input} && (
+            $data->{using} ||
+            $package->can("_$name") ||
+            $package->can("_process_$name")
+        )
     ;
 
     $self->configuration->methods->add($name, $data);
@@ -2126,7 +2130,7 @@ Validation::Class::Prototype - Data Validation Engine for Validation::Class Clas
 
 =head1 VERSION
 
-version 7.900030
+version 7.900031
 
 =head1 DESCRIPTION
 
