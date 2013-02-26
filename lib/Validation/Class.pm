@@ -13,7 +13,7 @@ use Exporter ();
 
 use Validation::Class::Prototype;
 
-our $VERSION = '7.900031'; # VERSION
+our $VERSION = '7.900032'; # VERSION
 
 our @ISA    = qw(Exporter);
 our @EXPORT = qw(
@@ -516,7 +516,7 @@ Validation::Class - Powerful Data Validation Framework
 
 =head1 VERSION
 
-version 7.900031
+version 7.900032
 
 =head1 SYNOPSIS
 
@@ -662,6 +662,7 @@ CPAN installable directives.
 
     # define a custom class-level directive
     directive 'blacklisted' => sub {
+
         my ($self, $field, $param) = @_;
 
         if (defined $field->{blacklisted} && defined $param) {
@@ -683,11 +684,12 @@ CPAN installable directives.
         }
 
         return 1;
+
     };
 
     field 'email_address' => {
-        email => 1,
         blacklisted => '/path/to/blacklsit'
+        email => 1,
     };
 
 
@@ -760,25 +762,17 @@ definitions. It is a means of extending the pre-existing filters declared by
 the L<"filters directive"|Validation::Class::Directive::Filters> before
 instantiation.
 
-    package MyApp::Directives;
-
-    use Validation::Class;
-
-    filter 'flatten' => sub {
-
-        $_[0] =~ s/[\t\r\n]+/ /g;
-        return $_[0];
-
-    };
-
     package MyApp::Person;
 
     use Validate::Class;
 
-    use MyApp::Directives;
+    filter 'flatten' => sub {
+        $_[0] =~ s/[\t\r\n]+/ /g;
+        return $_[0];
+    };
 
     field 'biography' => {
-        filters => ['trim', 'flatten']
+        filters => ['trim', 'strip', 'flatten']
     };
 
     1;

@@ -78,6 +78,7 @@ t/03-streaming.t
 t/04-attribute-assignments.t
 t/04-dot-notation.t
 t/04-proxy-methods.t
+t/05-filters-usage.t
 t/05-foreign-directive.t
 t/05-heirarchal-role-handling.t
 t/05-method-syntax.t
