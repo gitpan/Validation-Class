@@ -8,7 +8,7 @@ use warnings;
 use Validation::Class::Util '!has', '!hold';
 use Hash::Merge ();
 
-our $VERSION = '7.900032'; # VERSION
+our $VERSION = '7.900033'; # VERSION
 
 
 
@@ -293,6 +293,7 @@ sub values {
 1;
 
 __END__
+
 =pod
 
 =head1 NAME
@@ -301,7 +302,7 @@ Validation::Class::Mapping - Generic Container Class for a Hash Reference
 
 =head1 VERSION
 
-version 7.900032
+version 7.900033
 
 =head1 SYNOPSIS
 
@@ -441,4 +442,3 @@ This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-

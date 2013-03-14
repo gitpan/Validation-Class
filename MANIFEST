@@ -109,6 +109,7 @@ t/legacy/regression/03-mixin-usages.t
 t/legacy/regression/04-parameters.t
 t/legacy/regression/04-profile-usages.t
 t/legacy/regression/10-custom-validation.t
+t/legacy/regression/10-default-values.t
 t/legacy/regression/10-stash.t
 t/legacy/regression/10-validation.t
 t/legacy/regression/11-array-param-validation.t

@@ -11,7 +11,7 @@ use Carp;
 use Validation::Class::Simple;
 use Validation::Class::Util;
 
-our $VERSION = '7.900032'; # VERSION
+our $VERSION = '7.900033'; # VERSION
 
 
 sub new {
@@ -49,7 +49,7 @@ sub check {
 
         $validator->queue($self->{target} = $target);
 
-        $validator->proto->normalize;
+        $validator->proto->normalize($validator);
 
     }
 
@@ -186,6 +186,7 @@ sub DESTROY {}
 1;
 
 __END__
+
 =pod
 
 =head1 NAME
@@ -194,7 +195,7 @@ Validation::Class::Simple::Streamer - Simple Streaming Data Validation
 
 =head1 VERSION
 
-version 7.900032
+version 7.900033
 
 =head1 SYNOPSIS
 
@@ -302,4 +303,3 @@ This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-

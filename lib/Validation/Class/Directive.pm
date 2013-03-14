@@ -9,7 +9,7 @@ use Validation::Class::Util;
 
 use Carp 'confess';
 
-our $VERSION = '7.900032'; # VERSION
+our $VERSION = '7.900033'; # VERSION
 
 
 # defaults
@@ -114,6 +114,7 @@ sub validate {
 1;
 
 __END__
+
 =pod
 
 =head1 NAME
@@ -122,7 +123,7 @@ Validation::Class::Directive - Base Class for Validation Class Directives
 
 =head1 VERSION
 
-version 7.900032
+version 7.900033
 
 =head1 SYNOPSIS
 
@@ -200,4 +201,3 @@ This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-

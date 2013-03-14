@@ -9,7 +9,7 @@ use base 'Validation::Class::Directive';
 
 use Validation::Class::Util;
 
-our $VERSION = '7.900032'; # VERSION
+our $VERSION = '7.900033'; # VERSION
 
 
 has 'mixin'   => 1;
@@ -40,6 +40,7 @@ sub validate {
 1;
 
 __END__
+
 =pod
 
 =head1 NAME
@@ -48,7 +49,7 @@ Validation::Class::Directive::Hostname - Hostname Directive for Validation Class
 
 =head1 VERSION
 
-version 7.900032
+version 7.900033
 
 =head1 SYNOPSIS
 
@@ -87,4 +88,3 @@ This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-

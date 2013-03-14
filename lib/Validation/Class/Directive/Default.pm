@@ -9,7 +9,7 @@ use base 'Validation::Class::Directive';
 
 use Validation::Class::Util;
 
-our $VERSION = '7.900032'; # VERSION
+our $VERSION = '7.900033'; # VERSION
 
 
 has 'mixin'        => 1;
@@ -28,9 +28,15 @@ sub after_validation {
 
     if (defined $field->{default} && ! defined $param) {
 
-        my $name = $field->name;
+        my $context = $proto->stash->{'validation.context'};
 
-        $proto->params->add($name, $field->{default});
+        my $name  = $field->name;
+        my $value = isa_coderef($field->{default}) ?
+            $field->{default}->($context, $proto) :
+            $field->{default}
+        ;
+
+        $proto->params->add($name, $value);
 
     }
 
@@ -46,9 +52,15 @@ sub before_validation {
 
     if (defined $field->{default} && ! defined $param) {
 
-        my $name = $field->name;
+        my $context = $proto->stash->{'validation.context'};
 
-        $proto->params->add($name, $field->{default});
+        my $name  = $field->name;
+        my $value = isa_coderef($field->{default}) ?
+            $field->{default}->($context, $proto) :
+            $field->{default}
+        ;
+
+        $proto->params->add($name, $value);
 
     }
 
@@ -64,9 +76,15 @@ sub normalize {
 
     if (defined $field->{default} && ! defined $param) {
 
-        my $name = $field->name;
+        my $context = $proto->stash->{'normalization.context'};
 
-        $proto->params->add($name, $field->{default});
+        my $name  = $field->name;
+        my $value = isa_coderef($field->{default}) ?
+            $field->{default}->($context, $proto) :
+            $field->{default}
+        ;
+
+        $proto->params->add($name, $value);
 
     }
 
@@ -77,6 +95,7 @@ sub normalize {
 1;
 
 __END__
+
 =pod
 
 =head1 NAME
@@ -85,7 +104,7 @@ Validation::Class::Directive::Default - Default Directive for Validation Class F
 
 =head1 VERSION
 
-version 7.900032
+version 7.900033
 
 =head1 SYNOPSIS
 
@@ -93,8 +112,8 @@ version 7.900032
 
     my $rules = Validation::Class::Simple->new(
         fields => {
-            user_role  => {
-                default => 'client'
+            access_code  => {
+                default => 'demo123'
             }
         }
     );
@@ -113,6 +132,24 @@ Validation::Class::Directive::Default is a core validation class field
 directive that holds the value which should be used if no parameter is
 supplied.
 
+=over 8
+
+=item * alternative argument: a-coderef-returning-a-default-value
+
+This directive can be passed a single value or a coderef which should return
+the value to be used as the default value:
+
+    fields => {
+        access_code => {
+            default => sub {
+                my $self = shift; # this coderef will receive a context object
+                return join '::', lc __PACKAGE__, time();
+            }
+        }
+    }
+
+=back
+
 =head1 AUTHOR
 
 Al Newkirk <anewkirk@ana.io>
@@ -125,4 +162,3 @@ This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-

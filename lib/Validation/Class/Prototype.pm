@@ -14,7 +14,7 @@ use Validation::Class::Fields;
 use Validation::Class::Errors;
 use Validation::Class::Util;
 
-our $VERSION = '7.900032'; # VERSION
+our $VERSION = '7.900033'; # VERSION
 
 use Hash::Flatten 'flatten', 'unflatten';
 use Module::Runtime 'use_module';
@@ -831,7 +831,19 @@ sub merge_mixin {
 
 sub normalize {
 
-    my $self = shift;
+    my ($self, $context) = @_;
+
+    # we need context
+
+    confess
+
+        "Context object ($self->{package} class instance) required ".
+        "to perform validation" unless $self->{package} eq ref $context
+
+    ;
+
+    # stash the current context object
+    $self->stash->{'normalization.context'} = $context;
 
     # resets
 
@@ -935,6 +947,9 @@ sub normalize {
         $self->check_field($key);
 
     }
+
+    # delete the stashed context object
+    delete $self->stash->{'normalization.context'};
 
     return $self;
 
@@ -1916,7 +1931,7 @@ sub has_valid { goto &validate } sub validates { goto &validate } sub validate {
 
     # normalize/sanitize
 
-    $self->normalize();
+    $self->normalize($context);
 
     # create alias map manually if requested
     # ... extremely-deprecated but it remains for back-compat and nostalgia !!!
@@ -2067,7 +2082,7 @@ sub method_validates { goto &validate_method } sub validate_method {
 
     return 0 unless $name;
 
-    $self->normalize();
+    $self->normalize($context);
     $self->apply_filters('pre');
 
     my $methspec = $self->methods->{$name};
@@ -2106,7 +2121,7 @@ sub profile_validates { goto &validate_profile } sub validate_profile {
 
     return 0 unless $name;
 
-    $self->normalize();
+    $self->normalize($context);
     $self->apply_filters('pre');
 
     if (isa_coderef($self->profiles->{$name})) {
@@ -2122,6 +2137,7 @@ sub profile_validates { goto &validate_profile } sub validate_profile {
 1;
 
 __END__
+
 =pod
 
 =head1 NAME
@@ -2130,7 +2146,7 @@ Validation::Class::Prototype - Data Validation Engine for Validation::Class Clas
 
 =head1 VERSION
 
-version 7.900032
+version 7.900033
 
 =head1 DESCRIPTION
 
@@ -2791,4 +2807,3 @@ This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
