@@ -9,7 +9,7 @@ use base 'Validation::Class::Directive';
 
 use Validation::Class::Util;
 
-our $VERSION = '7.900033'; # VERSION
+our $VERSION = '7.900034'; # VERSION
 
 
 has 'mixin'   => 1;
@@ -76,7 +76,7 @@ Validation::Class::Directive::Decimal - Decimal Directive for Validation Class F
 
 =head1 VERSION
 
-version 7.900033
+version 7.900034
 
 =head1 SYNOPSIS
 
