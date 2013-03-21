@@ -9,7 +9,7 @@ use base 'Validation::Class::Directive';
 
 use Validation::Class::Util;
 
-our $VERSION = '7.900034'; # VERSION
+our $VERSION = '7.900035'; # VERSION
 
 
 has 'mixin' => 0;
@@ -28,7 +28,7 @@ Validation::Class::Directive::MixinField - MixinField Directive for Validation C
 
 =head1 VERSION
 
-version 7.900034
+version 7.900035
 
 =head1 SYNOPSIS
 

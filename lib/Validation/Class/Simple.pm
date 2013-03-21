@@ -10,7 +10,7 @@ use Validation::Class::Prototype;
 
 use Validation::Class::Util ('prototype_registry');
 
-our $VERSION = '7.900034'; # VERSION
+our $VERSION = '7.900035'; # VERSION
 
 
 sub new {
@@ -101,7 +101,7 @@ Validation::Class::Simple - Simple Ad-Hoc Data Validation
 
 =head1 VERSION
 
-version 7.900034
+version 7.900035
 
 =head1 SYNOPSIS
 
