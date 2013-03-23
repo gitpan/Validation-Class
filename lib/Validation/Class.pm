@@ -13,7 +13,7 @@ use Exporter ();
 
 use Validation::Class::Prototype;
 
-our $VERSION = '7.900035'; # VERSION
+our $VERSION = '7.900036'; # VERSION
 
 our @ISA    = qw(Exporter);
 our @EXPORT = qw(
@@ -517,7 +517,7 @@ Validation::Class - Powerful Data Validation Framework
 
 =head1 VERSION
 
-version 7.900035
+version 7.900036
 
 =head1 SYNOPSIS
 
@@ -594,7 +594,10 @@ a more traditional usage of Validation::Class:
 
 If you are looking for a simple in-line data validation module built using the
 same tenets and principles as Validation::Class, please review
-L<Validation::Class::Simple> or L<Validation::Class::Simple::Streamer>.
+L<Validation::Class::Simple> or L<Validation::Class::Simple::Streamer>. If
+you're interested in an experimental yet highly promising approach toward
+validating hierachical data, please take a moment to review
+L<Validation::Class::Domain>.
 
 =head1 RATIONALE
 
@@ -1168,6 +1171,12 @@ See L<Validation::Class::Prototype/error_fields> for full documentation.
 
 See L<Validation::Class::Prototype/errors> for full documentation.
 
+=head2 errors_to_string
+
+    $self->errors_to_string;
+
+See L<Validation::Class::Prototype/errors_to_string> for full documentation.
+
 =head2 get_errors
 
     $self->get_errors;
@@ -1324,12 +1333,6 @@ See L<Validation::Class::Prototype/validate_method> for full documentation.
     $self->validate_profile;
 
 See L<Validation::Class::Prototype/validate_profile> for full documentation.
-
-=head2 errors_to_string
-
-    $self->errors_to_string;
-
-See L<Validation::Class::Prototype/errors_to_string> for full documentation.
 
 =head1 EXTENSIBILITY
 
