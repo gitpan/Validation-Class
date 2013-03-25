@@ -13,7 +13,7 @@ use Exporter ();
 
 use Validation::Class::Prototype;
 
-our $VERSION = '7.900038'; # VERSION
+our $VERSION = '7.900039'; # VERSION
 
 our @ISA    = qw(Exporter);
 our @EXPORT = qw(
@@ -517,7 +517,7 @@ Validation::Class - Powerful Data Validation Framework
 
 =head1 VERSION
 
-version 7.900038
+version 7.900039
 
 =head1 SYNOPSIS
 
@@ -592,12 +592,12 @@ a more traditional usage of Validation::Class:
 
 =head1 QUICKSTART
 
-If you are looking for a simple in-line data validation module built using the
-same tenets and principles as Validation::Class, please review
+If you are looking for a simple in-line data validation module built
+using the same tenets and principles as Validation::Class, please review
 L<Validation::Class::Simple> or L<Validation::Class::Simple::Streamer>. If
 you're interested in an experimental yet highly promising approach toward
 validating hierachical data, please take a moment to review
-L<Validation::Class::Deep>.
+L<Validation::Class::Document>.
 
 =head1 RATIONALE
 
