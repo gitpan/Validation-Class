@@ -13,7 +13,7 @@ use Exporter ();
 
 use Validation::Class::Prototype;
 
-our $VERSION = '7.900036'; # VERSION
+our $VERSION = '7.900037'; # VERSION
 
 our @ISA    = qw(Exporter);
 our @EXPORT = qw(
@@ -517,7 +517,7 @@ Validation::Class - Powerful Data Validation Framework
 
 =head1 VERSION
 
-version 7.900036
+version 7.900037
 
 =head1 SYNOPSIS
 
@@ -545,7 +545,7 @@ The most common usage of Validation::Class is to transform class namespaces into
 data validation domains where consistency and reuse are primary concerns.
 Validation::Class provides an extensible framework for defining reusable data
 validation rules. It ships with a complete set of pre-defined validations and
-filters referred to as L<"directives"|Validation::Class::Directives/DIRECTIVES>.
+filters referred to as L<directives|Validation::Class::Directives/DIRECTIVES>.
 
 The core feature-set consist of self-validating methods, validation profiles,
 reusable validation rules and templates, pre and post input filtering, class
@@ -597,7 +597,7 @@ same tenets and principles as Validation::Class, please review
 L<Validation::Class::Simple> or L<Validation::Class::Simple::Streamer>. If
 you're interested in an experimental yet highly promising approach toward
 validating hierachical data, please take a moment to review
-L<Validation::Class::Domain>.
+L<Validation::Class::Deep>.
 
 =head1 RATIONALE
 
