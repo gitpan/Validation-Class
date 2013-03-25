@@ -13,7 +13,7 @@ use Exporter ();
 
 use Validation::Class::Prototype;
 
-our $VERSION = '7.900037'; # VERSION
+our $VERSION = '7.900038'; # VERSION
 
 our @ISA    = qw(Exporter);
 our @EXPORT = qw(
@@ -517,7 +517,7 @@ Validation::Class - Powerful Data Validation Framework
 
 =head1 VERSION
 
-version 7.900037
+version 7.900038
 
 =head1 SYNOPSIS
 
@@ -545,7 +545,7 @@ The most common usage of Validation::Class is to transform class namespaces into
 data validation domains where consistency and reuse are primary concerns.
 Validation::Class provides an extensible framework for defining reusable data
 validation rules. It ships with a complete set of pre-defined validations and
-filters referred to as L<directives|Validation::Class::Directives/DIRECTIVES>.
+filters referred to as L<"directives"|Validation::Class::Directives/DIRECTIVES>.
 
 The core feature-set consist of self-validating methods, validation profiles,
 reusable validation rules and templates, pre and post input filtering, class
@@ -621,6 +621,7 @@ be used as it's default value.
 
     has 'first_name' => 'Peter';
     has 'last_name'  => 'Venkman';
+
     has 'full_name'  => sub { join ', ', $_[0]->last_name, $_[0]->first_name };
 
     has 'email_address';
@@ -640,7 +641,7 @@ in the same way the common BUILD routine is used in modern OO frameworks.
 
         my ($self, $args) = @_;
 
-        # run after instantiation in the order declared
+        # run after instantiation in the order defined
 
     };
 
@@ -729,7 +730,7 @@ underscore.
 
     # accessor will be created as send_reminders
     field 'send-reminders' => {
-        length   => 1
+        length => 1
     };
 
 Please note that prefixing field names with a double plus-symbol instructs the
@@ -744,7 +745,7 @@ pre-existing declarations.
 
     set role => 'MyApp::User';
 
-    # overwrite and append existing field
+    # append existing field and overwrite directives
     field '++email_address' => {
         required => 1
     };
