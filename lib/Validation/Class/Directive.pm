@@ -9,7 +9,7 @@ use Validation::Class::Util;
 
 use Carp 'confess';
 
-our $VERSION = '7.900039'; # VERSION
+our $VERSION = '7.900040'; # VERSION
 
 
 # defaults
@@ -123,7 +123,7 @@ Validation::Class::Directive - Base Class for Validation Class Directives
 
 =head1 VERSION
 
-version 7.900039
+version 7.900040
 
 =head1 SYNOPSIS
 

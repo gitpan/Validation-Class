@@ -13,7 +13,7 @@ use Exporter ();
 
 use Validation::Class::Prototype;
 
-our $VERSION = '7.900039'; # VERSION
+our $VERSION = '7.900040'; # VERSION
 
 our @ISA    = qw(Exporter);
 our @EXPORT = qw(
@@ -517,11 +517,13 @@ Validation::Class - Powerful Data Validation Framework
 
 =head1 VERSION
 
-version 7.900039
+version 7.900040
 
 =head1 SYNOPSIS
 
     use Validation::Class::Simple::Streamer;
+
+    my  $parameters = {username => 'admin', password => 's3cret'};
 
     my  $input = Validation::Class::Simple::Streamer->new($parameters);
 
@@ -534,7 +536,7 @@ version 7.900039
         $input->filters([qw/trim strip/]);
 
         # run validations
-        print $input->errors_to_string unless $input;
+        print $input->messages unless $input;
 
 =head1 DESCRIPTION
 
@@ -580,12 +582,14 @@ a more traditional usage of Validation::Class:
         min_symbols => 1
     };
 
-    # elsewhere in your application
+    package main;
+
     my $person = MyApp::Person->new(username => 'admin', password => 'secr3t');
 
     # validate rules on the person object
     unless ($person->validates) {
         # handle the failures
+        warn $person->errors_to_string;
     }
 
     1;
@@ -596,14 +600,16 @@ If you are looking for a simple in-line data validation module built
 using the same tenets and principles as Validation::Class, please review
 L<Validation::Class::Simple> or L<Validation::Class::Simple::Streamer>. If
 you're interested in an experimental yet highly promising approach toward
-validating hierachical data, please take a moment to review
+validating hierarchical data, please take a moment to review
 L<Validation::Class::Document>.
 
 =head1 RATIONALE
 
-If you are new to Validation::Class, or would like more information on the
-underpinnings of this library and how it views and approaches data validation,
-please review L<Validation::Class::Whitepaper>.
+If you are new to Validation::Class, or would like more information on
+the underpinnings of this library and how it views and approaches
+data validation, please review L<Validation::Class::Whitepaper>.
+Please review the L<Validation::Class::Simple/GUIDED-TOUR> for a detailed
+step-by-step look into how Validation::Class works.
 
 =head1 KEYWORDS
 
@@ -688,7 +694,7 @@ CPAN installable directives.
     };
 
     field 'email_address' => {
-        blacklisted => '/path/to/blacklsit'
+        blacklisted => '/path/to/blacklist'
         email => 1,
     };
 
@@ -1018,7 +1024,7 @@ following default mixins for the sake of convenience:
         filters    => [qw/trim strip/]
     };
 
-Please note that the aforementioned mixin names are prexed with a semi-colon but
+Please note that the aforementioned mixin names are prefixed with a semi-colon but
 are treated as an exception to the rule. Prefixing mixin names with a double
 plus-symbol instructs the register to merge your declaration with any pre-existing
 declarations within the same scope (e.g. mixins imported via loading roles),
