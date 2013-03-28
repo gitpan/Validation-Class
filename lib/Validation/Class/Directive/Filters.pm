@@ -9,7 +9,7 @@ use base 'Validation::Class::Directive';
 
 use Validation::Class::Util;
 
-our $VERSION = '7.900040'; # VERSION
+our $VERSION = '7.900041'; # VERSION
 
 our $_registry = {
 
@@ -224,7 +224,7 @@ Validation::Class::Directive::Filters - Filters Directive for Validation Class F
 
 =head1 VERSION
 
-version 7.900040
+version 7.900041
 
 =head1 SYNOPSIS
 

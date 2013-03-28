@@ -23,4 +23,4 @@ resources:
   bugtracker: https://github.com/alnewkirk/Validation-Class/issues
   homepage: http://search.cpan.org/dist/Validation-Class/
   repository: git://github.com/alnewkirk/Validation-Class.git
-version: 7.900040
+version: 7.900041
