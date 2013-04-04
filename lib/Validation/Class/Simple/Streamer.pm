@@ -2,6 +2,7 @@
 
 package Validation::Class::Simple::Streamer;
 
+use 5.10.0;
 use strict;
 use warnings;
 use overload bool => \&validate, '""' => \&messages, fallback => 1;
@@ -11,7 +12,7 @@ use Carp;
 use Validation::Class::Simple;
 use Validation::Class::Util;
 
-our $VERSION = '7.900041'; # VERSION
+our $VERSION = '7.900042'; # VERSION
 
 
 
@@ -121,6 +122,15 @@ sub declare {
 }
 
 
+sub is_valid {
+
+    my ($self) = @_;
+
+    return $self->{validator}->error_count ? 0 : 1;
+
+}
+
+
 sub messages {
 
     my ($self, @arguments) = @_;
@@ -196,7 +206,7 @@ Validation::Class::Simple::Streamer - Simple Streaming Data Validation
 
 =head1 VERSION
 
-version 7.900041
+version 7.900042
 
 =head1 SYNOPSIS
 
@@ -283,6 +293,14 @@ The clear method resets the validation queue and declared fields but leaves the
 declared parameters in-tact, almost like the object state post-instantiation.
 
     $self->clear;
+
+=head2 is_valid
+
+The is_valid method returns a boolean value which is true if the last validation
+attempt was successful, and false if it was not (which is determined by looking
+for errors at the class and field levels).
+
+    $self->is_valid;
 
 =head2 messages
 

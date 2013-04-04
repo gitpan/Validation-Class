@@ -132,6 +132,7 @@ t/legacy/regression/98-unknown_params.t
 t/legacy/regression/99-battery.t
 t/legacy/regression/filters/01-trim.t
 t/legacy/regression/filters/02-alpha.t
+t/legacy/regression/filters/03-currency.t
 t/legacy/regression/filters/03-decimal.t
 t/legacy/regression/filters/04-strip.t
 t/legacy/regression/filters/05-numeric.t

@@ -14,7 +14,7 @@ use Validation::Class::Fields;
 use Validation::Class::Errors;
 use Validation::Class::Util;
 
-our $VERSION = '7.900041'; # VERSION
+our $VERSION = '7.900042'; # VERSION
 
 use Hash::Flatten 'flatten', 'unflatten';
 use Module::Runtime 'use_module';
@@ -943,6 +943,7 @@ sub normalize {
     foreach my $name (@fields) {
 
         my $field = $self->fields->get($name);
+        my $label = $field->{label} ? $field->{label} : "The field $name";
 
         if (defined $field->{alias}) {
 
@@ -953,9 +954,17 @@ sub normalize {
 
                 if ($mapper->{$alias}) {
 
+                    my $alt_field =
+                        $self->fields->get($mapper->{$alias})
+                    ;
+
+                    my $alt_label = $alt_field->{label} ?
+                        $alt_field->{label} : "the field $mapper->{$alias}"
+                    ;
+
                     my $error =
-                        qq(The field $name contains the alias $alias which is
-                        also an alias on the field $mapper->{$alias})
+                        qq($label contains the alias $alias which is
+                        also an alias on $alt_label)
                     ;
 
                     $self->throw_error($error);
@@ -965,7 +974,7 @@ sub normalize {
                 if ($self->fields->has($alias)) {
 
                     my $error =
-                        qq(The field $name contains the alias $alias which is
+                        qq($label contains the alias $alias which is
                         the name of an existing field)
                     ;
 
@@ -2172,7 +2181,7 @@ Validation::Class::Prototype - Data Validation Engine for Validation::Class Clas
 
 =head1 VERSION
 
-version 7.900041
+version 7.900042
 
 =head1 DESCRIPTION
 
@@ -2412,7 +2421,9 @@ order queued.
 
 The clone_field method is used to create new fields (rules) from existing fields
 on-the-fly. This is useful when you have a variable number of parameters being
-validated that can share existing validation rules.
+validated that can share existing validation rules. Please note that cloning a
+field does not include copying and/or processing of any mixins on the original
+field to the cloned field, if desired, this must be done manually.
 
     package Class;
 
