@@ -23,7 +23,7 @@ foreach my $module (usesub 'Validation::Class::Directive') {
     ;
 }
 
-our $VERSION = '7.900044'; # VERSION
+our $VERSION = '7.900045'; # VERSION
 
 
 sub new {
@@ -172,7 +172,7 @@ Validation::Class::Directives - Validation::Class Core Directives Registry
 
 =head1 VERSION
 
-version 7.900044
+version 7.900045
 
 =head1 DESCRIPTION
 
@@ -196,7 +196,7 @@ of input (e.g. a hospital API may require a more sophisticated SSN validation
 than that of a department of education API; likewise; an email service API may
 require a more sophisticated email validation than that of a file sharing API).
 Validation::Class does not attempt to provide validators for all levels of
-strictness and the core directives exist to support simple typical use-case with
+strictness and the core directives exist to support typical use-cases with
 a minimal level of strictness.
 
 =head2 alias

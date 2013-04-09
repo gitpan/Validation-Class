@@ -5,7 +5,7 @@ package Validation::Class::Util;
 use strict;
 use warnings;
 
-our $VERSION = '7.900044'; # VERSION
+our $VERSION = '7.900045'; # VERSION
 
 use Module::Runtime 'use_module';
 use Scalar::Util 'blessed';
