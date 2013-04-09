@@ -14,7 +14,7 @@ use Exporter ();
 
 use Validation::Class::Prototype;
 
-our $VERSION = '7.900043'; # VERSION
+our $VERSION = '7.900044'; # VERSION
 
 our @ISA    = qw(Exporter);
 our @EXPORT = qw(
@@ -518,7 +518,7 @@ Validation::Class - Powerful Data Validation Framework
 
 =head1 VERSION
 
-version 7.900043
+version 7.900044
 
 =head1 SYNOPSIS
 
@@ -1411,6 +1411,12 @@ your existing Moose-based codebase.
 
 This library is nice for simple use-cases, it has virtually no dependencies
 and solid test coverage.
+
+=item L<Data::Domain>
+
+This library is has a unique yet modular API for building data valdation rules,
+although the design is simple, it appears to also support the validating of
+hierarchical data and objects.
 
 =back
 
