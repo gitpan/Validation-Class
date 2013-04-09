@@ -15,7 +15,7 @@ use Validation::Class::Errors;
 use Validation::Class::Util '!has';
 use Carp 'confess';
 
-our $VERSION = '7.900042'; # VERSION
+our $VERSION = '7.900043'; # VERSION
 
 use base 'Validation::Class::Mapping';
 

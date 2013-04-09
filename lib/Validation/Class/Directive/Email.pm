@@ -9,7 +9,7 @@ use base 'Validation::Class::Directive';
 
 use Validation::Class::Util;
 
-our $VERSION = '7.900042'; # VERSION
+our $VERSION = '7.900043'; # VERSION
 
 
 has 'mixin'   => 1;
@@ -49,7 +49,7 @@ Validation::Class::Directive::Email - Email Directive for Validation Class Field
 
 =head1 VERSION
 
-version 7.900042
+version 7.900043
 
 =head1 SYNOPSIS
 
@@ -75,7 +75,9 @@ version 7.900042
 
 Validation::Class::Directive::Email is a core validation class field directive
 that checks the validity of email addresses specified by the associated
-parameters.
+parameters. Please note, the email directive does not perform a host lookup
+nor does it conform to the RFC specification. For more sophisticated email
+validation, please use custom validation with L<Email::Valid> or similar.
 
 =head1 AUTHOR
 

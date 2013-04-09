@@ -13,7 +13,7 @@ Validation::Class::Cookbook - Recipes for Validation::Class
 
 =head1 VERSION
 
-version 7.900042
+version 7.900043
 
 =head1 BUILDING CLASSES
 

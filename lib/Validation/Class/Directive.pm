@@ -9,7 +9,7 @@ use Validation::Class::Util;
 
 use Carp 'confess';
 
-our $VERSION = '7.900042'; # VERSION
+our $VERSION = '7.900043'; # VERSION
 
 
 # defaults
@@ -123,13 +123,16 @@ Validation::Class::Directive - Base Class for Validation Class Directives
 
 =head1 VERSION
 
-version 7.900042
+version 7.900043
 
 =head1 SYNOPSIS
 
-    package Validation::Class::Plugin::CheckBlacklist;
+    package Validation::Class::Directive::CheckBlacklist;
 
     use base 'Validation::Class::Directive';
+
+    use strict;
+    use warnings;
     use Validation::Class::Util;
     use File::Slurp;
 

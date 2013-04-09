@@ -14,7 +14,7 @@ use Validation::Class::Fields;
 use Validation::Class::Errors;
 use Validation::Class::Util;
 
-our $VERSION = '7.900042'; # VERSION
+our $VERSION = '7.900043'; # VERSION
 
 use Hash::Flatten 'flatten', 'unflatten';
 use Module::Runtime 'use_module';
@@ -2035,7 +2035,7 @@ sub has_valid { goto &validate } sub validates { goto &validate } sub validate {
         # were explicitly requested to be validated, e.g. not explicitly
         # defining fields to be validated effectively allows the parameters
         # submitted to dictate what gets validated (may not be dangerous)
-        @fields = (map { $self->fields->has($_) ? $_ : () } $self->params->keys);
+        @fields = ($self->params->keys);
     }
 
     elsif (@fields && !$self->params->count) {
@@ -2181,7 +2181,7 @@ Validation::Class::Prototype - Data Validation Engine for Validation::Class Clas
 
 =head1 VERSION
 
-version 7.900042
+version 7.900043
 
 =head1 DESCRIPTION
 
