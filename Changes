@@ -1,5 +1,11 @@
 Revision history for the Perl library Validation::Class
 
+7.900046  2013-04-09
+
+  - Dynamically handle requests to validate aliases
+
+  - Alias resolution handled during the normalization process instead of before validate
+
 7.900045  2013-04-09
 
   - Fixed problem validating aliases with ignore_unknown and report_unknown enabled

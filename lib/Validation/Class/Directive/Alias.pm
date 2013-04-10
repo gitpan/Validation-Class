@@ -9,18 +9,18 @@ use base 'Validation::Class::Directive';
 
 use Validation::Class::Util;
 
-our $VERSION = '7.900045'; # VERSION
+our $VERSION = '7.900046'; # VERSION
 
 
 has 'mixin'        => 0;
 has 'field'        => 1;
 has 'multi'        => 0;
 has 'dependencies' => sub {{
-    normalization => [],
-    validation    => ['name']
+    normalization => ['name'],
+    validation    => []
 }};
 
-sub before_validation {
+sub normalize {
 
     my ($self, $proto, $field, $param) = @_;
 
@@ -38,12 +38,39 @@ sub before_validation {
 
             if ($proto->params->has($alias)) {
 
-                # rename the submitted parameter alias with the field name
-                $proto->params->add($name => $proto->params->delete($alias));
+                # merge the submitted parameter alias with the related field
 
-                push @{$proto->stash->{'validation.fields'}}, $name unless
-                    grep { $name eq $_} @{$proto->stash->{'validation.fields'}}
-                ;
+                my $val1 = $proto->params->get($name);
+                my $val2 = $proto->params->get($alias);
+
+                if ($val1) {
+                    if (isa_arrayref($val1)) {
+                        if (defined $val2) {
+                            if (isa_arrayref($val2)) {
+                                push @{$val1}, @{$val2};
+                            }
+                            else {
+                                push @{$val1}, $val2;
+                            }
+                        }
+                    }
+                    else {
+                        if (defined $val2) {
+                            if (isa_arrayref($val2)) {
+                                $val1 = [$val1, @{$val2}];
+                            }
+                            else {
+                                $val1 = [$val1, $val2];
+                            }
+                        }
+                    }
+                }
+                else {
+                    $val1 = $val2 if defined $val2;
+                }
+
+                $proto->params->add($name => $val1);
+                $proto->params->delete($alias);
 
             }
 
@@ -67,7 +94,7 @@ Validation::Class::Directive::Alias - Alias Directive for Validation Class Field
 
 =head1 VERSION
 
-version 7.900045
+version 7.900046
 
 =head1 SYNOPSIS
 

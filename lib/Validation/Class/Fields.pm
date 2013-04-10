@@ -12,7 +12,7 @@ use Validation::Class::Util '!has';
 use Hash::Flatten ();
 use Carp;
 
-our $VERSION = '7.900045'; # VERSION
+our $VERSION = '7.900046'; # VERSION
 
 use base 'Validation::Class::Mapping';
 

@@ -14,7 +14,7 @@ use Validation::Class::Fields;
 use Validation::Class::Errors;
 use Validation::Class::Util;
 
-our $VERSION = '7.900045'; # VERSION
+our $VERSION = '7.900046'; # VERSION
 
 use Hash::Flatten 'flatten', 'unflatten';
 use Module::Runtime 'use_module';
@@ -2064,7 +2064,8 @@ sub has_valid { goto &validate } sub validates { goto &validate } sub validate {
                     my @aliases = isa_arrayref($_->get('alias')) ?
                         @{$_->get('alias')} : ($_->get('alias'))
                     ;
-                    grep { $f eq $_ } @aliases;
+                    # if alias was specified, use field name instead
+                    push @fields, $_->get('name') if grep { $f eq $_ } @aliases;
                 }
             }
             $self->fields->values
@@ -2191,7 +2192,7 @@ Validation::Class::Prototype - Data Validation Engine for Validation::Class Clas
 
 =head1 VERSION
 
-version 7.900045
+version 7.900046
 
 =head1 DESCRIPTION
 
