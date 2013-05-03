@@ -83,9 +83,7 @@ t/05-foreign-directive.t
 t/05-heirarchal-role-handling.t
 t/05-method-syntax.t
 t/05-role-requirements.t
-t/06-alias-validation.t
 t/06-load-settings.t
-t/99-alias-handling-on-normalize.t
 t/99-alias-handling-with-report-unknown-enabled.t
 t/99-check-queuing-and-alternatives.t
 t/legacy/01-fields-access.t

@@ -9,7 +9,7 @@ use base 'Validation::Class::Directive';
 
 use Validation::Class::Util;
 
-our $VERSION = '7.900046'; # VERSION
+our $VERSION = '7.900047'; # VERSION
 
 our $_registry = {
 
@@ -66,7 +66,7 @@ sub filter_capitalize {
 
 sub filter_currency {
 
-    my $n = $_[0] =~ /([^\d\-]+)?\-/ ? 1 : 0;
+    my $n = $_[0] =~ /^(?:[^\d\-]+)?([\-])/ ? 1 : 0;
             $_[0] =~ s/[^0-9\.\,]+//g;
     return $n ? "-$_[0]" : "$_[0]";
 
@@ -74,7 +74,7 @@ sub filter_currency {
 
 sub filter_decimal {
 
-    my $n = $_[0] =~ /([^\d\-]+)?\-/ ? 1 : 0;
+    my $n = $_[0] =~ /^(?:[^\d\-]+)?([\-])/ ? 1 : 0;
             $_[0] =~ s/[^0-9\.]+//g;
     return $n ? "-$_[0]" : "$_[0]";
 
@@ -88,7 +88,7 @@ sub filter_lowercase {
 
 sub filter_numeric {
 
-    my $n = $_[0] =~ /([^\d\-]+)?\-/ ? 1 : 0;
+    my $n = $_[0] =~ /^(?:[^\d\-]+)?([\-])/ ? 1 : 0;
             $_[0] =~ s/[^0-9]+//g;
     return $n ? "-$_[0]" : "$_[0]";
 
@@ -235,7 +235,7 @@ Validation::Class::Directive::Filters - Filters Directive for Validation Class F
 
 =head1 VERSION
 
-version 7.900046
+version 7.900047
 
 =head1 SYNOPSIS
 
