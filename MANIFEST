@@ -86,6 +86,7 @@ t/05-role-requirements.t
 t/06-load-settings.t
 t/99-alias-handling-with-report-unknown-enabled.t
 t/99-check-queuing-and-alternatives.t
+t/99-toggling-filters-during-execution.t
 t/legacy/01-fields-access.t
 t/legacy/10-attribute-method.t
 t/legacy/10-build-method.t

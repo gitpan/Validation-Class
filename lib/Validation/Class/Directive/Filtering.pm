@@ -9,7 +9,7 @@ use base 'Validation::Class::Directive';
 
 use Validation::Class::Util;
 
-our $VERSION = '7.900047'; # VERSION
+our $VERSION = '7.900048'; # VERSION
 
 
 has 'mixin' => 1;
@@ -27,7 +27,7 @@ sub normalize {
     # by default fields should have a filtering directive
     # unless already specified
 
-    $field->{filtering} = $proto->filtering || 'pre' if ! defined $field->{filtering};
+    $field->{filtering} = $proto->filtering unless defined $field->{filtering};
 
     return $self;
 
@@ -45,7 +45,7 @@ Validation::Class::Directive::Filtering - Filtering Directive for Validation Cla
 
 =head1 VERSION
 
-version 7.900047
+version 7.900048
 
 =head1 SYNOPSIS
 
