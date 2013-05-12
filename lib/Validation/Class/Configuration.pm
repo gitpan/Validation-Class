@@ -17,7 +17,7 @@ use Validation::Class::Util;
 
 use Module::Find 'usesub';
 
-our $VERSION = '7.900048'; # VERSION
+our $VERSION = '7.900049'; # VERSION
 
 sub attributes {
 
@@ -158,6 +158,8 @@ sub default_profile {
 
         DIRECTIVES  => Validation::Class::Mapping->new,
 
+        DOCUMENTS   => Validation::Class::Mapping->new,
+
         EVENTS     => Validation::Class::Mapping->new,
 
         FIELDS     => Validation::Class::Fields->new,
@@ -181,6 +183,14 @@ sub directives {
     my ($self) = @_;
 
     return $self->profile->{DIRECTIVES};
+
+}
+
+sub documents {
+
+    my ($self) = @_;
+
+    return $self->profile->{DOCUMENTS};
 
 }
 

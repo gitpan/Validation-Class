@@ -25,10 +25,11 @@ my %WriteMakefileArgs = (
     "Hash::Merge" => 0,
     "List::MoreUtils" => 0,
     "Module::Find" => 0,
-    "Module::Runtime" => 0
+    "Module::Runtime" => 0,
+    "Scalar::Util" => 0
   },
   "TEST_REQUIRES" => {},
-  "VERSION" => "7.900048",
+  "VERSION" => "7.900049",
   "test" => {
     "TESTS" => "t/*.t t/legacy/*.t t/legacy/regression/*.t t/legacy/regression/filters/*.t t/legacy/regression/validators/*.t"
   }

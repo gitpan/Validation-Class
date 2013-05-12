@@ -5,6 +5,7 @@ META.yml
 Makefile.PL
 README
 README.mkdn
+cpanfile
 lib/Validation/Class.pm
 lib/Validation/Class/Configuration.pm
 lib/Validation/Class/Cookbook.pod
@@ -84,6 +85,14 @@ t/05-heirarchal-role-handling.t
 t/05-method-syntax.t
 t/05-role-requirements.t
 t/06-load-settings.t
+t/07-adopt-syntax.t
+t/98-02-document-synopsis-adhoc.t
+t/98-02-document-synopsis-filtering.t
+t/98-02-document-synopsis.t
+t/98-03-document-example-composition.t
+t/98-03-document-example-nested.t
+t/98-03-document-example-pruning.t
+t/98-03-document-example-reporting.t
 t/99-alias-handling-with-report-unknown-enabled.t
 t/99-check-queuing-and-alternatives.t
 t/99-toggling-filters-during-execution.t
@@ -178,3 +187,5 @@ t/legacy/regression/validators/22-telephone.t
 t/legacy/regression/validators/22-time.t
 t/legacy/regression/validators/22-uuid.t
 t/legacy/regression/validators/22-zipcode.t
+t/lib/T/Location.pm
+t/lib/T/User.pm

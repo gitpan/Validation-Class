@@ -14,16 +14,20 @@ use Exporter ();
 
 use Validation::Class::Prototype;
 
-our $VERSION = '7.900048'; # VERSION
+our $VERSION = '7.900049'; # VERSION
 
 our @ISA    = qw(Exporter);
 our @EXPORT = qw(
 
+    adopt
+    adt
     attribute
     bld
     build
     dir
     directive
+    doc
+    document
     fld
     field
     flt
@@ -206,6 +210,39 @@ sub initialize_validator {
 
 
 
+sub adt { goto &adopt } sub adopt {
+
+    my $package = shift if @_ == 4;
+
+    my ($class, $type, $name) = @_;
+
+    my $aliases = {
+        has => 'attribute',
+        dir => 'directive',
+        doc => 'document',
+        fld => 'field',
+        flt => 'filter',
+        msg => 'message',
+        mth => 'method',
+        mxn => 'mixin',
+        pro => 'profile'
+    };
+
+    my $keywords = { map { $_ => $_ } values %{$aliases} };
+
+    $type = $keywords->{$type} || $aliases->{$type};
+
+    return unless $class && $name && $type;
+
+    my $store  = "${type}s";
+    my $config = prototype_registry->get($class)->configuration;
+    my $data   = clone $config->$store->get($name);
+
+    @_ = ($name => $data) and goto &$type;
+
+}
+
+
 sub has { goto &attribute } sub attribute {
 
     my $package = shift if @_ == 3;
@@ -269,6 +306,29 @@ sub dir { goto &directive } sub directive {
     };
 
 }
+
+
+sub doc { goto &document } sub document {
+
+    my $package = shift if @_ == 3;
+
+    my ($name, $data) = @_;
+
+    $data ||= {};
+
+    return unless ($name && $data);
+
+    return configure_class_proto $package => sub {
+
+        my ($proto) = @_;
+
+        $proto->register_document($name, $data);
+
+        return $proto;
+
+    };
+
+};
 
 
 sub fld { goto &field } sub field {
@@ -518,15 +578,15 @@ Validation::Class - Powerful Data Validation Framework
 
 =head1 VERSION
 
-version 7.900048
+version 7.900049
 
 =head1 SYNOPSIS
 
     use Validation::Class::Simple::Streamer;
 
-    my  $parameters = {username => 'admin', password => 's3cret'};
+    my  $params = {username => 'admin', password => 's3cret'};
 
-    my  $input = Validation::Class::Simple::Streamer->new($parameters);
+    my  $input = Validation::Class::Simple::Streamer->new(params => $params);
 
         # check username parameter
         $input->check('username')->required->between('5-255');
@@ -536,10 +596,8 @@ version 7.900048
         $input->check('password')->required->between('5-255')->min_symbols(1);
         $input->filters([qw/trim strip/]);
 
-        # run validations
-        unless ($input) {
-            print $input->messages("\n");
-        }
+        # run validate
+        die $input->errors_to_string unless $input->validate;
 
 =head1 DESCRIPTION
 
@@ -601,20 +659,38 @@ a more traditional usage of Validation::Class:
 
 If you are looking for a simple in-line data validation module built
 using the same tenets and principles as Validation::Class, please review
-L<Validation::Class::Simple> or L<Validation::Class::Simple::Streamer>. If
-you're interested in an experimental yet highly promising approach toward
-validating hierarchical data, please take a moment to review
-L<Validation::Class::Document>.
-
-=head1 RATIONALE
-
-If you are new to Validation::Class, or would like more information on
-the underpinnings of this library and how it views and approaches
-data validation, please review L<Validation::Class::Whitepaper>.
-Please review the L<Validation::Class::Simple/GUIDED-TOUR> for a detailed
-step-by-step look into how Validation::Class works.
+L<Validation::Class::Simple> or L<Validation::Class::Simple::Streamer>. If you
+are new to Validation::Class, or would like more information on the
+underpinnings of this library and how it views and approaches data validation,
+please review L<Validation::Class::Whitepaper>. Please review the
+L<Validation::Class::Simple/GUIDED-TOUR> for a detailed step-by-step look into
+how Validation::Class works.
 
 =head1 KEYWORDS
+
+=head2 adopt
+
+The adopt keyword (or adt) copies configuration and functionality from
+other Validation::Class classes. The adopt keyword takes three arguments, the
+name of the class to be introspected, and the configuration type and name to be
+recreated. Basically, anything you can configure using a Validation::Class
+keyword can be adopted into other classes using this keyword with the exception
+of coderefs registered using the build keyword. Please note! If you are adopting
+a field declaration which has an associated mixin directive defined on the
+target class, you must adopt the mixin explicitly if you wish it's values to be
+interpolated.
+
+    package MyApp::Exployee;
+
+    use Validate::Class;
+    use MyApp::Person;
+
+    adopt MyApp::Person, mixin   => 'basic';
+    adopt MyApp::Person, field   => 'first_name';
+    adopt MyApp::Person, field   => 'last_name';
+    adopt MyApp::Person, profile => 'has_fullname';
+
+    1;
 
 =head2 attribute
 
@@ -628,12 +704,13 @@ be used as it's default value.
 
     use Validate::Class;
 
-    has 'first_name' => 'Peter';
-    has 'last_name'  => 'Venkman';
+    attribute 'first_name' => 'Peter';
+    attribute 'last_name'  => 'Venkman';
+    attribute 'full_name'  => sub {
+        join ', ', $_[0]->last_name, $_[0]->first_name
+    };
 
-    has 'full_name'  => sub { join ', ', $_[0]->last_name, $_[0]->first_name };
-
-    has 'email_address';
+    attribute 'email_address';
 
     1;
 
@@ -653,6 +730,8 @@ in the same way the common BUILD routine is used in modern OO frameworks.
         # run after instantiation in the order defined
 
     };
+
+    1;
 
 The build keyword takes one argument, a coderef which is passed the instantiated
 class object.
@@ -675,21 +754,13 @@ CPAN installable directives.
         my ($self, $field, $param) = @_;
 
         if (defined $field->{blacklisted} && defined $param) {
-
             if ($field->{required} || $param) {
-
                 if (exists_in_blacklist($field->{blacklisted}, $param)) {
-
                     my $handle = $field->label || $field->name;
-
                     $field->errors->add("$handle has been blacklisted");
-
                     return 0;
-
                 }
-
             }
-
         }
 
         return 1;
@@ -701,8 +772,6 @@ CPAN installable directives.
         email => 1,
     };
 
-
-
     1;
 
 The directive keyword takes two arguments, the name of the directive and a
@@ -711,6 +780,176 @@ passed four ordered parameters; a directive object, the class prototype object,
 the current field object, and the matching parameter's value. The validator
 (coderef) is evaluated by its return value as well as whether it altered any
 error containers.
+
+=head2 document
+
+The document keyword (or doc) registers a data matching profile which can be
+used to validate heiarchal data. It will store a hashref with pre-define path
+matching rules for the data structures you wish to validate. The "path matching
+rules", which use a specialized object notation, referred to as the document
+notation, can be thought of as a kind-of simplified regular expression which is
+executed against the flattened data structure. The following are a few general
+use-cases:
+
+    package MyApp::Person;
+
+    use Validation::Class;
+
+    field  'string' => {
+        mixin => [':str']
+    };
+
+    # given this JSON data structure
+    {
+        "id": "1234-A",
+        "name": {
+            "first_name" : "Bob",
+            "last_name"  : "Smith",
+         },
+        "title": "CIO",
+        "friends" : [],
+    }
+
+    # select id to validate against the string rule
+    document 'foobar'  =>
+        { 'id' => 'string' };
+
+    # select name -> first_name/last_name to validate against the string rule
+    document 'foobar'  =>
+        {'name.first_name' => 'string', 'name.last_name' => 'string'};
+
+    # or
+    document 'foobar'  =>
+        {'name.*_name' => 'string'};
+
+    # select each element in friends to validate against the string rule
+    document 'foobar'  =>
+        { 'friends.@'  => 'string' };
+
+    # or select an element of a hashref in each element in friends to validate
+    # against the string rule
+    document 'foobar'  =>
+        { 'friends.@.name' => 'string' };
+
+The document declaration's keys should follow the aforementioned document
+notation schema and it's values should be strings which correspond to the names
+of fields (or other document declarations) that will be used to preform the
+data validation. It is possible to combine document declarations to validate
+hierarchical data that contains data structures matching one or more document
+patterns. The following is an example of what that might look like.
+
+    package MyApp::Person;
+
+    use Validation::Class;
+
+    # data validation rule
+    field  'name' => {
+        mixin      => [':str'],
+        pattern    => qr/^[A-Za-z ]+$/,
+        max_length => 20,
+    };
+
+    # data validation map / document notation schema
+    document 'friend' => {
+        'name' => 'name'
+    };
+
+    # data validation map / document notation schema
+    document 'person' => {
+        'name' => 'name',
+        'friends.@' => 'friend'
+    };
+
+    package main;
+
+    my $data = {
+        "name"   => "Anita Campbell-Green",
+        "friends" => [
+            { "name" => "Horace" },
+            { "name" => "Skinner" },
+            { "name" => "Alonzo" },
+            { "name" => "Frederick" },
+        ],
+    };
+
+    my $person = MyApp::Person->new;
+
+    unless ($person->validate_document(person => $data)) {
+        warn $person->errors_to_string if $person->error_count;
+    }
+
+    1;
+
+Alternatively, the following is a more verbose data validation class using
+traditional styling and configuration.
+
+    package MyApp::Person;
+
+    use Validation::Class;
+
+    field  'id' => {
+        mixin      => [':str'],
+        filters    => ['numeric'],
+        max_length => 2,
+    };
+
+    field  'name' => {
+        mixin      => [':str'],
+        pattern    => qr/^[A-Za-z ]+$/,
+        max_length => 20,
+    };
+
+    field  'rating' => {
+        mixin      => [':str'],
+        pattern    => qr/^\-?\d+$/,
+    };
+
+    field  'tag' => {
+        mixin      => [':str'],
+        pattern    => qr/^(?!evil)\w+/,
+        max_length => 20,
+    };
+
+    document 'person' => {
+        'id'                             => 'id',
+        'name'                           => 'name',
+        'company.name'                   => 'name',
+        'company.supervisor.name'        => 'name',
+        'company.supervisor.rating.@.*'  => 'rating',
+        'company.tags.@'                 => 'name'
+    };
+
+    package main;
+
+    my $data = {
+        "id"      => "1234-ABC",
+        "name"    => "Anita Campbell-Green",
+        "title"   => "Designer",
+        "company" => {
+            "name"       => "House of de Vil",
+            "supervisor" => {
+                "name"   => "Cruella de Vil",
+                "rating" => [
+                    {   "support"  => -9,
+                        "guidance" => -9
+                    }
+                ]
+            },
+            "tags" => [
+                "evil",
+                "cruelty",
+                "dogs"
+            ]
+        },
+    };
+
+    my $person = MyApp::Person->new;
+
+    unless ($person->validate_document(person => $data)) {
+        warn $person->errors_to_string if $person->error_count;
+    }
+
+    1;
 
 =head2 field
 
@@ -763,6 +1002,8 @@ pre-existing declarations.
     field '+login' => {
         required => 1
     };
+
+    1;
 
 =head2 filter
 
@@ -925,7 +1166,6 @@ for execution.
             my ($self, @args) = @_;
 
             # do something registrationy
-
             $self->id(...); # set the ID field for output validation
 
             return $self;
@@ -1050,6 +1290,8 @@ to overwrite any pre-existing declarations.
         required => 1
     };
 
+    1;
+
 The mixin keyword takes two arguments, the mixin name and a hashref of key/values
 pairs known as directives.
 
@@ -1084,6 +1326,8 @@ validates data relevant to a specific action.
     unless ($user->validate_profile('check_email')) {
         # handle failures
     }
+
+    1;
 
 The profile keyword takes two arguments, a profile name and coderef which will
 be used to execute a sequence of actions for validation purposes.
@@ -1122,6 +1366,8 @@ code (magic) necessary to normalize your environment.
 
     }
 
+    1;
+
 =head2 prototype
 
 The prototype method (or proto) returns an instance of the associated class
@@ -1138,6 +1384,8 @@ this method directly, see L<Validation::Class::Prototype>.
     my $person = MyApp::Person->new;
 
     my $prototype = $person->prototype;
+
+    1;
 
 =head1 PROXY METHODS
 
@@ -1386,9 +1634,12 @@ B<If you have simple data validation needs, please review:>
 
 =back
 
-Validation::Class validates strings, not structures. If you need a means for
-validating object types you should be using a modern object system like L<Mo>,
-L<Moo>, L<Mouse>, or L<Moose>. Alternatively you could use L<Params::Validate>.
+Validation::Class primarily validates strings, not blessed objects. If you need
+a means for validating object types you should be using a modern object system
+like L<Mo>, L<Moo>, L<Mouse>, or L<Moose>. Alternatively, you could use a
+decoupled object validators like L<Type::Tiny>, L<Params::Validate> or
+L<Specio>. If you are looking for the best-of-both-worlds, you might want to
+look at L<MooX::Validate>.
 
 In the event that you would like to look elsewhere for your data validation
 needs, the following is a list of other validation libraries/frameworks you

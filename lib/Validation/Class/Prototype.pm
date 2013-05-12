@@ -14,7 +14,7 @@ use Validation::Class::Fields;
 use Validation::Class::Errors;
 use Validation::Class::Util;
 
-our $VERSION = '7.900048'; # VERSION
+our $VERSION = '7.900049'; # VERSION
 
 use Hash::Flatten 'flatten', 'unflatten';
 use Module::Runtime 'use_module';
@@ -23,6 +23,7 @@ use List::MoreUtils 'uniq', 'firstval';
 use Class::Forward 'clsf';
 use Hash::Merge 'merge';
 use Carp 'confess';
+use Clone 'clone';
 
 
 my $_registry = Validation::Class::Mapping->new; # prototype registry
@@ -38,6 +39,9 @@ hold 'configuration' => sub { Validation::Class::Configuration->new };
 
 
 hold 'directives' => sub { Validation::Class::Mapping->new };
+
+
+hold 'documents' => sub { Validation::Class::Mapping->new };
 
 
 hold 'errors' => sub { Validation::Class::Errors->new };
@@ -1110,6 +1114,8 @@ sub proxy_methods_wrapped {
 
         validate
         validates
+        validate_document
+        document_validates
         validate_method
         method_validates
         validate_profile
@@ -1211,6 +1217,16 @@ sub register_directive {
     );
 
     $self->configuration->directives->add($name, $directive);
+
+    return $self;
+
+}
+
+sub register_document {
+
+    my ($self, $name, $data) = @_;
+
+    $self->configuration->documents->add($name, $data);
 
     return $self;
 
@@ -1841,6 +1857,7 @@ sub snapshot {
         my @clonable_configuration_settings = qw(
             attributes
             directives
+            documents
             events
             fields
             filters
@@ -2117,6 +2134,211 @@ sub has_valid { goto &validate } sub validates { goto &validate } sub validate {
 }
 
 
+sub document_validates { goto &validate_document } sub validate_document {
+
+    my ($self, $context, $ref, $data, $options) = @_;
+
+    my $name;
+
+    my $documents = clone $self->documents->hash;
+
+    my $_fmap     = {}; # ad-hoc fields
+
+    if ("HASH" eq ref $ref) {
+
+        $ref  = clone $ref;
+
+        $name = "DOC" . time() . ($self->documents->count + 1);
+
+        # build document on-the-fly from a hashref
+        foreach my $rules (values %{$ref}) {
+
+            next unless "HASH" eq ref $rules;
+
+            my  $id = uc "$rules";
+                $id =~ s/\W/_/g;
+                $id =~ s/_$//;
+
+            $self->fields->add($id => $rules);
+            $rules = $id;
+            $_fmap->{$id} = 1;
+
+        }
+
+        $documents->{$name} = $ref;
+
+    }
+
+    else {
+
+        $name = $ref;
+
+    }
+
+    my $fields    = { map {$_ => 1} ($self->fields->keys) };
+
+    confess "Please supply a registered document name to validate against"
+        unless $name
+    ;
+
+    confess "The ($name) document is not registered and cannot be validated against"
+        unless $name && exists $documents->{$name}
+    ;
+
+    my $document = $documents->{$name};
+
+    confess "The ($name) document does not contain any mappings and cannot ".
+          "be validated against" unless keys %{$documents}
+    ;
+
+    $options ||= {};
+
+    for my  $key (keys %{$document}) {
+
+        $document->{$key} = $documents->{$document->{$key}} if
+            $document->{$key} && exists $documents->{$document->{$key}} &&
+            ! $self->fields->has($document->{$key})
+        ;
+
+    }
+
+    $document = flatten $document;
+
+    for my  $key (keys %{$document}) {
+
+        my  $value = delete $document->{$key};
+
+        my  $token;
+        my  $regex;
+
+            $token  = '\.\@';
+            $regex  = ':\d+';
+            $key    =~ s/$token/$regex/g;
+
+            $token  = '\*';
+            $regex  = '[^\.]+';
+            $key    =~ s/$token/$regex/g;
+
+        $document->{$key} = $value;
+
+    }
+
+    my $_dmap = {};
+    my $_pmap = {};
+    my $_xmap = {};
+
+    my $_data = flatten $data;
+
+    for my $key (keys %{$_data}) {
+
+        my  $point = $key;
+            $point =~ s/\W/_/g;
+        my  $label = $key;
+            $label =~ s/\:/./g;
+
+        my  $match = 0;
+
+        for my $regex (keys %{$document}) {
+
+            if ($_data->{$key}) {
+
+                my  $field = $document->{$regex};
+
+                if ($key =~ /^$regex$/) {
+
+                    my $config = {label => $label};
+
+                    $config->{mixin} = $self->fields->get($field)->mixin
+                        if $self->fields->get($field)->can('mixin')
+                    ;
+
+                    $self->clone_field($field, $point => $config);
+
+                    $self->apply_mixin($point => $config->{mixin})
+                        if $config->{mixin}
+                    ;
+
+                    $_dmap->{$key}   = 1;
+                    $_pmap->{$point} = $key;
+
+                    $match = 1;
+
+                }
+
+            }
+
+        }
+
+        $_xmap->{$point} = $key;
+
+        # register node as a parameter
+
+        $self->params->add($point => $_data->{$key})
+            unless $options->{prune} && ! $match
+        ;
+
+        # queue and force requirement
+
+        $self->queue("+$point")
+            unless $options->{prune} && ! $match
+        ;
+
+        # prune unnecessary nodes
+
+        if ($options->{prune} && ! $match) {
+
+            delete $_data->{$key};
+
+        }
+
+    }
+
+    $self->validate($context);
+
+    $self->clear_queue;
+
+    my @errors = $self->get_errors;
+
+    for (sort @errors) {
+
+        my ($message) = $_ =~ /field (\w+) does not exist/;
+
+        next unless $message;
+
+        $message = $_xmap->{$message};
+
+        next unless $message;
+
+        $message  =~ s/\W/./g;
+
+        # re-format unknown parameter errors
+        $_ = "The parameter $message was not expected and could not be validated";
+
+    }
+
+    $_dmap = unflatten $_dmap;
+
+    while (my($point, $key) = each(%{$_pmap})) {
+
+        $_data->{$key} = $self->params->get($point); # prepare data
+
+        $self->fields->delete($point) unless $fields->{$point}; # reap clones
+
+    }
+
+    $self->fields->delete($_) for keys %{$_fmap}; # reap ad-hoc fields
+
+    $self->reset_fields;
+
+    $self->set_errors(@errors) if @errors; # report errors
+
+    $_[3] = unflatten $_data if defined $_[2]; # restore data
+
+    return $self->is_valid;
+
+}
+
+
 sub method_validates { goto &validate_method } sub validate_method {
 
     my  ($self, $context, $name, @args) = @_;
@@ -2191,7 +2413,7 @@ Validation::Class::Prototype - Data Validation Engine for Validation::Class Clas
 
 =head1 VERSION
 
-version 7.900048
+version 7.900049
 
 =head1 DESCRIPTION
 
@@ -2221,17 +2443,23 @@ The configuration attribute provides the default configuration profile.
 This attribute is a L<Validation::Class::Configuration> object and CANNOT be
 overridden.
 
-=head2 errors
-
-The errors attribute provides access to class-level error messages.
-This attribute is a L<Validation::Class::Errors> object, may contain
-error messages and CANNOT be overridden.
-
 =head2 directives
 
 The directives attribute provides access to defined directive objects.
 This attribute is a L<Validation::Class::Mapping> object containing
 hashrefs and CANNOT be overridden.
+
+=head2 documents
+
+The documents attribute provides access to defined document models.
+This attribute is a L<Validation::Class::Mapping> object and CANNOT be
+overridden.
+
+=head2 errors
+
+The errors attribute provides access to class-level error messages.
+This attribute is a L<Validation::Class::Errors> object, may contain
+error messages and CANNOT be overridden.
 
 =head2 events
 
@@ -2804,6 +3032,27 @@ minus respectively as follows:
     unless ($input->validate(@spec)){
         return $input->errors_to_string;
     }
+
+=head2 validate_document
+
+The validate_document method (or document_validates) is used to validate the
+specified hierarchical data against the specified document declaration. This is
+extremely valuable for validating serialized messages passed between machines.
+This method requires two arguments, the name of the document declaration to be
+used, and the data to be validated which should be submitted in the form of a
+hashref. The following is an example of this technique:
+
+    my $boolean = $self->validate_document(foobar => $data);
+
+Additionally, you may submit options in the form of a hashref to further control
+the validation process. The following is an example of this technique:
+
+    # the prune option removes non-matching parameters (nodes)
+    my $boolean = $self->validate_document(foobar => $data, { prune => 1 });
+
+Additionally, to support the validation of ad-hoc specifications, you may pass
+this method two hashrefs, the first being the document notation schema, and the
+second being the hierarchical data you wish to validate.
 
 =head2 validate_method
 
