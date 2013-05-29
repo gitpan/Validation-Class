@@ -12,7 +12,7 @@ use Scalar::Util ('refaddr');
 use Validation::Class::Util ('prototype_registry');
 use Validation::Class ();
 
-our $VERSION = '7.900049'; # VERSION
+our $VERSION = '7.900050'; # VERSION
 
 
 sub new {
@@ -108,7 +108,7 @@ Validation::Class::Simple - Simple Ad-Hoc Data Validation
 
 =head1 VERSION
 
-version 7.900049
+version 7.900050
 
 =head1 SYNOPSIS
 
@@ -169,15 +169,15 @@ please review L<Validation::Class::Whitepaper>.
 
 =head1 PROXY METHODS
 
-Each instance of Validation::Class::Simple is associated with a *prototype*
-class which provides the data validation engine and keeps the class namespace
-free from pollution and collisions, please see L<Validation::Class::Prototype>
-for more information on specific methods and attributes.
+Each instance of Validation::Class::Simple is associated with a prototype class
+which provides the data validation engine and keeps the class namespace free
+from pollution and collisions, please see L<Validation::Class::Prototype> for
+more information on specific methods and attributes.
 
 Validation::Class::Simple is injected with a few proxy methods which are
-basically aliases to the corresponding prototype (engine) class methods, however
-it is possible to access the prototype directly using the proto/prototype
-methods.
+basically aliases to the corresponding prototype (engine) class methods,
+however it is possible to access the prototype directly using the
+proto/prototype methods.
 
 =head2 class
 
@@ -209,12 +209,11 @@ See L<Validation::Class::Prototype/error_fields> for full documentation.
 
 See L<Validation::Class::Prototype/errors> for full documentation.
 
-head2 errors_to_string
+=head2 errors_to_string
 
     $self->errors_to_string;
 
-See L<Validation::Class::Prototype/errors_to_string> for full
-documentation.
+See L<Validation::Class::Prototype/errors_to_string> for full documentation.
 
 =head2 get_errors
 
@@ -228,11 +227,23 @@ See L<Validation::Class::Prototype/get_errors> for full documentation.
 
 See L<Validation::Class::Prototype/get_fields> for full documentation.
 
+=head2 get_hash
+
+    $self->get_hash;
+
+See L<Validation::Class::Prototype/get_hash> for full documentation.
+
 =head2 get_params
 
     $self->get_params;
 
 See L<Validation::Class::Prototype/get_params> for full documentation.
+
+=head2 get_values
+
+    $self->get_values;
+
+See L<Validation::Class::Prototype/get_values> for full documentation.
 
 =head2 fields
 
@@ -250,15 +261,19 @@ See L<Validation::Class::Prototype/filtering> for full documentation.
 
     $self->ignore_failure;
 
-See L<Validation::Class::Prototype/ignore_failure> for full
-documentation.
+See L<Validation::Class::Prototype/ignore_failure> for full documentation.
 
 =head2 ignore_unknown
 
     $self->ignore_unknown;
 
-See L<Validation::Class::Prototype/ignore_unknown> for full
-documentation.
+See L<Validation::Class::Prototype/ignore_unknown> for full documentation.
+
+=head2 is_valid
+
+    $self->is_valid;
+
+See L<Validation::Class::Prototype/is_valid> for full documentation.
 
 =head2 param
 
@@ -271,6 +286,12 @@ See L<Validation::Class::Prototype/param> for full documentation.
     $self->params;
 
 See L<Validation::Class::Prototype/params> for full documentation.
+
+=head2 plugin
+
+    $self->plugin;
+
+See L<Validation::Class::Prototype/plugin> for full documentation.
 
 =head2 queue
 

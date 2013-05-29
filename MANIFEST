@@ -95,6 +95,7 @@ t/98-03-document-example-pruning.t
 t/98-03-document-example-reporting.t
 t/99-alias-handling-with-report-unknown-enabled.t
 t/99-check-queuing-and-alternatives.t
+t/99-instance-based-stash-object.t
 t/99-toggling-filters-during-execution.t
 t/legacy/01-fields-access.t
 t/legacy/10-attribute-method.t

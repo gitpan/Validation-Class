@@ -14,7 +14,7 @@ use Exporter ();
 
 use Validation::Class::Prototype;
 
-our $VERSION = '7.900049'; # VERSION
+our $VERSION = '7.900050'; # VERSION
 
 our @ISA    = qw(Exporter);
 our @EXPORT = qw(
@@ -239,6 +239,8 @@ sub adt { goto &adopt } sub adopt {
     my $data   = clone $config->$store->get($name);
 
     @_ = ($name => $data) and goto &$type;
+
+    return;
 
 }
 
@@ -578,7 +580,7 @@ Validation::Class - Powerful Data Validation Framework
 
 =head1 VERSION
 
-version 7.900049
+version 7.900050
 
 =head1 SYNOPSIS
 
@@ -1390,7 +1392,7 @@ this method directly, see L<Validation::Class::Prototype>.
 =head1 PROXY METHODS
 
 Validation::Class mostly provides sugar functions for modeling your data
-validation requirements. Each class you create is associated with a *prototype*
+validation requirements. Each class you create is associated with a prototype
 class which provides the data validation engine and keeps your class namespace
 free from pollution, please see L<Validation::Class::Prototype> for more
 information on specific methods and attributes.

@@ -14,7 +14,7 @@ use Validation::Class::Fields;
 use Validation::Class::Errors;
 use Validation::Class::Util;
 
-our $VERSION = '7.900049'; # VERSION
+our $VERSION = '7.900050'; # VERSION
 
 use Hash::Flatten 'flatten', 'unflatten';
 use Module::Runtime 'use_module';
@@ -74,7 +74,7 @@ hold 'methods' => sub { Validation::Class::Mapping->new };
 hold 'mixins' => sub { Validation::Class::Mixins->new };
 
 
-hold 'package' => sub{ undef };
+hold 'package' => sub { undef };
 
 
 hold 'params' => sub { Validation::Class::Params->new };
@@ -1849,6 +1849,10 @@ sub snapshot {
 
     my ($self) = @_;
 
+    # reset the stash
+
+    $self->stashed->clear;
+
     # clone configuration settings and merge into the prototype
     # ... which makes the prototype kind've a snapshot of the configuration
 
@@ -2413,7 +2417,7 @@ Validation::Class::Prototype - Data Validation Engine for Validation::Class Clas
 
 =head1 VERSION
 
-version 7.900049
+version 7.900050
 
 =head1 DESCRIPTION
 
