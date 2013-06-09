@@ -14,7 +14,7 @@ use Exporter ();
 
 use Validation::Class::Prototype;
 
-our $VERSION = '7.900050'; # VERSION
+our $VERSION = '7.900051'; # VERSION
 
 our @ISA    = qw(Exporter);
 our @EXPORT = qw(
@@ -28,6 +28,8 @@ our @EXPORT = qw(
     directive
     doc
     document
+    ens
+    ensure
     fld
     field
     flt
@@ -333,6 +335,30 @@ sub doc { goto &document } sub document {
 };
 
 
+
+sub ens { goto &ensure } sub ensure {
+
+    my $package = shift if @_ == 3;
+
+    my ($name, $data) = @_;
+
+    $data ||= {};
+
+    return unless ($name && $data);
+
+    return configure_class_proto $package => sub {
+
+        my ($proto) = @_;
+
+        $proto->register_ensure($name, $data);
+
+        return $proto;
+
+    };
+
+}
+
+
 sub fld { goto &field } sub field {
 
     my $package = shift if @_ == 3;
@@ -580,7 +606,7 @@ Validation::Class - Powerful Data Validation Framework
 
 =head1 VERSION
 
-version 7.900050
+version 7.900051
 
 =head1 SYNOPSIS
 
@@ -665,7 +691,7 @@ L<Validation::Class::Simple> or L<Validation::Class::Simple::Streamer>. If you
 are new to Validation::Class, or would like more information on the
 underpinnings of this library and how it views and approaches data validation,
 please review L<Validation::Class::Whitepaper>. Please review the
-L<Validation::Class::Simple/GUIDED-TOUR> for a detailed step-by-step look into
+L<Validation::Class::Cookbook/GUIDED-TOUR> for a detailed step-by-step look into
 how Validation::Class works.
 
 =head1 KEYWORDS
@@ -741,8 +767,9 @@ class object.
 =head2 directive
 
 The directive keyword (or dir) registers custom validator directives to be used
-in your field definitions. This is a means of extending the list of directives
-per instance. See the list of core directives, L<Validation::Class::Directives>,
+in your field definitions. Please note that custom directives can only be used
+with field definitions. This is a means of extending the list of directives per
+instance. See the list of core directives, L<Validation::Class::Directives>,
 or review L<Validation::Class::Directive> for insight into creating your own
 CPAN installable directives.
 
@@ -953,6 +980,51 @@ traditional styling and configuration.
 
     1;
 
+=head2 ensure
+
+The ensure keyword (or ens) is used to convert a pre-existing method
+into an auto-validating method. The auto-validating method will be
+registered and function as if it was created using the method keyword.
+The original pre-existing method will be overridden with a modifed version
+which performs the pre and/or post validation routines.
+
+    package MyApp::Person;
+
+    use Validation::Class;
+
+    sub register {
+        ...
+    }
+
+    ensure register => {
+        input  => ['name', '+email', 'username', '+password', '+password2'],
+        output => ['+id'], # optional output validation, dies on failure
+    };
+
+    package main;
+
+    my $person = MyApp::Person->new(params => $params);
+
+    if ($person->register) {
+        # handle the successful registration
+    }
+
+    1;
+
+The ensure keyword takes two arguments, the name of the method to be
+overridden and a hashref of required key/value pairs. The hashref may
+have an input key (e.g. input, input_document, input_profile, or input_method).
+The `input` key (specifically) must have a value which must be either an
+arrayref of fields to be validated, or a scalar value which matches (a
+validation profile or auto-validating method name). The hashref may also have
+an output key (e.g. output, output_document, output_profile, or output_method).
+The `output` key (specifically) must have a value which must be either an
+arrayref of fields to be validated, or a scalar value which matches (a
+validation profile or auto-validating method name). Whether and what the
+method returns is yours to decide. The method will return undefined if
+validation fails. The ensure keyword wraps and functions much in the same way
+as the method keyword.
+
 =head2 field
 
 The field keyword (or fld) registers a data validation rule for reuse and
@@ -1151,9 +1223,9 @@ which is feed to sprintf to format the message.
 =head2 method
 
 The method keyword (or mth) is used to register an auto-validating method.
-Similar to method signatures, an auto-validating method can leverage pre-existing
-validation rules and profiles to ensure a method has the required data necessary
-for execution.
+Similar to method signatures, an auto-validating method can leverage
+pre-existing validation rules and profiles to ensure a method has the
+required pre/post-conditions and data necessary for execution.
 
     package MyApp::Person;
 
@@ -1189,14 +1261,31 @@ for execution.
     1;
 
 The method keyword takes two arguments, the name of the method to be created
-and a hashref of required key/value pairs. The hashref must have an `input`
-key whose value is either an arrayref of fields to be validated, or a scalar
-value which matches (a validation profile or auto-validating method name). The
-hashref must also have a `using` key whose value is a coderef which will be
-executed upon successfully validating the input. The `using` key/coderef can be
-omitted when a sub-routine of the same name prefixed with an underscore
-(or underscore + process + underscore) is present. Whether and what the method
-returns is yours to decide. The method will return 0 if validation fails.
+and a hashref of required key/value pairs. The hashref may have a `using` key
+whose value is the coderef to be executed upon successful validation. The
+`using` key is only optional when a pre-existing subroutine has the same name
+or the method being declared prefixed with a dash or dash-process-dash. The
+following are valid subroutine names to be called by the method declaration in
+absence of a `using` key. Please note, unlike the ensure keyword, any
+pre-existing subroutines will not be wrapped-and-replaced and can be executed
+without validation if called directly.
+
+    sub _name {
+        ...
+    }
+
+    sub _process_name {
+        ...
+    }
+
+The hashref may have an input key
+(e.g. input, input_document, input_profile, or input_method). The `input` key
+(specifically) must have a value which must be either an arrayref of fields to
+be validated, or a scalar value which matches (a validation profile or
+auto-validating method name), which will be used to perform data validation
+B<before> the aforementioned coderef has been executed. Whether and what the
+method returns is yours to decide. The method will return undefined if
+validation fails.
 
     # alternate usage
 
@@ -1211,18 +1300,20 @@ returns is yours to decide. The method will return 0 if validation fails.
         return $self;
     }
 
-Optionally the required hashref can have an `output` key whose value is either
-an arrayref of fields to be validated, or a scalar value which matches
-(a validation profile or auto-validating method name) which will be used to
-perform data validation B<after> the aforementioned coderef has been executed.
+Optionally the hashref may also have an output key (e.g. output,
+output_document, output_profile, or output_method). The `output` key
+(specifically) must have a value which must be either an arrayref of
+fields to be validated, or a scalar value which matches (a validation profile
+or auto-validating method name), which will be used to perform data validation
+B<after> the aforementioned coderef has been executed.
 
 Please note that output validation failure will cause the program to die,
 the premise behind this decision is based on the assumption that given
-successfully validated input a routine's output should be predictable and if an
-error occurs it is most-likely a program error as opposed to a user error.
+successfully validated input a routine's output should be predictable and
+if an error occurs it is most-likely a program error as opposed to a user error.
 
-See the ignore_failure and report_failure attributes on the prototype to control
-how method input validation failures are handled.
+See the ignore_failure and report_failure attributes on the prototype to
+control how method validation failures are handled.
 
 =head2 mixin
 
@@ -1588,6 +1679,12 @@ See L<Validation::Class::Prototype/stash> for full documentation.
 
 See L<Validation::Class::Prototype/validate> for full documentation.
 
+=head2 validate_document
+
+    $self->validate_document;
+
+See L<Validation::Class::Prototype/validate_document> for full documentation.
+
 =head2 validate_method
 
     $self->validate_method;
@@ -1638,10 +1735,10 @@ B<If you have simple data validation needs, please review:>
 
 Validation::Class primarily validates strings, not blessed objects. If you need
 a means for validating object types you should be using a modern object system
-like L<Mo>, L<Moo>, L<Mouse>, or L<Moose>. Alternatively, you could use a
+like L<Mo>, L<Moo>, L<Mouse>, or L<Moose>. Alternatively, you could use
 decoupled object validators like L<Type::Tiny>, L<Params::Validate> or
-L<Specio>. If you are looking for the best-of-both-worlds, you might want to
-look at L<MooX::Validate>.
+L<Specio>. If you are looking to integrate data validation with a
+light-weight object system, you might want to look at L<MooX::Validate>.
 
 In the event that you would like to look elsewhere for your data validation
 needs, the following is a list of other validation libraries/frameworks you

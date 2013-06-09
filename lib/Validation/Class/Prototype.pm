@@ -2,6 +2,7 @@
 
 package Validation::Class::Prototype;
 
+use 5.10.0;
 use strict;
 use warnings;
 
@@ -14,12 +15,13 @@ use Validation::Class::Fields;
 use Validation::Class::Errors;
 use Validation::Class::Util;
 
-our $VERSION = '7.900050'; # VERSION
+our $VERSION = '7.900051'; # VERSION
 
+use List::MoreUtils 'uniq', 'firstval';
 use Hash::Flatten 'flatten', 'unflatten';
 use Module::Runtime 'use_module';
 use Module::Find 'findallmod';
-use List::MoreUtils 'uniq', 'firstval';
+use Scalar::Util 'weaken';
 use Class::Forward 'clsf';
 use Hash::Merge 'merge';
 use Carp 'confess';
@@ -1232,6 +1234,28 @@ sub register_document {
 
 }
 
+sub register_ensure {
+
+    my ($self, $name, $data) = @_;
+
+    my $package = $self->{package};
+    my $code    = $package->can($name);
+
+    confess
+        "Error creating pre/post condition(s) ".
+        "around method $name on $package: method does not exist"
+            unless $code
+    ;
+
+    $data->{using}     = $code;
+    $data->{overwrite} = 1;
+
+    $self->register_method($name, $data);
+
+    return $self;
+
+}
+
 sub register_field {
 
     my ($self, $name, $data) = @_;
@@ -1321,23 +1345,42 @@ sub register_method {
 
     my $package = $self->package;
 
-    confess
-        "Error creating method $name on $package: collides with attribute $name"
-        if $self->attributes->has($name)
-    ;
+    unless ($data->{overwrite}) {
+
+        confess
+            "Error creating method $name on $package: ".
+            "collides with attribute $name"
+                if $self->attributes->has($name)
+        ;
+        confess
+            "Error creating method $name on $package: ".
+            "collides with method $name"
+                if $package->can($name)
+        ;
+
+    }
+
+    my @output_keys = my @input_keys = qw(
+        input input_document input_profile input_method
+    );
+
+    s/input/output/ for @output_keys;
 
     confess
-        "Error creating method $name on $package: collides with method $name"
-        if $package->can($name)
+        "Error creating method $name, requires " .
+        "at-least one pre or post-condition option, e.g., " .
+        join ', or ', map { "'$_'" } sort @input_keys, @output_keys
+            unless grep { $data->{$_} } @input_keys, @output_keys
     ;
 
+    $data->{using} ||= $package->can("_$name");
+    $data->{using} ||= $package->can("_process_$name");
+
     confess
-        "Error creating method $name, requires 'input' and 'using' options"
-        unless $data->{input} && (
-            $data->{using} ||
-            $package->can("_$name") ||
-            $package->can("_process_$name")
-        )
+        "Error creating method $name, requires the " .
+        "'using' option and a coderef or subroutine which conforms ".
+        "to the naming conventions suggested in the documentation"
+            unless "CODE" eq ref $data->{using}
     ;
 
     $self->configuration->methods->add($name, $data);
@@ -1351,31 +1394,88 @@ sub register_method {
         my $self  = shift;
         my @args  = @_;
 
-        my $validator;
+        my $i_validator;
+        my $o_validator;
 
-        my $input  = $data->{'input'};
-        my $output = $data->{'output'};
+        my $input_type  = firstval { defined $data->{$_} } @input_keys;
+        my $output_type = firstval { defined $data->{$_} } @output_keys;
+        my $input  = $input_type  ? $data->{$input_type}  : '';
+        my $output = $output_type ? $data->{$output_type} : '';
         my $using  = $data->{'using'};
+        my $return = undef;
 
-           $using ||= $self->can("_$name");
-           $using ||= $self->can("_process_$name");
-
-        if ($input) {
+        if ($input and $input_type eq 'input') {
 
             if (isa_arrayref($input)) {
-                $validator = sub {$self->validate(@{$input})};
+                $i_validator = sub {$self->validate(@{$input})};
             }
 
             elsif ($self->proto->profiles->get($input)) {
-                $validator = sub {$self->validate_profile($input, @args)};
+                $i_validator = sub {$self->validate_profile($input, @args)};
             }
 
             elsif ($self->proto->methods->get($input)) {
-                $validator = sub {$self->validate_method($input, @args)};
+                $i_validator = sub {$self->validate_method($input, @args)};
             }
 
             else {
                 confess "Method $name has an invalid input specification";
+            }
+
+        }
+
+        elsif ($input) {
+
+            my $type           = $input_type;
+               $type           =~ s/input_//;
+
+            my $type_list      = "${type}s";
+            my $type_validator = "validate_${type}";
+
+            if ($type && $type_list && $self->proto->$type_list->get($input)) {
+                $i_validator = sub {$self->$type_validator($input, @args)};
+            }
+
+            else {
+                confess "Method $name has an invalid input specification";
+            }
+
+        }
+
+        if ($output and $output_type eq 'output') {
+
+            if (isa_arrayref($output)) {
+                $o_validator = sub {$self->validate(@{$output})};
+            }
+
+            elsif ($self->proto->profiles->get($output)) {
+                $o_validator = sub {$self->validate_profile($output, @args)};
+            }
+
+            elsif ($self->proto->methods->get($output)) {
+                $o_validator = sub {$self->validate_method($output, @args)};
+            }
+
+            else {
+                confess "Method $name has an invalid output specification";
+            }
+
+        }
+
+        elsif ($output) {
+
+            my $type           = $output_type;
+               $type           =~ s/output_//;
+
+            my $type_list      = "${type}s";
+            my $type_validator = "validate_${type}";
+
+            if ($type && $type_list && $self->proto->$type_list->get($output)) {
+                $o_validator = sub {$self->$type_validator($output, @args)};
+            }
+
+            else {
+                confess "Method $name has an invalid output specification";
             }
 
         }
@@ -1386,64 +1486,40 @@ sub register_method {
 
                 my $error = "Method $name failed to validate";
 
-                # run input validation
-                if (isa_coderef($validator)) {
-
-                    unless ($validator->(@args)) {
-
+                # execute input validation
+                if ($input) {
+                    unless ($i_validator->(@args)) {
+                        confess $error. " input, ". $self->errors_to_string
+                            if !$self->ignore_failure;
                         unshift @{$self->errors}, $error
                             if $self->report_failure;
-
-                        confess $error. " input, ". $self->errors_to_string
-                            if ! $self->ignore_failure;
-
-                        return 0;
-
+                        return $return;
                     }
-
                 }
 
                 # execute routine
-                my $return = $using->($self, @args);
+                $return = $using->($self, @args);
 
-                # run output validation
+                # execute output validation
                 if ($output) {
-
-                    if (isa_arrayref($output)) {
-                        $validator = sub {$self->validate(@{$output})};
-                    }
-
-                    elsif ($self->proto->profiles->get($output)) {
-                        $validator = sub {$self->validate_profile($output, @args)};
-                    }
-
-                    elsif ($self->proto->methods->get($output)) {
-                        $validator = sub {$self->validate_method($output, @args)};
-                    }
-
-                    else {
-                        confess "Method $name has an invalid output specification";
-                    }
-
                     confess $error. " output, ". $self->errors_to_string
-                        unless $validator->(@args)
-                    ;
-
+                        unless $o_validator->(@args);
                 }
 
+                # return
                 return $return;
 
             }
 
             else {
 
-                confess "Error executing $name, no associated method or coderef";
+                confess "Error executing $name, invalid coderef specification";
 
             }
 
         }
 
-        return 0;
+        return $return;
 
     };
 
@@ -1451,7 +1527,7 @@ sub register_method {
 
     return $self;
 
-}
+};
 
 sub register_mixin {
 
@@ -2179,7 +2255,7 @@ sub document_validates { goto &validate_document } sub validate_document {
 
     }
 
-    my $fields    = { map {$_ => 1} ($self->fields->keys) };
+    my $fields = { map { $_ => 1 } ($self->fields->keys) };
 
     confess "Please supply a registered document name to validate against"
         unless $name
@@ -2197,7 +2273,9 @@ sub document_validates { goto &validate_document } sub validate_document {
 
     $options ||= {};
 
-    for my  $key (keys %{$document}) {
+    # handle sub-document references
+
+    for my $key (keys %{$document}) {
 
         $document->{$key} = $documents->{$document->{$key}} if
             $document->{$key} && exists $documents->{$document->{$key}} &&
@@ -2208,7 +2286,30 @@ sub document_validates { goto &validate_document } sub validate_document {
 
     $document = flatten $document;
 
-    for my  $key (keys %{$document}) {
+    my $signature = clone $document;
+
+    # create document signature
+
+    for my $key (keys %{$signature}) {
+
+        (my $new = $key) =~ s/\\//g;
+
+        $new =~ s/\*/???/g;
+        $new =~ s/\.@/:0/g;
+
+        $signature->{$new} = '???';
+
+        delete $signature->{$key} unless $new eq $key;
+
+    }
+
+    my $overlay = clone $signature;
+
+    $_ = undef for values %{$overlay};
+
+    # handle regex expansions
+
+    for my $key (keys %{$document}) {
 
         my  $value = delete $document->{$key};
 
@@ -2231,7 +2332,25 @@ sub document_validates { goto &validate_document } sub validate_document {
     my $_pmap = {};
     my $_xmap = {};
 
-    my $_data = flatten $data;
+    my $_zata = flatten $data;
+    my $_data = merge $overlay, $_zata;
+
+    # remove overlaid patterns if matching nodes exist
+
+    for my $key (keys %{$_data}) {
+
+        if ($key =~ /\?{3}/) {
+
+            (my $regex = $key) =~ s/\?{3}/\\w+/g;
+
+            delete $_data->{$key}
+                if grep { $_ =~ /$regex/ && $_ ne $key } keys %{$_data};
+
+        }
+
+    }
+
+    # generate validation rules
 
     for my $key (keys %{$_data}) {
 
@@ -2242,13 +2361,17 @@ sub document_validates { goto &validate_document } sub validate_document {
 
         my  $match = 0;
 
+        my  $switch;
+
         for my $regex (keys %{$document}) {
 
-            if ($_data->{$key}) {
+            if (exists $_data->{$key}) {
 
-                my  $field = $document->{$regex};
+                my  $field  = $document->{$regex};
 
                 if ($key =~ /^$regex$/) {
+
+                    $switch = $1 if $field =~ s/^([+-])//;
 
                     my $config = {label => $label};
 
@@ -2276,26 +2399,17 @@ sub document_validates { goto &validate_document } sub validate_document {
         $_xmap->{$point} = $key;
 
         # register node as a parameter
+        $self->params->add($point => $_data->{$key}) unless ! $match;
 
-        $self->params->add($point => $_data->{$key})
-            unless $options->{prune} && ! $match
-        ;
-
-        # queue and force requirement
-
-        $self->queue("+$point")
-            unless $options->{prune} && ! $match
-        ;
+        # queue node and requirement
+        $self->queue($switch ? "$switch$point" : "$point") unless ! $match;
 
         # prune unnecessary nodes
-
-        if ($options->{prune} && ! $match) {
-
-            delete $_data->{$key};
-
-        }
+        delete $_data->{$key} if $options->{prune} && ! $match;
 
     }
+
+    # validate
 
     $self->validate($context);
 
@@ -2356,27 +2470,27 @@ sub method_validates { goto &validate_method } sub validate_method {
     $self->normalize($context);
     $self->apply_filters('pre');
 
-    my $methspec = $self->methods->{$name};
-
-    my $input = $methspec->{input};
+    my $method_spec = $self->methods->{$name};
+    my $input       = $method_spec->{input};
 
     if ($input) {
 
-        if ("ARRAY" eq ref $input) {
+        my $code   = $method_spec->{using};
+        my $output = $method_spec->{output};
 
-            return $self->validate($context, @{$input});
+        weaken $method_spec->{$_} for ('using', 'output');
 
-        }
+        $method_spec->{using}  = sub { 1 };
+        $method_spec->{output} = undef;
 
-        else {
+        $context->$name(@args);
 
-            return $self->validate_profile($context, $input, @args);
-
-        }
+        $method_spec->{using}  = $code;
+        $method_spec->{output} = $output;
 
     }
 
-    return 0;
+    return $self->is_valid ? 1 : 0;
 
 }
 
@@ -2417,7 +2531,7 @@ Validation::Class::Prototype - Data Validation Engine for Validation::Class Clas
 
 =head1 VERSION
 
-version 7.900050
+version 7.900051
 
 =head1 DESCRIPTION
 

@@ -8,7 +8,7 @@ use warnings;
 use Validation::Class::Util '!has', '!hold';
 use List::MoreUtils 'uniq';
 
-our $VERSION = '7.900050'; # VERSION
+our $VERSION = '7.900051'; # VERSION
 
 
 
@@ -274,7 +274,7 @@ Validation::Class::Listing - Generic Container Class for an Array Reference
 
 =head1 VERSION
 
-version 7.900050
+version 7.900051
 
 =head1 SYNOPSIS
 
@@ -285,7 +285,7 @@ version 7.900050
     $foos->add('foo');
     $foos->add('bar', 'baz');
 
-    print $foos->count; # 2 objects
+    print $foos->count; # 3 objects
 
 =head1 DESCRIPTION
 

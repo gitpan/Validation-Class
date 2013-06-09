@@ -86,10 +86,12 @@ t/05-method-syntax.t
 t/05-role-requirements.t
 t/06-load-settings.t
 t/07-adopt-syntax.t
+t/08-ensure-syntax.t
 t/98-02-document-synopsis-adhoc.t
 t/98-02-document-synopsis-filtering.t
 t/98-02-document-synopsis.t
 t/98-03-document-example-composition.t
+t/98-03-document-example-method-usages.t
 t/98-03-document-example-nested.t
 t/98-03-document-example-pruning.t
 t/98-03-document-example-reporting.t
