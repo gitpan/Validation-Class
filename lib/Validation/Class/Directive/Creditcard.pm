@@ -9,7 +9,7 @@ use base 'Validation::Class::Directive';
 
 use Validation::Class::Util;
 
-our $VERSION = '7.900051'; # VERSION
+our $VERSION = '7.900052'; # VERSION
 
 
 has 'mixin'   => 1;
@@ -80,7 +80,7 @@ Validation::Class::Directive::Creditcard - Creditcard Directive for Validation C
 
 =head1 VERSION
 
-version 7.900051
+version 7.900052
 
 =head1 SYNOPSIS
 

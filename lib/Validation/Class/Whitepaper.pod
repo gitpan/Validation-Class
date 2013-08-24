@@ -13,7 +13,7 @@ Validation::Class::Whitepaper - Operate with Impunity
 
 =head1 VERSION
 
-version 7.900051
+version 7.900052
 
 =head1 INTRODUCTION
 

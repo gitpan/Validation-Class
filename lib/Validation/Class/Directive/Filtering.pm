@@ -9,14 +9,14 @@ use base 'Validation::Class::Directive';
 
 use Validation::Class::Util;
 
-our $VERSION = '7.900051'; # VERSION
+our $VERSION = '7.900052'; # VERSION
 
 
 has 'mixin' => 1;
 has 'field' => 1;
 has 'multi' => 0;
 has 'dependencies' => sub {{
-    normalization => [],
+    normalization => ['alias'],
     validation    => []
 }};
 
@@ -45,7 +45,7 @@ Validation::Class::Directive::Filtering - Filtering Directive for Validation Cla
 
 =head1 VERSION
 
-version 7.900051
+version 7.900052
 
 =head1 SYNOPSIS
 
