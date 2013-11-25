@@ -23,7 +23,7 @@ foreach my $module (usesub 'Validation::Class::Directive') {
     ;
 }
 
-our $VERSION = '7.900053'; # VERSION
+our $VERSION = '7.900054'; # VERSION
 
 
 sub new {
@@ -171,7 +171,7 @@ Validation::Class::Directives - Validation::Class Core Directives Registry
 
 =head1 VERSION
 
-version 7.900053
+version 7.900054
 
 =head1 DESCRIPTION
 

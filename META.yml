@@ -2,7 +2,8 @@
 abstract: 'Powerful Data Validation Framework'
 author:
   - 'Al Newkirk <anewkirk@ana.io>'
-build_requires: {}
+build_requires:
+  perl: 5.010
 configure_requires:
   ExtUtils::MakeMaker: 6.30
 dynamic_config: 0
@@ -20,8 +21,9 @@ requires:
   Module::Find: 0
   Module::Runtime: 0
   Scalar::Util: 0
+  perl: 5.010
 resources:
   bugtracker: https://github.com/alnewkirk/Validation-Class/issues
   homepage: http://search.cpan.org/dist/Validation-Class/
   repository: git://github.com/alnewkirk/Validation-Class.git
-version: 7.900053
+version: 7.900054

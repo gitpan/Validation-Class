@@ -17,7 +17,7 @@ use Validation::Class::Util;
 
 use Module::Find 'usesub';
 
-our $VERSION = '7.900053'; # VERSION
+our $VERSION = '7.900054'; # VERSION
 
 sub attributes {
 

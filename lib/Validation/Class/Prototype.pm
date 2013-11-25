@@ -15,7 +15,7 @@ use Validation::Class::Fields;
 use Validation::Class::Errors;
 use Validation::Class::Util;
 
-our $VERSION = '7.900053'; # VERSION
+our $VERSION = '7.900054'; # VERSION
 
 use List::MoreUtils 'uniq', 'firstval';
 use Hash::Flatten 'flatten', 'unflatten';
@@ -2530,7 +2530,7 @@ Validation::Class::Prototype - Data Validation Engine for Validation::Class Clas
 
 =head1 VERSION
 
-version 7.900053
+version 7.900054
 
 =head1 DESCRIPTION
 
