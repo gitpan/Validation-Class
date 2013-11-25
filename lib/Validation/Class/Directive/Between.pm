@@ -9,7 +9,7 @@ use base 'Validation::Class::Directive';
 
 use Validation::Class::Util;
 
-our $VERSION = '7.900052'; # VERSION
+our $VERSION = '7.900053'; # VERSION
 
 
 has 'mixin'   => 1;
@@ -67,7 +67,7 @@ Validation::Class::Directive::Between - Between Directive for Validation Class F
 
 =head1 VERSION
 
-version 7.900052
+version 7.900053
 
 =head1 SYNOPSIS
 

@@ -13,7 +13,7 @@ use Validation::Class::Util;
 
 use overload bool => \&validate, '""' => \&messages, fallback => 1;
 
-our $VERSION = '7.900052'; # VERSION
+our $VERSION = '7.900053'; # VERSION
 
 
 
@@ -170,7 +170,7 @@ Validation::Class::Simple::Streamer - Simple Streaming Data Validation
 
 =head1 VERSION
 
-version 7.900052
+version 7.900053
 
 =head1 SYNOPSIS
 

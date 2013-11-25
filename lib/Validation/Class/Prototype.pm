@@ -15,7 +15,7 @@ use Validation::Class::Fields;
 use Validation::Class::Errors;
 use Validation::Class::Util;
 
-our $VERSION = '7.900052'; # VERSION
+our $VERSION = '7.900053'; # VERSION
 
 use List::MoreUtils 'uniq', 'firstval';
 use Hash::Flatten 'flatten', 'unflatten';
@@ -1267,8 +1267,7 @@ sub register_field {
     $merge   = 1 if $name =~ s/^\+{1}//;
 
     confess "Error creating field $name, name is not properly formatted"
-        unless $name =~ /^[a-zA-Z_](([\w\.]+)?\w)$/
-        xor    $name =~ /^[a-zA-Z_](([\w\.]+)?\w)\:\d+$/;
+        unless $name =~ /^(?:[a-zA-Z_](?:[\w\.]*\w|\w*)(?:\:\d+)?)$/;
 
     if ($merge) {
         if ($self->configuration->fields->has($name) && $merge == 2) {
@@ -2531,7 +2530,7 @@ Validation::Class::Prototype - Data Validation Engine for Validation::Class Clas
 
 =head1 VERSION
 
-version 7.900052
+version 7.900053
 
 =head1 DESCRIPTION
 
