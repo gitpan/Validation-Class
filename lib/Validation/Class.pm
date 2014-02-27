@@ -14,7 +14,7 @@ use Exporter ();
 
 use Validation::Class::Prototype;
 
-our $VERSION = '7.900054'; # VERSION
+our $VERSION = '7.900055'; # VERSION
 
 our @ISA    = qw(Exporter);
 our @EXPORT = qw(
@@ -606,7 +606,7 @@ Validation::Class - Powerful Data Validation Framework
 
 =head1 VERSION
 
-version 7.900054
+version 7.900055
 
 =head1 SYNOPSIS
 
@@ -630,7 +630,10 @@ version 7.900054
 =head1 DESCRIPTION
 
 Validation::Class is a scalable data validation library with interfaces for
-applications of all sizes.
+applications of all sizes. B<Note: Validation::Class is entering into
+maintenance-only mode, i.e. Validation::Class will only be updated with minor
+enhancements and bug fixes, the lessons learned will be part of a complete
+rewrite uploaded under the namespace> L<Validation::Interface>.
 
 The most common usage of Validation::Class is to transform class namespaces into
 data validation domains where consistency and reuse are primary concerns.

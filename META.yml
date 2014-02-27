@@ -7,7 +7,7 @@ build_requires:
 configure_requires:
   ExtUtils::MakeMaker: 6.30
 dynamic_config: 0
-generated_by: 'Dist::Zilla version 5.006, CPAN::Meta::Converter version 2.132830'
+generated_by: 'Dist::Zilla version 5.013, CPAN::Meta::Converter version 2.132830'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -26,4 +26,4 @@ resources:
   bugtracker: https://github.com/alnewkirk/Validation-Class/issues
   homepage: http://search.cpan.org/dist/Validation-Class/
   repository: git://github.com/alnewkirk/Validation-Class.git
-version: 7.900054
+version: 7.900055

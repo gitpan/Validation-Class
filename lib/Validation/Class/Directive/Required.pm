@@ -9,7 +9,7 @@ use base 'Validation::Class::Directive';
 
 use Validation::Class::Util;
 
-our $VERSION = '7.900054'; # VERSION
+our $VERSION = '7.900055'; # VERSION
 
 
 has 'mixin'        => 1;
@@ -30,7 +30,8 @@ sub before_validation {
         if ($field->{required} && (! defined $param || $param eq '')) {
 
             $self->error($proto, $field);
-            $proto->stash->{'validation.bypass_event'}++;
+            $proto->stash->{'validation.bypass_event'}++
+                unless $proto->ignore_intervention;
 
         }
 
@@ -64,7 +65,7 @@ Validation::Class::Directive::Required - Required Directive for Validation Class
 
 =head1 VERSION
 
-version 7.900054
+version 7.900055
 
 =head1 SYNOPSIS
 

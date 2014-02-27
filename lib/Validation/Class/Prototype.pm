@@ -15,7 +15,7 @@ use Validation::Class::Fields;
 use Validation::Class::Errors;
 use Validation::Class::Util;
 
-our $VERSION = '7.900054'; # VERSION
+our $VERSION = '7.900055'; # VERSION
 
 use List::MoreUtils 'uniq', 'firstval';
 use Hash::Flatten 'flatten', 'unflatten';
@@ -62,6 +62,9 @@ hold 'filters' => sub { Validation::Class::Mapping->new };
 
 
 has 'ignore_failure' => '1';
+
+
+has 'ignore_intervention' => '0';
 
 
 has 'ignore_unknown' => '0';
@@ -430,6 +433,7 @@ sub class {
     my @attrs = qw(
 
         ignore_failure
+        ignore_intervention
         ignore_unknown
         report_failure
         report_unknown
@@ -1090,6 +1094,7 @@ sub proxy_methods {
         fields
         filtering
         ignore_failure
+        ignore_intervention
         ignore_unknown
         is_valid
         param
@@ -2530,7 +2535,7 @@ Validation::Class::Prototype - Data Validation Engine for Validation::Class Clas
 
 =head1 VERSION
 
-version 7.900054
+version 7.900055
 
 =head1 DESCRIPTION
 
@@ -2611,6 +2616,16 @@ upon failing to validate a self-validating method defined using the method
 keyword. This is on (1) by default, method validation failures will set errors
 and can be determined by checking the error stack using one of the error message
 methods. If turned off, the application will die and confess on failure.
+
+=head2 ignore_intervention
+
+The ignore_intervention boolean determines whether validation will short-circuit
+if required fields are not present. This is off (0) by default; The logic behind
+this decision is that, for example, in the case of a required field, if the
+field was not submitted but was required, there is no need to perform additional
+validation. This is a type-of short-circuiting which reduces validation
+overhead. If you would like to emit all applicable validation errors you can
+enable this option.
 
 =head2 ignore_unknown
 
