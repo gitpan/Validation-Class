@@ -9,7 +9,7 @@ use base 'Validation::Class::Directive';
 
 use Validation::Class::Util;
 
-our $VERSION = '7.900055'; # VERSION
+our $VERSION = '7.900056'; # VERSION
 
 
 has 'mixin'   => 1;
@@ -77,7 +77,7 @@ Validation::Class::Directive::DependsOn - DependsOn Directive for Validation Cla
 
 =head1 VERSION
 
-version 7.900055
+version 7.900056
 
 =head1 SYNOPSIS
 

@@ -15,7 +15,7 @@ use Validation::Class::Fields;
 use Validation::Class::Errors;
 use Validation::Class::Util;
 
-our $VERSION = '7.900055'; # VERSION
+our $VERSION = '7.900056'; # VERSION
 
 use List::MoreUtils 'uniq', 'firstval';
 use Hash::Flatten 'flatten', 'unflatten';
@@ -2535,7 +2535,7 @@ Validation::Class::Prototype - Data Validation Engine for Validation::Class Clas
 
 =head1 VERSION
 
-version 7.900055
+version 7.900056
 
 =head1 DESCRIPTION
 
@@ -3104,7 +3104,10 @@ into context/instance specific operations.
 =head2 validate
 
 The validate method (or has_valid, or validates) returns true/false depending on
-whether all specified fields passed validation checks.
+whether all specified fields passed validation checks. Please consider, if this
+method is called without any parameters, the list of fields to be validated
+will be assumed/deduced, making the execution strategy conditional, which may
+not be what you want.
 
     use MyApp::Person;
 
